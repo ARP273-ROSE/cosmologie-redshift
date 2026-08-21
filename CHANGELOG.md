@@ -43,8 +43,10 @@ First public release.
 - Complete **English / French** interface: menus, tooltips, seven help pages,
   status bar and console. The units follow the language (`Gly` / `G al`) and so
   does the decimal separator.
-- Language chosen through the *Language* menu, `--lang`, `COSMO_LANG`, or the
-  system locale.
+- The program starts in the language of the machine (POSIX variables, Windows
+  API, macOS preferences), **English by default** for any language other than
+  French. The *Language* menu switches immediately and the choice is remembered
+  for the next start; `--lang` and `COSMO_LANG` override it.
 
 ### Installation
 

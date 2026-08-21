@@ -74,8 +74,10 @@ environment and installs the dependencies.
 On Windows, replace `./launch.sh` with `launch.bat`; the sub-commands are the
 same, and `launch.bat help` lists them.
 
-**Language**: the *Language* menu, `--lang en`, or `COSMO_LANG=en`. By default
-the program follows the system locale.
+**Language**: the program starts in the language of the machine — French on a
+French system, **English everywhere else**. The *Language* menu switches
+immediately and the choice is remembered for the next start; `--lang fr|en` and
+`COSMO_LANG` override it.
 
 **Updates**: the program quietly checks at start-up whether a newer release
 exists (anonymous request, never blocking, disabled with

@@ -71,13 +71,22 @@ If `python3 -m venv` fails on Debian/Ubuntu: `sudo apt install python3-venv`.
 
 ### 1.3 Choosing the language
 
-The program is bilingual. In order of priority:
+The program is bilingual and starts in the language of the machine. In order
+of priority:
 
-1. the *Language* menu inside the GUI (switches immediately);
-2. `--lang en` / `--lang fr` on the command line;
-3. the `COSMO_LANG=en` environment variable;
-4. the system locale;
-5. French by default.
+1. `--lang en` / `--lang fr` on the command line;
+2. the `COSMO_LANG=en` environment variable;
+3. the language chosen in the *Language* menu during a previous session
+   (remembered through `QSettings`: registry on Windows, plist on macOS,
+   configuration file on Linux);
+4. the language of the system — POSIX variables (`LC_ALL`, `LC_MESSAGES`,
+   `LANGUAGE`, `LANG`), then the Windows API (`GetUserDefaultUILanguage`),
+   then the macOS preferences (`AppleLocale`), then Python's `locale` module;
+5. **English by default** — a French system gets French, anything else gets
+   English.
+
+The *Language* menu switches the whole interface immediately, without
+restarting, and stores the choice.
 
 ```bash
 COSMO_LANG=en ./launch.sh

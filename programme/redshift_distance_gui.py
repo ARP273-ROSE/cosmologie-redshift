@@ -19,6 +19,7 @@ Langue : menu « Langue / Language », ou variable COSMO_LANG=en, ou --lang en.
 ================================================================================
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -28,7 +29,7 @@ if str(HERE) not in sys.path:      # importable quel que soit le dossier courant
 
 import numpy as np
 
-from PyQt6.QtCore import Qt, QLocale, QThread, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, QLocale, QThread, pyqtSignal, QObject, QSettings
 from PyQt6.QtGui import QFont, QPalette, QColor, QAction, QIcon, QPixmap, QActionGroup
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -44,7 +45,8 @@ from cosmo_core import (
     fmt_num, C_KMS, T0_GYR, D_H_GLYR, PARTICLE_HORIZON_GLYR, EVENT_HORIZON_GLYR,
     Z_DA_MAX, DA_MAX_GLYR, H0_PLANCK, OM_PLANCK, H0_SHOES,
 )
-from i18n import t, set_language, current_language, LANGUAGE_NAMES
+from i18n import (t, set_language, current_language, detect_system_language,
+                  LANGUAGE_NAMES)
 from help_texts import help_html
 from updates import (__version__, RELEASES_URL, DOWNLOAD_URL,
                      latest_version, is_newer, check_enabled)
@@ -599,6 +601,7 @@ class MainWindow(QMainWindow):
 
     def set_lang(self, code: str):
         set_language(code)
+        _save_language(code)          # le choix survit au redémarrage
         for c, act in self.lang_actions.items():
             act.setChecked(c == code)
         self.retranslate()
@@ -878,6 +881,19 @@ class MainWindow(QMainWindow):
 # ENTRY POINT
 # ============================================================================
 
+SETTINGS_ORG, SETTINGS_APP = "cosmologie-redshift", "CosmologicalDistanceCalculator"
+
+
+def _saved_language() -> str | None:
+    """Langue choisie lors d'une session précédente, si elle a été mémorisée."""
+    value = QSettings(SETTINGS_ORG, SETTINGS_APP).value("language")
+    return value if value in LANGUAGE_NAMES else None
+
+
+def _save_language(code: str) -> None:
+    QSettings(SETTINGS_ORG, SETTINGS_APP).setValue("language", code)
+
+
 def main():
     argv = list(sys.argv)
     lang = None
@@ -886,6 +902,11 @@ def main():
         if i + 1 < len(argv):
             lang = argv[i + 1]
             del argv[i:i + 2]
+
+    # Priorité : --lang, puis COSMO_LANG, puis le choix mémorisé, puis la
+    # langue du système (anglais si elle n'est ni française ni détectable).
+    if lang is None and not os.environ.get("COSMO_LANG"):
+        lang = _saved_language()
     set_language(lang)
 
     app = QApplication(argv)

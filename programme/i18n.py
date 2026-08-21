@@ -8,13 +8,17 @@ Bilingual support (French / English) for the whole program.
 
 Choix de la langue, par ordre de priorité :
   1. appel explicite  set_language("en")
-  2. variable d'environnement  COSMO_LANG=en  (ou fr)
-  3. option de ligne de commande  --lang en   (traitée par les deux scripts)
-  4. locale du système
-  5. français par défaut
+  2. option de ligne de commande  --lang en   (traitée par les deux scripts)
+  3. variable d'environnement  COSMO_LANG=en  (ou fr)
+  4. langue du système : variables POSIX (LC_ALL, LC_MESSAGES, LANGUAGE, LANG),
+     API Windows (GetUserDefaultUILanguage), réglages macOS (AppleLocale),
+     puis le module locale de Python
+  5. anglais par défaut
 
-Language selection order: explicit call, COSMO_LANG, --lang, system locale,
-French by default.
+Language selection order: explicit call, --lang, COSMO_LANG, the system
+language (POSIX variables, Windows API, macOS preferences, Python locale),
+then English by default. A machine set to French gets French; anything else
+gets English.
 
 Usage :
     from i18n import t, set_language
@@ -27,28 +31,110 @@ from __future__ import annotations
 
 import locale
 import os
+import sys
 
 __all__ = ["t", "set_language", "current_language", "available_languages",
-           "LANGUAGE_NAMES"]
+           "detect_system_language", "LANGUAGE_NAMES", "DEFAULT_LANGUAGE"]
 
 LANGUAGE_NAMES = {"fr": "Français", "en": "English"}
+DEFAULT_LANGUAGE = "en"          # repli quand la langue du système est autre
 
 _LANG: str | None = None
 
 
 def available_languages() -> list[str]:
-    return ["fr", "en"]
+    return list(LANGUAGE_NAMES)
+
+
+def _normalise(tag: str) -> str:
+    """« fr_FR.UTF-8 », « fr-CA », « French_France » -> « fr » (ou "")."""
+    tag = (tag or "").strip()
+    if not tag or tag.lower() in ("c", "posix", "c.utf-8", "c.utf8"):
+        return ""
+    tag = tag.split(":")[0].replace("-", "_").split(".")[0].split("@")[0]
+    code = tag.split("_")[0].lower()
+    if code in LANGUAGE_NAMES:
+        return code
+    # noms complets renvoyés par certaines API Windows
+    return {"french": "fr", "francais": "fr", "français": "fr",
+            "english": "en"}.get(code, "")
+
+
+def _from_env() -> str:
+    """Variables POSIX, présentes sous Linux et souvent sous macOS."""
+    for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
+        code = _normalise(os.environ.get(var, ""))
+        if code:
+            return code
+        # une locale lisible mais d'une autre langue : décision prise, anglais
+        raw = (os.environ.get(var) or "").strip()
+        if raw and raw.lower() not in ("c", "posix", "c.utf-8", "c.utf8"):
+            return DEFAULT_LANGUAGE
+    return ""
+
+
+def _from_windows() -> str:
+    """Langue d'affichage de Windows, via l'API du système."""
+    if not sys.platform.startswith("win"):
+        return ""
+    try:
+        import ctypes
+        lcid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
+        tag = locale.windows_locale.get(lcid, "")
+        return _normalise(tag) or (DEFAULT_LANGUAGE if tag else "")
+    except Exception:
+        return ""
+
+
+def _from_macos() -> str:
+    """Réglages de langue de macOS (les variables POSIX y sont souvent vides)."""
+    if sys.platform != "darwin":
+        return ""
+    try:
+        import subprocess
+        for key in ("AppleLocale", "AppleLanguages"):
+            out = subprocess.run(["defaults", "read", "-g", key],
+                                 capture_output=True, text=True, timeout=3).stdout
+            for token in out.replace("(", " ").replace(")", " ").replace('"', " ").split():
+                code = _normalise(token)
+                if code:
+                    return code
+                if len(token) >= 2 and token[:2].isalpha():
+                    return DEFAULT_LANGUAGE
+    except Exception:
+        pass
+    return ""
+
+
+def _from_python_locale() -> str:
+    """Dernier recours : le module locale (getdefaultlocale est déprécié)."""
+    try:
+        tag = locale.getlocale()[0] or ""
+    except (ValueError, TypeError):
+        tag = ""
+    if not tag:
+        try:                       # présent jusqu'à Python 3.12 au moins
+            tag = (locale.getdefaultlocale()[0] or "")   # noqa: DEP005
+        except (ValueError, TypeError, AttributeError):
+            tag = ""
+    code = _normalise(tag)
+    return code or (DEFAULT_LANGUAGE if tag else "")
+
+
+def detect_system_language() -> str:
+    """Langue de la machine, ramenée à « fr » ou « en » (anglais par défaut)."""
+    for source in (_from_env, _from_windows, _from_macos, _from_python_locale):
+        code = source()
+        if code in LANGUAGE_NAMES:
+            return code
+    return DEFAULT_LANGUAGE
 
 
 def _detect() -> str:
-    env = (os.environ.get("COSMO_LANG") or "").strip().lower()[:2]
-    if env in LANGUAGE_NAMES:
-        return env
-    try:
-        loc = locale.getlocale()[0] or locale.getdefaultlocale()[0] or ""
-    except (ValueError, TypeError):
-        loc = ""
-    return "fr" if loc[:2].lower() == "fr" else ("en" if loc else "fr")
+    code = _normalise(os.environ.get("COSMO_LANG", ""))
+    if code:
+        return code
+    return detect_system_language()
 
 
 def set_language(lang: str | None) -> str:
@@ -70,10 +156,10 @@ def current_language() -> str:
 def t(key: str, **kw) -> str:
     """Chaîne traduite ; les mots-clés sont substitués par str.format."""
     lang = current_language()
-    table = STRINGS.get(lang, STRINGS["fr"])
+    table = STRINGS.get(lang, STRINGS[DEFAULT_LANGUAGE])
     s = table.get(key)
-    if s is None:                      # repli : français, puis la clé elle-même
-        s = STRINGS["fr"].get(key, key)
+    if s is None:                      # repli : langue par défaut, puis la clé
+        s = STRINGS[DEFAULT_LANGUAGE].get(key, key)
     return s.format(**kw) if kw else s
 
 

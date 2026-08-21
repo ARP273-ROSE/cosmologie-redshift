@@ -44,8 +44,10 @@ Première version publique.
 - Interface **française / anglaise** complète : menus, infobulles, sept pages
   d'aide, barre d'état et console. Les unités suivent la langue (`G al` /
   `Gly`), le séparateur décimal aussi.
-- Langue choisie par le menu *Langue*, `--lang`, `COSMO_LANG`, ou la locale du
-  système.
+- Le programme démarre dans la langue de la machine (variables POSIX, API
+  Windows, réglages macOS), **anglais par défaut** pour toute langue autre que
+  le français. Le menu *Langue* bascule immédiatement et le choix est mémorisé
+  pour les fois suivantes ; `--lang` et `COSMO_LANG` priment.
 
 ### Installation
 

@@ -69,7 +69,31 @@ COSMO_VENV=~/work/venv ./launch.sh check
 
 Si `python3 -m venv` échoue sous Debian/Ubuntu : `sudo apt install python3-venv`.
 
-### 1.3 Installation manuelle (sans lanceur)
+### 1.3 Choix de la langue
+
+Le programme est bilingue et démarre dans la langue de la machine. En ordre de
+priorité :
+
+1. `--lang en` / `--lang fr` en ligne de commande ;
+2. la variable d'environnement `COSMO_LANG=en` ;
+3. la langue choisie dans le menu *Langue* lors d'une session précédente
+   (mémorisée par `QSettings` : registre sous Windows, plist sous macOS,
+   fichier de configuration sous Linux) ;
+4. la langue du système — variables POSIX (`LC_ALL`, `LC_MESSAGES`, `LANGUAGE`,
+   `LANG`), puis l'API Windows (`GetUserDefaultUILanguage`), puis les réglages
+   macOS (`AppleLocale`), puis le module `locale` de Python ;
+5. **anglais par défaut** — un système français donne du français, tout autre
+   système de l'anglais.
+
+Le menu *Langue* bascule toute l'interface immédiatement, sans redémarrage, et
+retient le choix.
+
+```bash
+COSMO_LANG=en ./launch.sh
+./launch.sh console 2.34 --lang en
+```
+
+### 1.4 Installation manuelle (sans lanceur)
 
 ```bash
 python -m venv .venv
@@ -81,7 +105,7 @@ python -m venv .venv
 (`comoving_distance`, `age`, `lookback_time`). Sans lui, l'import passe mais tout
 calcul échoue.
 
-### 1.4 Cas particulier : une image Docker minimale
+### 1.5 Cas particulier : une image Docker minimale
 
 Sur une image Python minimale (par exemple un conteneur Jupyter), les
 bibliothèques système dont Qt a besoin sont absentes. À installer une fois :
@@ -404,7 +428,7 @@ pas l'éditer à la main.
 | `ModuleNotFoundError: astropy` | venv incomplet | `launch.bat update` / `./launch.sh update` |
 | L'appli démarre puis se fige au premier calcul | `scipy` absent | idem (`update`) |
 | Échec de création du venv sous Debian/Ubuntu | paquet `python3-venv` absent | `sudo apt install python3-venv` |
-| `ImportError: libEGL.so.1` (Linux) | bibliothèques Qt système absentes | §1.4 |
+| `ImportError: libEGL.so.1` (Linux) | bibliothèques Qt système absentes | §1.5 |
 | `qt.qpa.plugin: could not load the Qt platform plugin "xcb"` | pas de serveur d'affichage | `./launch.sh console`, ou `QT_QPA_PLATFORM=offscreen` |
 | Caractères bizarres dans la console Windows (`Ã©`, `?`) | page de code non-UTF-8 | passer par `launch.bat` (fait `chcp 65001`) |
 | `AttributeError: module 'astropy.units' has no attribute 'Gly'` | l'unité s'écrit `Glyr` | utiliser `u.Glyr` et `u.lyr` |

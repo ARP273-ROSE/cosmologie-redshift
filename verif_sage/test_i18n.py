@@ -147,6 +147,49 @@ for lang in ("fr", "en"):
     check(not hits, f"[{lang}] sortie console homogène"
           + (f" ({hits[0][:60]!r})" if hits else ""))
 
+# ------------------------------------------- 6. détection de la langue système
+print("\n6. Détection automatique de la langue")
+import importlib                                    # noqa: E402
+import os as _os                                    # noqa: E402
+
+VARS = ("LANG", "LC_ALL", "LC_MESSAGES", "LANGUAGE", "COSMO_LANG")
+_saved = {v: _os.environ.get(v) for v in VARS}
+CASES = [
+    ("système en français",        {"LANG": "fr_FR.UTF-8"}, "fr"),
+    ("français, autre variable",   {"LC_ALL": "fr_BE"}, "fr"),
+    ("français canadien (tiret)",  {"LANG": "fr-CA"}, "fr"),
+    ("système en anglais",         {"LANG": "en_GB.UTF-8"}, "en"),
+    ("système en allemand",        {"LANG": "de_DE.UTF-8"}, "en"),
+    ("système en japonais",        {"LANG": "ja_JP.UTF-8"}, "en"),
+    ("locale C / serveur",         {"LANG": "C", "LC_ALL": "C"}, "en"),
+    ("aucune locale",              {}, "en"),
+    ("COSMO_LANG l'emporte",       {"LANG": "en_US.UTF-8", "COSMO_LANG": "fr"}, "fr"),
+    ("COSMO_LANG inconnu ignoré",  {"LANG": "fr_FR.UTF-8", "COSMO_LANG": "zz"}, "fr"),
+]
+for desc, env, expected in CASES:
+    for v in VARS:
+        _os.environ.pop(v, None)
+    _os.environ.update(env)
+    importlib.reload(i18n)
+    got = i18n.set_language(None)
+    check(got == expected, f"{desc:<28} -> {got}")
+
+for v, val in _saved.items():           # on remet l'environnement en état
+    if val is None:
+        _os.environ.pop(v, None)
+    else:
+        _os.environ[v] = val
+importlib.reload(i18n)
+
+# formes rencontrées sous Windows et macOS, ramenées au bon code
+for tag, expected in (("French_France", "fr"), ("fr_FR", "fr"), ("fr-CA", "fr"),
+                      ("en_US", "en"), ("English_United States", "en"),
+                      ("de-DE", ""), ("", ""), ("C", "")):
+    got = i18n._normalise(tag)
+    check(got == expected, f"_normalise({tag!r}) -> {got!r}")
+
+check(i18n.DEFAULT_LANGUAGE == "en", "la langue par défaut est l'anglais")
+
 print("\n" + "=" * 70)
 if failures:
     print(f"  {len(failures)} CONTRÔLE(S) EN ÉCHEC")

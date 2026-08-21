@@ -74,8 +74,10 @@ Il crée ensuite l'environnement virtuel et installe les dépendances.
 Sous Windows, remplacer `./launch.sh` par `launch.bat` ; les sous-commandes sont
 identiques et `launch.bat help` les rappelle.
 
-**Langue** : menu *Langue* dans l'interface, `--lang en`, ou `COSMO_LANG=en`.
-Par défaut, le programme suit la locale du système.
+**Langue** : le programme démarre dans la langue de la machine — français sur
+un système français, **anglais partout ailleurs**. Le menu *Langue* bascule
+immédiatement et le choix est mémorisé pour les fois suivantes ;
+`--lang fr|en` et `COSMO_LANG` priment.
 
 **Mises à jour** : le programme vérifie discrètement au démarrage si une version
 plus récente est publiée (requête anonyme, jamais bloquante, désactivable par
