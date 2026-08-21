@@ -1,6 +1,6 @@
 #!/usr/bin/env sage
 # =============================================================================
-#  AUDIT redshift_distance_gui.py — recalcul INDÉPENDANT sous SageMath
+#  Vérification INDÉPENDANTE des calculs de redshift_distance_gui.py sous SageMath
 #  Aucun appel à astropy : tout est reconstruit depuis les constantes CODATA
 #  et les équations de Friedmann, en précision étendue (mpmath).
 #  La fonction de Fermi-Dirac des neutrinos massifs est calculée EXACTEMENT

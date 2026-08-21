@@ -3,7 +3,7 @@
 *[Version française](MANUEL.md)*
 
 Everything needed to install, use, modify, rebuild and verify the program.
-For an overview see [`README.en.md`](README.en.md); for the current status,
+For an overview see [`README.md`](README.md); for the current status,
 [`PROGRESS.md`](PROGRESS.md).
 
 ---
@@ -383,7 +383,7 @@ The script forces `QT_QPA_PLATFORM=offscreen` itself. It sweeps 8 values of `z`
 (including the limits 0 and 1500), prints the consistency checks, exercises
 **both languages** and all seven help dialogs, checks that the numeric fields
 accept typed input with either decimal separator, and rewrites the screenshots
-in `audit/captures/`. **This is the test to re-run after any change to the
+in `captures/`. **This is the test to re-run after any change to the
 GUI.**
 
 ---
@@ -399,10 +399,6 @@ pdflatex -interaction=nonstopmode cours_distances_cosmologiques.tex   # French
 pdflatex -interaction=nonstopmode cours_distances_cosmologiques.tex
 pdflatex -interaction=nonstopmode course_cosmological_distances.tex   # English
 pdflatex -interaction=nonstopmode course_cosmological_distances.tex
-
-cd ../audit
-pdflatex -interaction=nonstopmode AUDIT_cosmologie.tex
-pdflatex -interaction=nonstopmode AUDIT_cosmologie.tex
 
 rm -f *.aux *.log *.out *.toc
 ```

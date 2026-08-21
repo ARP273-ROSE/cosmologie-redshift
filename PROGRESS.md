@@ -18,7 +18,6 @@
 | Console version | **✅ rewritten**, bilingual, with `--omega-k` / `--no-shoes` / `--lang` | `programme/redshift_distance_calculator.py` |
 | Course, French | **✅ 68 pp., no compilation error, no unresolved reference** | `cours/cours_distances_cosmologiques.pdf` |
 | Course, English | **✅ 64 pp.** | `cours/course_cosmological_distances.pdf` |
-| Audit report | **✅ 11 pp.** (French) | `audit/AUDIT_cosmologie.pdf` |
 | SageMath verification | **✅ run**, 2×10⁻⁶ agreement on the distances | `verif_sage/` |
 | Version control | **✅ done 2026-08-14** — this was the weak point | this repository |
 
@@ -69,10 +68,8 @@
 - **Units follow the language**: `G al` / `Gly`, `M al` / `Mly`, and the
   decimal separator (comma in French, point in English) through the new
   `fmt_num()`.
-- **English documents**: `README.en.md`, `MANUAL.md`, `PROGRESS.md`, and the
+- **English documents**: `README.md`, `MANUAL.md`, `PROGRESS.md`, and the
   full course `cours/course_cosmological_distances.tex` (64 pp.).
-- The audit report stays in French: it is a dated snapshot of the audit, not
-  a living document.
 
 **Keyboard entry fixed at the same time.** The curvature field could only be
 changed with the arrows: under a French locale Qt rejects the decimal *point*,
@@ -105,8 +102,7 @@ to 0.65 %, against 1.8 % for Ωm and 0.62 % for h), by symbolic solution in Sage
 | 1089.8 | 0.18 % | 0.95 % |
 
 Two lessons: ignoring the correlation overestimates the uncertainty by a
-factor of 2 to 5 (the « ±0.6 % » estimate of the audit report was of that
-order, lacking the cross term); and the uncertainty goes through a **minimum
+factor of 2 to 5; and the uncertainty goes through a **minimum
 near z ≈ 5**, a « pivot » redshift.
 
 **SH0ES comparison**: a checkbox shows the same quantities with H₀ = 73.04 and
@@ -133,8 +129,7 @@ redshifts tested.
 
 `curves()` writes to `programme/cache/curves_<hash>.npz`, the key covering all
 parameters and the grid. Real measurements: **49 ms → 4 ms** for 600 points.
-The « ~1 s » estimate in the audit report was pessimistic (astropy 8
-vectorises better); the gain becomes significant when the grid grows
+The gain becomes significant when the grid grows
 (5 000 points: 390 ms). Automatic fallback to the temporary folder when the
 repository is not writable — a common case on a network share.
 
@@ -259,7 +254,6 @@ recombination, and the bibliography.
 | 2 | **Export** | a « copy results » button or CSV export over a range of z |
 | 3 | **Uncertainty on Ωk** | the ± only propagate σ(H₀) and σ(Ωm); add σ(Ωk) = 0.0019 when curvature is enabled |
 | 4 | **Validate `launch.bat` on Windows** | partly validated (the diagnostics did identify the network drive); a complete run after the fix remains to be confirmed |
-| 5 | **Translate the audit report** | `AUDIT_cosmologie.pdf` is still French only |
 
 ---
 

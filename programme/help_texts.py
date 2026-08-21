@@ -49,7 +49,7 @@ français / anglais (menu <i>Langue</i>).</p>
 indépendamment sous <b>SageMath</b> (mpmath 25 chiffres, intégrale de
 Fermi-Dirac exacte pour les neutrinos massifs)&nbsp;: accord à
 2&times;10<sup>-6</sup> en relatif sur les distances, 1,5&times;10<sup>-5</sup>
-sur les âges. Voir <code>AUDIT_cosmologie.pdf</code>.</p>
+sur les âges (scripts dans <code>verif_sage/</code>).</p>
 <p style="color:#7a8498;font-size:9pt;">Documentation complète dans le cours
 LaTeX joint&nbsp;: <code>cours_distances_cosmologiques.pdf</code> (68 p.).</p>
 """,
@@ -289,7 +289,7 @@ retrouvée à 10<sup>-9</sup>&nbsp;;</li>
 </ul>
 <p style="color:#7a8498;font-size:9pt;">Scripts : <code>verif_sage/verif_cosmo.sage</code>,
 <code>verif_DL_symbolique.sage</code> et <code>verif_courbure_sigma.sage</code>.
-Détail complet dans <code>AUDIT_cosmologie.pdf</code>.</p>
+La méthode est détaillée en annexe du cours.</p>
 """,
 
 "sigma": """
@@ -374,8 +374,8 @@ French / English (<i>Language</i> menu).</p>
 <p><b>Verification.</b> Every displayed value has been recomputed independently
 with <b>SageMath</b> (mpmath, 25 digits, exact Fermi-Dirac integral for massive
 neutrinos)&nbsp;: agreement to 2&times;10<sup>-6</sup> in relative terms for the
-distances and 1.5&times;10<sup>-5</sup> for the ages. See
-<code>AUDIT_cosmologie.pdf</code>.</p>
+distances and 1.5&times;10<sup>-5</sup> for the ages (scripts in
+<code>verif_sage/</code>).</p>
 <p style="color:#7a8498;font-size:9pt;">Full documentation in the companion
 LaTeX course&nbsp;: <code>course_cosmological_distances.pdf</code> (64 pp.).</p>
 """,
@@ -611,7 +611,7 @@ recovered to 10<sup>-9</sup>&nbsp;;</li>
 </ul>
 <p style="color:#7a8498;font-size:9pt;">Scripts: <code>verif_sage/verif_cosmo.sage</code>,
 <code>verif_DL_symbolique.sage</code> and <code>verif_courbure_sigma.sage</code>.
-Full details in <code>AUDIT_cosmologie.pdf</code>.</p>
+The method is detailed in the appendix of the course.</p>
 """,
 
 "sigma": """

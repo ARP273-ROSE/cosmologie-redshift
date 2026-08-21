@@ -4,7 +4,7 @@ Usage (depuis la racine du dépôt) :
     QT_QPA_PLATFORM=offscreen .venv/bin/python verif_sage/test_gui_headless.py
     set QT_QPA_PLATFORM=offscreen && .venv\\Scripts\\python.exe verif_sage\\test_gui_headless.py
 
-Les captures sont écrites dans audit/captures/. C'est le test à relancer après
+Les captures sont écrites dans captures/. C'est le test à relancer après
 toute modification de la GUI.
 """
 import os
@@ -18,7 +18,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PyQt6.QtWidgets import QApplication
 import redshift_distance_gui as G
 
-OUT = ROOT / "audit" / "captures"
+OUT = ROOT / "captures"
 OUT.mkdir(parents=True, exist_ok=True)
 
 app = QApplication(sys.argv)

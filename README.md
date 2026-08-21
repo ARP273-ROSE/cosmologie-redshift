@@ -1,183 +1,183 @@
-# Cosmologie — du redshift aux distances
+# Cosmology — from redshift to distances
 
-*[English version](README.en.md)*
+*[Version française](README.fr.md)*
 
 [![release](https://img.shields.io/github/v/release/ARP273-ROSE/cosmologie-redshift?label=version)](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest)
 [![build](https://github.com/ARP273-ROSE/cosmologie-redshift/actions/workflows/release.yml/badge.svg)](https://github.com/ARP273-ROSE/cosmologie-redshift/actions/workflows/release.yml)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 
-Calculateur interactif **redshift → distances cosmologiques** (PyQt6), accompagné
-d'un **cours de 68 pages** en trois niveaux de lecture et d'un **rapport d'audit**
-avec vérification indépendante sous SageMath.
+Interactive **redshift → cosmological distance** calculator (PyQt6), together
+with a **64-page course** written at three reading levels, and an independent
+verification of every number in SageMath.
 
-Modèle : ΛCDM contraint par **Planck 2018** (`astropy.cosmology.Planck18`).
+Model: ΛCDM constrained by **Planck 2018** (`astropy.cosmology.Planck18`).
 
-Le programme est **bilingue** (français / anglais) : menu *Langue*, `--lang en`,
-ou variable `COSMO_LANG=en`. Le cours existe dans les deux langues.
+The program is **bilingual** (French / English): use the *Language* menu,
+`--lang en`, or the `COSMO_LANG=en` environment variable.
 
-![aperçu](audit/captures/gui_z2.34.png)
+![overview](captures/gui_english.png)
 
 ---
 
-## Contenu du dépôt
+## Repository contents
 
-| Dossier / fichier | Contenu |
+| Folder / file | Contents |
 |---|---|
-| `launch.bat` / `launch.sh` | lanceurs Windows et Linux/macOS (venv + dépendances automatiques) |
-| `programme/` | l'application Qt6, sa version console et le noyau de calcul |
-| `cours/` | le cours en français (`cours_distances_cosmologiques.pdf`, 68 p.) et en anglais (`course_cosmological_distances.pdf`, 64 p.) |
-| `audit/` | `AUDIT_cosmologie.pdf` (11 p.) : audit du code, des données et du cours |
-| `verif_sage/` | scripts de vérification (SageMath sans astropy + calcul formel) |
+| `launch.bat` / `launch.sh` | Windows and Linux/macOS launchers (venv + dependencies handled automatically) |
+| `programme/` | the Qt6 application, its console version and the computation core |
+| `cours/` | the course, in French (`cours_distances_cosmologiques.pdf`) and English (`course_cosmological_distances.pdf`, 64 pp.) |
+| `verif_sage/` | verification scripts (SageMath without astropy + symbolic algebra) |
 | `requirements.txt` | numpy, scipy, astropy, PyQt6, pyqtgraph |
 
-**Documents à lire** :
-- [`MANUEL.md`](MANUEL.md) — installation, utilisation, recompilation, dépannage
-- [`PROGRESSION.md`](PROGRESSION.md) — état du projet, historique, ce qui reste à faire
+**Documents to read**:
+- [`MANUAL.md`](MANUAL.md) — installation, usage, rebuilding, troubleshooting
+- [`PROGRESS.md`](PROGRESS.md) — project status, history, what is left to do
 
 ---
 
 ## Installation
 
-### 1. Le plus simple : l'exécutable autonome (aucun prérequis)
+### 1. Simplest: the standalone executable (no prerequisite)
 
-Rien à installer, pas besoin de Python : un seul fichier à télécharger.
+Nothing to install, no Python needed: a single file to download.
 
-| Système | Téléchargement | Premier lancement |
+| System | Download | First run |
 |---|---|---|
-| **Windows** | [⬇ .exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-windows.exe) | double-clic. SmartScreen prévient que le programme n'est pas signé : *Informations complémentaires* → *Exécuter quand même* |
-| **macOS (Apple Silicon)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip) | décompresser, puis **clic droit → Ouvrir** la première fois |
-| **macOS (Intel)** | *en construction* | en attendant, passer par les sources (§2) : le lanceur installe tout |
-| **Linux (x86_64)** | [⬇ binaire](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64) | `chmod +x` puis exécuter |
+| **Windows** | [⬇ .exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-windows.exe) | double-click. SmartScreen warns that the program is unsigned: *More info* → *Run anyway* |
+| **macOS (Apple Silicon)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip) | unzip, then **right-click → Open** the first time |
+| **macOS (Intel)** | *being built* | until then, run from source (§2): the launcher installs everything |
+| **Linux (x86_64)** | [⬇ binary](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64) | `chmod +x` then run |
 
-Ces liens pointent toujours vers la version la plus récente.
+These links always point at the most recent version.
 
-### 2. Depuis les sources
+### 2. From source
 
 ```bash
 git clone https://github.com/ARP273-ROSE/cosmologie-redshift.git
 cd cosmologie-redshift
-./launch.sh              # Linux, macOS   (launch.bat sous Windows)
+./launch.sh              # Linux, macOS   (launch.bat on Windows)
 ```
 
-**Si Python n'est pas installé, le lanceur s'en occupe** : winget ou l'installeur
-officiel sous Windows, Homebrew sous macOS, le gestionnaire de paquets du
-système sous Linux (apt, dnf, pacman, zypper, apk). Il demande confirmation
-avant d'installer quoi que ce soit ; `COSMO_AUTO_INSTALL=1` accepte d'office.
-Il crée ensuite l'environnement virtuel et installe les dépendances.
+**If Python is not installed, the launcher takes care of it**: winget or the
+official installer on Windows, Homebrew on macOS, the system package manager on
+Linux (apt, dnf, pacman, zypper, apk). It asks before installing anything;
+`COSMO_AUTO_INSTALL=1` accepts automatically. It then creates the virtual
+environment and installs the dependencies.
 
-| Commande | Effet |
+| Command | Effect |
 |---|---|
-| `./launch.sh` | interface graphique |
-| `./launch.sh console 2.34` | version console, un redshift |
-| `./launch.sh table` | table des huit presets |
-| `./launch.sh doctor` | diagnostic si l'installation coince |
+| `./launch.sh` | graphical interface |
+| `./launch.sh console 2.34` | console version, one redshift |
+| `./launch.sh table` | table of the eight presets |
+| `./launch.sh doctor` | diagnostics if the installation fails |
 
-Sous Windows, remplacer `./launch.sh` par `launch.bat` ; les sous-commandes sont
-identiques et `launch.bat help` les rappelle.
+On Windows, replace `./launch.sh` with `launch.bat`; the sub-commands are the
+same, and `launch.bat help` lists them.
 
-**Langue** : menu *Langue* dans l'interface, `--lang en`, ou `COSMO_LANG=en`.
-Par défaut, le programme suit la locale du système.
+**Language**: the *Language* menu, `--lang en`, or `COSMO_LANG=en`. By default
+the program follows the system locale.
 
-**Mises à jour** : le programme vérifie discrètement au démarrage si une version
-plus récente est publiée (requête anonyme, jamais bloquante, désactivable par
-`COSMO_NO_UPDATE_CHECK=1`). *Aide → Vérifier les mises à jour* fait de même à la
-demande.
+**Updates**: the program quietly checks at start-up whether a newer release
+exists (anonymous request, never blocking, disabled with
+`COSMO_NO_UPDATE_CHECK=1`). *Help → Check for updates* does the same on demand.
 
 ---
 
-## Ce que le programme affiche
+## What the program shows
 
-Pour un redshift `z` entre 0 et 1500 :
+For a redshift `z` between 0 and 1500:
 
-**Quatre distances** — comobile `D_C`, luminosité `D_L = (1+z)D_C`,
-diamètre angulaire `D_A = D_C/(1+z)`, trajet de la lumière `D_lt = c·t_L`.
+**Four distances** — comoving `D_C`, luminosity `D_L = (1+z)D_M`,
+angular diameter `D_A = D_M/(1+z)`, light-travel `D_lt = c·t_L`.
 
-**Barres d'erreur** — chaque valeur est donnée avec son incertitude 1σ, propagée
-de σ(H₀) = 0,42 et σ(Ωm) = 0,0056 **en tenant compte de leur corrélation**
-(ρ = −0,976, déduite de la contrainte sur ω_m = Ωm h²). À z = 2,34 : ±0,17 %,
-contre ±0,79 % si l'on ignore ce terme croisé.
+**Error bars** — every value comes with its 1σ uncertainty, propagated from
+σ(H₀) = 0.42 and σ(Ωm) = 0.0056 **taking their correlation into account**
+(ρ = −0.976, derived from the constraint on ω_m = Ωm h²). At z = 2.34: ±0.17 %,
+against ±0.79 % if that cross term is ignored.
 
-**Courbure Ωk** — champ réglable (±0,05). Dès que Ωk ≠ 0, la distance comobile
-**transverse** D_M apparaît et remplace D_C dans D_L et D_A.
+**Curvature Ωk** — adjustable field (±0.05). As soon as Ωk ≠ 0 the
+**transverse** comoving distance D_M appears and replaces D_C in D_L and D_A.
 
-**Comparaison SH0ES** — une case affiche en regard les mêmes grandeurs avec
-H₀ = 73,04 (toutes les distances raccourcissent de 7,4 %) et superpose les
-courbes en pointillé.
+**SH0ES comparison** — a checkbox shows the same quantities computed with
+H₀ = 73.04 (all distances shrink by 7.4 %) and overlays the corresponding
+dotted curves.
 
-**Grandeurs cosmologiques** — lookback time, âge de l'univers à `z`,
-facteur d'échelle `a = 1/(1+z)`, `E(z) = H(z)/H₀` et `H(z)`.
+**Cosmological quantities** — lookback time, age of the universe at `z`,
+scale factor `a = 1/(1+z)`, `E(z) = H(z)/H₀` and `H(z)`.
 
-**Trois vitesses de récession**, parce qu'elles diffèrent radicalement et que
-deux d'entre elles sont des approximations :
+**Three recession velocities**, because they differ radically and two of them
+are approximations:
 
-| Définition | à z = 2,34 | statut |
+| Definition | at z = 2.34 | status |
 |---|---|---|
-| Doppler naïf `v = cz` | 2,340 c | valable seulement si z ≪ 1 |
-| Doppler relativiste | 0,835 c | conceptuellement inadaptée en cosmologie |
-| FLRW `v = H₀·D_C` | 1,303 c | **la bonne** |
+| naive Doppler `v = cz` | 2.340 c | valid only for z ≪ 1 |
+| relativistic Doppler | 0.835 c | conceptually inappropriate in cosmology |
+| FLRW `v = H₀·D_C` | 1.303 c | **the right one** |
 
-**Deux contrôles permanents** en barre d'état : `t_L + t_em = t₀` et l'identité
-d'Etherington `D_L = (1+z)²D_A`.
+**Two permanent checks** in the status bar: `t_L + t_em = t₀` and the
+Etherington identity `D_L = (1+z)²D_A`.
 
-**Un tracé log-log** des quatre distances, avec repères (z=1, maximum de `D_A`,
-GN-z11, CMB) et asymptotes (`c·t₀`, horizon des particules).
+**A log-log plot** of the four distances, with markers (z = 1, maximum of
+`D_A`, GN-z11, CMB) and asymptotes (`c·t₀`, particle horizon).
 
 ---
 
-## Repères numériques (Planck 2018)
+## Numerical landmarks (Planck 2018)
 
-| Grandeur | Valeur |
+| Quantity | Value |
 |---|---|
-| H₀ | 67,66 ± 0,42 km/s/Mpc |
-| Ω_m + Ω_ν | 0,31110 (dont Ω_ν = 0,00144) |
-| Ω_Λ | 0,68885 |
-| Ω_γ | 5,402 × 10⁻⁵ |
-| Âge de l'univers t₀ | 13,786885 Gyr |
-| Distance de Hubble D_H = c/H₀ | 4 430,87 Mpc = **14,4516 G al** |
-| Horizon des particules | 46,2005 G al |
-| Horizon des événements | 16,5808 G al |
-| Maximum de D_A | 5,84629 G al à **z = 1,592133** |
+| H₀ | 67.66 ± 0.42 km/s/Mpc |
+| Ω_m + Ω_ν | 0.31110 (of which Ω_ν = 0.00144) |
+| Ω_Λ | 0.68885 |
+| Ω_γ | 5.402 × 10⁻⁵ |
+| Age of the universe t₀ | 13.786885 Gyr |
+| Hubble distance D_H = c/H₀ | 4 430.87 Mpc = **14.4516 Gly** |
+| Particle horizon | 46.2005 Gly |
+| Event horizon | 16.5808 Gly |
+| Maximum of D_A | 5.84629 Gly at **z = 1.592133** |
 
-### Deux pièges qui ont coûté cher
+### Two traps that proved costly
 
-1. **`Planck18.Om0 = 0,30966`, pas 0,3111.** Le « Ω_m = 0,3111 » du papier Planck
-   vaut `Om0 + Onu0` : les neutrinos, non relativistes aujourd'hui, y sont comptés
-   dans la matière, alors qu'astropy les porte à part.
-2. **`E(z) = √(Ω_m(1+z)³ + Ω_Λ)` n'est pas la formule utilisée.** La vraie est
-   `E² = Ω_r(z)(1+z)⁴ + Ω_m(1+z)³ + Ω_k(1+z)² + Ω_Λ`, où `Ω_r(z)` contient les
-   photons *et* les neutrinos. La version simplifiée sous-estime `E` de 12,8 % au
-   CMB et donnerait un âge de 479 kyr au lieu de 372 kyr.
+1. **`Planck18.Om0 = 0.30966`, not 0.3111.** The « Ω_m = 0.3111 » of the Planck
+   paper is `Om0 + Onu0`: neutrinos, being non-relativistic today, are counted
+   as matter there, whereas astropy keeps them separate.
+2. **`E(z) = √(Ω_m(1+z)³ + Ω_Λ)` is not the formula in use.** The real one is
+   `E² = Ω_r(z)(1+z)⁴ + Ω_m(1+z)³ + Ω_k(1+z)² + Ω_Λ`, where `Ω_r(z)` contains
+   the photons *and* the neutrinos. The simplified version underestimates `E`
+   by 12.8 % at the CMB and would give an age of 479 kyr instead of 372 kyr.
 
 ---
 
-## Vérification des calculs
+## Verification of the calculations
 
-Tout a été recalculé **sans astropy** sous SageMath : reconstruction des densités
-depuis les constantes CODATA 2022, intégrale de Fermi-Dirac exacte pour les
-neutrinos massifs, quadratures mpmath à 25 chiffres. Les développements limités
-ont été redémontrés en calcul formel.
+Everything has been recomputed **without astropy** in SageMath: densities
+rebuilt from the CODATA 2022 constants, exact Fermi-Dirac integral for the
+massive neutrinos, mpmath quadrature at 25 digits. The series expansions were
+re-derived symbolically.
 
-| Grandeur | Écart astropy ↔ SageMath |
+| Quantity | astropy ↔ SageMath difference |
 |---|---|
-| E(z) | 1,8 × 10⁻⁵ |
-| D_C, D_L, D_A | 2,1 × 10⁻⁶ |
-| lookback time | 4,6 × 10⁻⁷ |
-| âge | 1,5 × 10⁻⁵ |
+| E(z) | 1.8 × 10⁻⁵ |
+| D_C, D_L, D_A | 2.1 × 10⁻⁶ |
+| lookback time | 4.6 × 10⁻⁷ |
+| age | 1.5 × 10⁻⁵ |
 
-L'écart résiduel vient uniquement de l'ajustement de Komatsu (2011) qu'utilise
-astropy pour la densité des neutrinos. Pour mémoire, l'incertitude des paramètres
-Planck eux-mêmes est de ~0,5 %, et la tension de Hubble représente 8 %.
+The residual difference comes solely from the Komatsu (2011) fit that astropy
+uses for the neutrino density. For reference, the uncertainty of the Planck
+parameters themselves is about 0.5 %, and the Hubble tension amounts to 7 %.
 
-Détail complet : [`audit/AUDIT_cosmologie.pdf`](audit/AUDIT_cosmologie.pdf).
+The scripts are in `verif_sage/` and can be re-run at any time; the appendix of
+the course details the method.
 
 ---
 
-## Source des paramètres
+## Source of the parameters
 
 Aghanim *et al.* (Planck Collaboration), *Planck 2018 results. VI. Cosmological
-parameters*, A&A **641**, A6 (2020) — [arXiv:1807.06209](https://arxiv.org/abs/1807.06209),
-tableau 2, colonne `TT,TE,EE+lowE+lensing+BAO`.
+parameters*, A&A **641**, A6 (2020) —
+[arXiv:1807.06209](https://arxiv.org/abs/1807.06209), Table 2, column
+`TT,TE,EE+lowE+lensing+BAO`.
 
 ## Licence
 
-Sans licence formelle, pour usage personnel et pédagogique.
+No formal licence; personal and educational use.

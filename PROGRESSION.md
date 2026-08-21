@@ -18,7 +18,6 @@
 | Version console | **✅ refondue** (3 modes : interactif, direct, `--table`) | `programme/redshift_distance_calculator.py` |
 | Cours LaTeX (FR) | **✅ 68 p., 0 erreur de compilation, 0 référence non résolue** | `cours/cours_distances_cosmologiques.pdf` |
 | Cours LaTeX (EN) | **✅ 64 p.** | `cours/course_cosmological_distances.pdf` |
-| Rapport d'audit | **✅ 11 p.** | `audit/AUDIT_cosmologie.pdf` |
 | Vérification SageMath | **✅ exécutée**, accord 2×10⁻⁶ sur les distances | `verif_sage/` |
 | Versionnement git | **✅ fait le 14/08/26** — c'était le point noir | ce dépôt |
 
@@ -72,10 +71,8 @@ clavier ».
   nombre n'est écrit en dur.
 - **Les unités suivent la langue** : `G al` / `Gly`, `M al` / `Mly`, et le
   séparateur décimal (virgule en français, point en anglais) via `fmt_num()`.
-- **Documents anglais** : `README.en.md`, `MANUAL.md`, `PROGRESS.md`, et le
+- **Documents anglais** : `README.md`, `MANUAL.md`, `PROGRESS.md`, et le
   cours complet `cours/course_cosmological_distances.tex` (**64 p.**).
-- Le rapport d'audit reste en français : c'est un instantané daté, pas un
-  document vivant.
 
 **Saisie clavier corrigée au passage.** Le champ de courbure ne se modifiait
 qu'avec les flèches : sous une locale française, Qt refuse le *point* décimal,
@@ -108,8 +105,7 @@ symbolique sous Sage.
 | 1089,8 | 0,18 % | 0,95 % |
 
 Deux enseignements : ignorer la corrélation surestime l'incertitude d'un
-facteur 2 à 5 (l'estimation « ±0,6 % » du rapport d'audit était de cet ordre,
-faute de terme croisé) ; et l'incertitude passe par un **minimum vers z ≈ 5**,
+facteur 2 à 5 ; et l'incertitude passe par un **minimum vers z ≈ 5**,
 un redshift « pivot ».
 
 **Comparaison SH0ES** : une case affiche en regard les mêmes grandeurs avec
@@ -136,8 +132,7 @@ quatre redshifts testés.
 
 `curves()` écrit dans `programme/cache/curves_<hash>.npz`, la clé couvrant tous
 les paramètres et la grille. Mesures réelles : **49 ms → 4 ms** pour 600
-points. L'estimation « ~1 s » du rapport d'audit était pessimiste (astropy 8
-vectorise mieux) ; le gain devient net si la grille s'étend (5 000 points :
+points ; le gain devient net si la grille s'étend (5 000 points :
 390 ms). Repli automatique vers le dossier temporaire si le dépôt n'est pas
 inscriptible — cas courant lorsque le dépôt est sur un partage réseau.
 
@@ -181,7 +176,7 @@ maintenant le lecteur réseau (fsutil, ou chemin UNC) et place le venv dans
   - `stdout`/`stderr` reconfigurés en UTF-8 : sans cela, la console Windows en
     cp1252 lèverait `UnicodeEncodeError` sur `•`, `₀`, `Ω`, `✓` ;
   - `verif_sage/test_gui_headless.py` : plus de chemins absolus en dur, il force
-    lui-même `QT_QPA_PLATFORM=offscreen` et écrit dans `audit/captures/`.
+    lui-même `QT_QPA_PLATFORM=offscreen` et écrit dans `captures/`.
 
 **Testé pour de vrai** sous Linux, venv créé de zéro : installation des cinq
 dépendances, puis `check`, `console 2.34`, `table`, `help`, appel depuis un

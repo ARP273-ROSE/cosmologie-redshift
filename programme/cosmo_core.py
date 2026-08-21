@@ -60,7 +60,7 @@ et ce sont D_L = (1+z) D_M et D_A = D_M/(1+z) qui s'en déduisent.
 --------------------------------------------------------------------------
 Vérification : valeurs recalculées indépendamment sous SageMath (mpmath 25
 chiffres, intégrale de Fermi-Dirac exacte) — accord à 2e-6 sur les distances,
-1,5e-5 sur les âges. Voir `verif_sage/` et `audit/AUDIT_cosmologie.pdf`.
+1,5e-5 sur les âges. Voir les scripts de `verif_sage/`.
 ================================================================================
 """
 
@@ -128,7 +128,7 @@ PARAMS_TXT = (
 )
 
 # (étiquette du bouton, z, clé d'infobulle traduite dans i18n.py)
-# Ages recomputed in Planck 2018 — see the audit report.
+# Ages recomputed in Planck 2018.
 PRESETS = [
     ("M 87",         0.00428, "preset_m87"),
     ("3C 273",       0.158,   "preset_3c273"),
@@ -185,7 +185,7 @@ def make_cosmology(H0: float = H0_PLANCK, Om: float = OM_PLANCK, Ok: float = 0.0
 
     Si les paramètres sont exactement ceux de Planck 2018 sans courbure, on
     renvoie la réalisation `Planck18` elle-même : les valeurs restent
-    rigoureusement identiques à celles de l'audit.
+    rigoureusement identiques aux valeurs de référence vérifiées.
     """
     key = (round(H0, 6), round(Om, 8), round(Ok, 8))
     if key in _cosmo_cache:

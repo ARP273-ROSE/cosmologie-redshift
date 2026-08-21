@@ -3,7 +3,7 @@
 *[English version](MANUAL.md)*
 
 Tout ce qu'il faut pour installer, utiliser, modifier, recompiler et vérifier.
-Pour l'aperçu du projet, voir [`README.md`](README.md) ; pour l'état d'avancement,
+Pour l'aperçu du projet, voir [`README.fr.md`](README.fr.md) ; pour l'état d'avancement,
 [`PROGRESSION.md`](PROGRESSION.md).
 
 ---
@@ -277,7 +277,7 @@ les paramètres cosmologiques *et* la grille : changer Ωk, H₀ ou le nombre de
 points invalide automatiquement l'entrée, il n'y a jamais de valeur périmée.
 
 Mesures réelles (astropy 8) : 600 points en **49 ms** sans cache, **4 ms**
-avec — l'estimation de « ~1 s » du rapport d'audit était pessimiste. Le gain
+avec. Le gain
 devient réel quand la grille s'étend : 5 000 points prennent 390 ms.
 
 Le dossier `cache/` est ignoré par git. Pour désactiver : variable
@@ -311,8 +311,7 @@ python programme/make_logo.py
 ```
 
 Produit `logo.svg` et `logo_{16,32,64,128,256}.png`. Les PNG servent d'icône de
-fenêtre (Windows choisit la taille), le 256 sert de couverture au rapport d'audit
-et `cours/logo.png` de couverture au cours.
+fenêtre (Windows choisit la taille) et `cours/logo.png` de couverture au cours.
 
 ---
 
@@ -361,7 +360,7 @@ Depuis la racine du dépôt, sur n'importe quelle plateforme :
 
 Le script force lui-même `QT_QPA_PLATFORM=offscreen`. Il balaye 8 valeurs de `z`
 (dont les cas limites 0 et 1500), imprime les contrôles de cohérence, ouvre les
-six boîtes d'aide et réécrit les deux captures de `audit/captures/`.
+six boîtes d'aide et réécrit les captures de `captures/`.
 **C'est le test à relancer après toute modification de la GUI.**
 
 ---
@@ -378,10 +377,6 @@ pdflatex -interaction=nonstopmode cours_distances_cosmologiques.tex
 pdflatex -interaction=nonstopmode course_cosmological_distances.tex   # anglais
 pdflatex -interaction=nonstopmode course_cosmological_distances.tex
 
-cd ../audit
-pdflatex -interaction=nonstopmode AUDIT_cosmologie.tex
-pdflatex -interaction=nonstopmode AUDIT_cosmologie.tex
-
 rm -f *.aux *.log *.out *.toc
 ```
 
@@ -394,7 +389,6 @@ Contrôles après compilation :
 ```bash
 grep -E "^! |Reference.*undefined" *.log     # doit être vide
 pdfinfo cours_distances_cosmologiques.pdf | grep Pages    # 66
-pdfinfo AUDIT_cosmologie.pdf | grep Pages                 # 11
 ```
 
 Le cours inclut `table_reference.tex`, généré par `verif_sage/gen_tables.py` : ne
