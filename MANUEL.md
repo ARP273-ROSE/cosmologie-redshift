@@ -235,6 +235,14 @@ effet ici : elle ne concerne que la vérification des mises à jour.
 Ωk > 0 = univers ouvert (D_M > D_C, sinh) ; Ωk < 0 = fermé (D_M < D_C, sin).
 Planck 2018 + BAO mesure Ωk = 0,0007 ± 0,0019, d'où le défaut à zéro.
 
+**Pourquoi la plage s'arrête à ±0,05.** Ωk n'est pas une longueur, mais la part
+de la courbure dans le contenu de l'univers : les parts de la matière, de
+l'énergie noire et de la courbure font 1 à elles toutes, par construction. Ωk =
+12 supposerait donc que les autres valent −11 en somme. Le champ accepte déjà
+vingt-cinq fois l'incertitude de Planck. Une valeur saisie hors de cette plage
+est ramenée à la borne la plus proche, et la raison en est donnée à côté du
+champ plutôt que laissée à deviner.
+
 Attention : l'âge actuel t₀ dépend lui aussi de la courbure (13,744 Gyr pour
 Ωk = +0,01) ; le contrôle « t_L + âge = t₀ » se réfère au modèle courant.
 

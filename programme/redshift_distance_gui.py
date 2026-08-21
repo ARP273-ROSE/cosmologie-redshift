@@ -247,6 +247,10 @@ class NumberSpinBox(QDoubleSpinBox):
     # Un nombre en cours de frappe : signe, chiffres, un seul séparateur.
     _PARTIAL = re.compile(r"^[+-]?\d*\.?\d*$")
 
+    # Émis quand une valeur hors domaine a été ramenée à une borne, pour que
+    # la fenêtre puisse en expliquer la raison : (valeur demandée, retenue).
+    clamped = pyqtSignal(float, float)
+
     def __init__(self, live: bool = True, parent=None):
         super().__init__(parent)
         self.setLocale(QLocale(QLocale.Language.C))    # point décimal
@@ -277,8 +281,11 @@ class NumberSpinBox(QDoubleSpinBox):
         try:
             value = float(self._norm(text) or 0.0)
         except ValueError:
-            value = self.value()
-        return self.textFromValue(max(self.minimum(), min(self.maximum(), value)))
+            return self.textFromValue(self.value())
+        bounded = max(self.minimum(), min(self.maximum(), value))
+        if bounded != value:
+            self.clamped.emit(value, bounded)
+        return self.textFromValue(bounded)
 
     def focusInEvent(self, event):                     # noqa: N802 (API Qt)
         super().focusInEvent(event)
@@ -519,6 +526,7 @@ class MainWindow(QMainWindow):
         self.z_spin.setValue(2.34)
         self.z_spin.setMinimumWidth(170)
         self.z_spin.valueChanged.connect(self.recompute)
+        self.z_spin.clamped.connect(self.on_z_clamped)
         in_lay.addWidget(self.z_spin)
 
         in_lay.addSpacing(16)
@@ -567,6 +575,7 @@ class MainWindow(QMainWindow):
         self.ok_spin.setValue(0.0)
         self.ok_spin.setMinimumWidth(120)
         self.ok_spin.valueChanged.connect(self.on_curvature_changed)
+        self.ok_spin.clamped.connect(self.on_curvature_clamped)
         m_lay.addWidget(self.ok_spin)
 
         self.btn_flat = QPushButton()
@@ -577,7 +586,11 @@ class MainWindow(QMainWindow):
         self.chk_shoes = QCheckBox()
         self.chk_shoes.toggled.connect(self.on_shoes_toggled)
         m_lay.addWidget(self.chk_shoes)
-        m_lay.addStretch()
+        m_lay.addSpacing(16)
+        self.ok_status = QLabel()
+        self.ok_status.setProperty("sub", True)
+        self.ok_status.setWordWrap(True)
+        m_lay.addWidget(self.ok_status, 1)
         root.addWidget(self.model_box)
 
         # ---- Body ----
@@ -711,6 +724,33 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------ mises à jour
 
     # ------------------------------------------------------------------
+    # Saisies hors domaine
+    # ------------------------------------------------------------------
+    def on_curvature_clamped(self, asked: float, kept: float):
+        """Explique pourquoi la courbure demandée n'était pas recevable."""
+        self._ok_message = (asked, kept)
+        self.ok_status.setText(self._curvature_status())
+
+    @staticmethod
+    def _short(value: float) -> str:
+        """Le nombre écrit avec le moins de décimales possible : « 12 », « 0,05 »."""
+        for decimals in range(5):
+            if abs(round(value, decimals) - value) < 1e-12:
+                return fmt_num(value, decimals)
+        return fmt_num(value, 4)
+
+    def _curvature_status(self) -> str:
+        message = getattr(self, "_ok_message", None)
+        if message is None:
+            return ""
+        asked, kept = message
+        return t("clamp_curvature", asked=self._short(asked), kept=self._short(kept))
+
+    def on_z_clamped(self, asked: float, kept: float):
+        """Même explication pour le redshift, dans la ligne de saisie."""
+        self._set_object_status("clamp_z", asked=asked, kept=kept)
+
+    # ------------------------------------------------------------------
     # Recherche d'un objet dans SIMBAD
     # ------------------------------------------------------------------
     def _object_status(self) -> str:
@@ -727,6 +767,7 @@ class MainWindow(QMainWindow):
     def _set_object_status(self, key: str | None, **kwargs):
         self._obj_message = (key, kwargs) if key else (None, {})
         self.obj_status.setText(self._object_status())
+        self.ok_status.setText(self._curvature_status())
 
     def lookup_object(self):
         """Demande à SIMBAD le redshift de l'objet dont le nom a été saisi."""
@@ -858,6 +899,7 @@ class MainWindow(QMainWindow):
         self.obj_button.setText(t("object_search"))
         self.obj_button.setToolTip(t("object_search_tip"))
         self.obj_status.setText(self._object_status())
+        self.ok_status.setText(self._curvature_status())
 
         self.model_box.setTitle(t("box_model"))
         self.ok_label.setText(t("curvature"))
@@ -1025,6 +1067,12 @@ class MainWindow(QMainWindow):
 
     def on_curvature_changed(self):
         ok = self.ok_spin.value()
+        # L'explication accompagne la valeur imposée ; elle disparaît dès que la
+        # courbure en change, mais pas au moment même où la borne est appliquée.
+        message = getattr(self, "_ok_message", None)
+        if message is not None and abs(ok - message[1]) > 1e-12:
+            self._ok_message = None
+            self.ok_status.setText("")
         self.curves = curves(self.z_grid, Ok=ok)
         for key, item in self.curve_items.items():
             item.setData(self.z_grid, self.curves[key])

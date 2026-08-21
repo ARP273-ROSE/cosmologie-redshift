@@ -235,6 +235,13 @@ only concerns the update check.
 Ωk > 0 = open universe (D_M > D_C, sinh); Ωk < 0 = closed (D_M < D_C, sin).
 Planck 2018 + BAO measures Ωk = 0.0007 ± 0.0019, hence the default of zero.
 
+**Why the range stops at ±0.05.** Ωk is not a length but the share of curvature
+in the content of the universe: the shares of matter, dark energy and curvature
+add up to 1 by construction, so Ωk = 12 would mean the others sum to −11. The
+field already allows twenty-five times the Planck uncertainty. A value typed
+outside that range is brought to the nearest bound, and the reason is spelled
+out next to the field rather than left to guess.
+
 Note: the present age t₀ also depends on curvature (13.744 Gyr for
 Ωk = +0.01); the « t_L + age = t₀ » check refers to the current model.
 

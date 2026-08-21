@@ -231,7 +231,17 @@ STRINGS: dict[str, dict[str, str]] = {
                        "Ωk > 0 : univers ouvert (hyperbolique) — D_M > D_C (sinh).\n"
                        "Ωk < 0 : univers fermé (sphérique)   — D_M < D_C (sin).\n"
                        "Dès que Ωk ≠ 0, la distance comobile TRANSVERSE D_M diffère de la\n"
-                       "radiale D_C, et c'est D_M qui entre dans D_L et D_A."),
+                       "radiale D_C, et c'est D_M qui entre dans D_L et D_A.\n"
+                       "Plage acceptée : −0,05 à +0,05. Ωk est une part de la densité totale,\n"
+                       "pas une longueur : au-delà, le modèle n'aurait plus de sens physique."),
+    "clamp_curvature": ("Ωk = {asked} n'est pas possible : Ωk n'est pas une longueur, mais la part\n"
+                        "de la courbure dans le contenu de l'univers — toutes les parts réunies\n"
+                        "font 1. Les observations la donnent quasi nulle (Planck 2018 :\n"
+                        "0,0007 ± 0,0019). Le champ va de −0,05 à +0,05, déjà vingt-cinq fois\n"
+                        "cette incertitude ; la valeur a été ramenée à {kept}."),
+    "clamp_z":         ("z = {asked:g} dépasse la limite du programme. Au-delà de z ≈ 1090,\n"
+                        "l'univers est opaque : la lumière n'y circule pas encore librement,\n"
+                        "et il n'y a rien à observer plus loin. Valeur ramenée à {kept:g}."),
     "flat_button":    "plat (Ωk = 0)",
     "flat_tip":       "Revenir à l'univers plat de Planck 2018.",
     "compare_shoes":  "comparer avec SH0ES (H₀ = {h0})",
@@ -485,7 +495,17 @@ STRINGS: dict[str, dict[str, str]] = {
                        "Ωk > 0: open (hyperbolic) universe — D_M > D_C (sinh).\n"
                        "Ωk < 0: closed (spherical) universe — D_M < D_C (sin).\n"
                        "As soon as Ωk ≠ 0, the TRANSVERSE comoving distance D_M differs from\n"
-                       "the radial D_C, and it is D_M that enters D_L and D_A."),
+                       "the radial D_C, and it is D_M that enters D_L and D_A.\n"
+                       "Accepted range: −0.05 to +0.05. Ωk is a share of the total density, not\n"
+                       "a length: beyond that the model would have no physical meaning."),
+    "clamp_curvature": ("Ωk = {asked} is not possible: Ωk is not a length but the share of\n"
+                        "curvature in the content of the universe — all the shares together\n"
+                        "add up to 1. Observations make it nearly zero (Planck 2018:\n"
+                        "0.0007 ± 0.0019). The field runs from −0.05 to +0.05, already\n"
+                        "twenty-five times that uncertainty; the value was brought to {kept}."),
+    "clamp_z":         ("z = {asked:g} is beyond the program's limit. Past z ≈ 1090 the\n"
+                        "universe is opaque: light does not travel freely yet, and there is\n"
+                        "nothing to observe further out. Value brought to {kept:g}."),
     "flat_button":    "flat (Ωk = 0)",
     "flat_tip":       "Back to the flat Planck 2018 universe.",
     "compare_shoes":  "compare with SH0ES (H₀ = {h0})",

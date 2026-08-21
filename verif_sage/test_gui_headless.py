@@ -124,6 +124,34 @@ for spin, name, cases in (
         print(f"    {name:>3} : frappe « {typed:>7} » -> {got:+.5f}   {'OK' if ok else 'ÉCHEC'}")
         assert ok, f"saisie « {typed} » non reconnue (valeur lue : {got}, attendue : {expected})"
 
+print("  C. une valeur hors domaine est expliquée, pas seulement plafonnée")
+for spin, name, typed, kept, status in ((w.ok_spin, "Ωk", "12", 0.05, lambda: w.ok_status.text()),
+                                        (w.ok_spin, "Ωk", "-3", -0.05, lambda: w.ok_status.text()),
+                                        (w.z_spin,  "z", "5000", 1500.0, lambda: w.obj_status.text())):
+    other = w.z_spin if spin is w.ok_spin else w.ok_spin
+    other.setFocus()
+    app.processEvents()
+    spin.setFocus()
+    app.processEvents()
+    QTest.keyClicks(spin.lineEdit(), typed)
+    QTest.keyClick(spin, _Qt.Key.Key_Return)
+    app.processEvents()
+    message = status()
+    print(f"    {name:>3} : « {typed:>5} » -> {spin.value():+.4f}   « {message.splitlines()[0][:52]}… »")
+    assert abs(spin.value() - kept) < 1e-9, f"{name} : {typed} devait être ramené à {kept}"
+    assert len(message) > 80, f"{name} : aucune explication affichée pour « {typed} »"
+
+# l'explication s'efface dès que la courbure prend une valeur recevable
+w.z_spin.setFocus()
+app.processEvents()
+w.ok_spin.setFocus()
+app.processEvents()
+QTest.keyClicks(w.ok_spin.lineEdit(), "0.02")
+QTest.keyClick(w.ok_spin, _Qt.Key.Key_Return)
+app.processEvents()
+assert not w.ok_status.text(), "l'explication aurait dû disparaître"
+print("    l'explication disparaît dès qu'une valeur recevable est saisie   OK")
+
 print("  B. le champ a déjà le focus, curseur en fin de ligne")
 for spin, name, typed in ((w.ok_spin, "Ωk", "5"), (w.z_spin, "z", "7")):
     line = spin.lineEdit()

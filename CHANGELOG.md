@@ -8,6 +8,23 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
+## 1.3.2 — 2026-08-21
+
+### Changed
+
+- **A value typed outside the allowed range is now explained, not silently
+  clamped.** Entering Ωk = 12 brought the field back to 0.05 without a word.
+  The reason now appears next to the field: Ωk is not a length but the share of
+  curvature in the content of the universe, and all the shares add up to 1, so
+  Ωk = 12 would require the others to sum to −11. Same treatment for a redshift
+  beyond 1500, where the universe is opaque and there is nothing left to
+  observe.
+- The explanation follows the interface language and clears itself as soon as a
+  usable value is entered.
+- The curvature tooltip now states the accepted range and why it is that narrow.
+
+---
+
 ## 1.3.1 — 2026-08-21
 
 ### Fixed

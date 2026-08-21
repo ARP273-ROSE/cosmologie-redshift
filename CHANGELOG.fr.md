@@ -8,6 +8,24 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## 1.3.2 — 21 août 2026
+
+### Modifié
+
+- **Une valeur hors domaine est désormais expliquée, non plafonnée en
+  silence.** Saisir Ωk = 12 ramenait le champ à 0,05 sans un mot. La raison
+  s'affiche maintenant à côté du champ : Ωk n'est pas une longueur mais la part
+  de la courbure dans le contenu de l'univers, et toutes les parts réunies font
+  1 — Ωk = 12 supposerait donc que les autres valent −11 en somme. Même
+  traitement pour un redshift au-delà de 1500, où l'univers est opaque et où il
+  n'y a plus rien à observer.
+- L'explication suit la langue de l'interface et s'efface dès qu'une valeur
+  recevable est saisie.
+- L'infobulle de la courbure indique la plage acceptée et pourquoi elle est si
+  étroite.
+
+---
+
 ## 1.3.1 — 21 août 2026
 
 ### Corrigé
