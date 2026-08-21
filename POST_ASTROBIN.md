@@ -42,8 +42,8 @@ SH0ES value of H₀ — which shortens every distance by 7.4 %, forty times more
 than the error bars. That is the Hubble tension, seen from the eyepiece so to
 speak.
 
-Free, open source, no installation on Windows (a single .exe), and it also runs
-on Linux and macOS. The interface is bilingual (English / French). A 64-page
+Free, open source, and nothing to install: a single file to download for
+Windows, macOS or Linux. The interface is bilingual (English / French). A 64-page
 course comes with it, written at three levels, from plain language to the FLRW
 derivations — with every number verified independently in SageMath.
 
@@ -90,8 +90,8 @@ comparaison avec la valeur SH0ES de H₀ — qui raccourcit toutes les distances
 7,4 %, quarante fois plus que les barres d'erreur. C'est la tension de Hubble,
 vue depuis l'oculaire en quelque sorte.
 
-Gratuit, libre, sans installation sous Windows (un simple .exe), et il tourne
-aussi sous Linux et macOS. Interface bilingue français / anglais. Un cours de
+Gratuit, libre, et rien à installer : un seul fichier à télécharger, pour
+Windows, macOS ou Linux. Interface bilingue français / anglais. Un cours de
 68 pages l'accompagne, écrit à trois niveaux, de la vulgarisation aux
 dérivations FLRW — avec tous les nombres vérifiés indépendamment sous SageMath.
 
@@ -105,13 +105,13 @@ Téléchargement et sources : https://github.com/ARP273-ROSE/cosmologie-redshift
 > a small free tool that converts a redshift into the four cosmological
 > distances (Planck 2018). The surprise is that beyond z ≈ 1.6 the angular
 > diameter distance *decreases* — an identical galaxy looks bigger at z = 5 than
-> at z = 1. Windows exe / Linux / macOS, bilingual, with a course explaining the
-> physics: https://github.com/ARP273-ROSE/cosmologie-redshift
+> at z = 1. One file for Windows, macOS or Linux, bilingual, with a course
+> explaining the physics: https://github.com/ARP273-ROSE/cosmologie-redshift
 
 > Belle image. Si tu es curieux de savoir où se trouve vraiment cet objet : j'ai
 > fait un petit outil libre qui convertit un redshift en quatre distances
 > cosmologiques (Planck 2018). La surprise, c'est qu'au-delà de z ≈ 1,6 la
 > distance de diamètre angulaire *diminue* — une galaxie identique paraît plus
-> grande à z = 5 qu'à z = 1. Exe Windows / Linux / macOS, bilingue, avec un
-> cours qui explique la physique :
+> grande à z = 5 qu'à z = 1. Un fichier pour Windows, macOS ou Linux, bilingue, avec un cours
+> qui explique la physique :
 > https://github.com/ARP273-ROSE/cosmologie-redshift

@@ -46,7 +46,7 @@ Rien à installer, pas besoin de Python : un seul fichier à télécharger.
 |---|---|---|
 | **Windows** | [⬇ .exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-windows.exe) | double-clic. SmartScreen prévient que le programme n'est pas signé : *Informations complémentaires* → *Exécuter quand même* |
 | **macOS (Apple Silicon)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip) | décompresser, puis **clic droit → Ouvrir** la première fois |
-| **macOS (Intel)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-intel.zip) | idem ; fonctionne aussi sur Apple Silicon via Rosetta |
+| **macOS (Intel)** | *en construction* | en attendant, passer par les sources (§2) : le lanceur installe tout |
 | **Linux (x86_64)** | [⬇ binaire](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64) | `chmod +x` puis exécuter |
 
 Ces liens pointent toujours vers la version la plus récente.
