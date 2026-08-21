@@ -59,9 +59,6 @@ jobs:
           - os: ubuntu-22.04
             asset: CosmologicalDistanceCalculator-linux-x86_64
             label: Linux (x86_64, glibc 2.35+)
-          - os: macos-13
-            asset: CosmologicalDistanceCalculator-macos-intel.zip
-            label: macOS (Intel, also runs on Apple Silicon through Rosetta)
           - os: macos-14
             asset: CosmologicalDistanceCalculator-macos-apple-silicon.zip
             label: macOS (Apple Silicon, native)
@@ -224,7 +221,6 @@ jobs:
           files: |
             out/CosmologicalDistanceCalculator-windows.exe
             out/CosmologicalDistanceCalculator-linux-x86_64
-            out/CosmologicalDistanceCalculator-macos-intel.zip
             out/CosmologicalDistanceCalculator-macos-apple-silicon.zip
             cours/cours_distances_cosmologiques.pdf
             cours/course_cosmological_distances.pdf
@@ -241,7 +237,7 @@ jobs:
             |---|---|---|
             | **Windows** | `CosmologicalDistanceCalculator-windows.exe` | double-click. SmartScreen warns about unsigned programs: *More info* → *Run anyway* |
             | **macOS (Apple Silicon)** | `CosmologicalDistanceCalculator-macos-apple-silicon.zip` | unzip, then **right-click → Open** the first time (unsigned app) |
-            | **macOS (Intel)** | `CosmologicalDistanceCalculator-macos-intel.zip` | same; also runs on Apple Silicon through Rosetta |
+            | **macOS (Intel)** | `CosmologicalDistanceCalculator-macos-intel.zip` | added to this release by the *Intel* workflow, which runs on a scarcer runner |
             | **Linux (x86_64)** | `CosmologicalDistanceCalculator-linux-x86_64` | `chmod +x` then run. Needs the usual Qt system libraries (see MANUAL §1.5) |
 
             Permanent links, always pointing at the latest build:

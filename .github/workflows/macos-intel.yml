@@ -1,0 +1,90 @@
+name: Add the macOS Intel build to the latest release
+
+# Le runner macOS Intel est une ressource rare : sa file d'attente peut durer
+# des heures. Il est donc sorti du workflow de publication pour ne pas retarder
+# la sortie d'une version ; ce workflow-ci se lance à la demande et ajoute
+# l'exécutable Intel à la release la plus récente.
+#
+# The macOS Intel runner is scarce and its queue can last hours, so it is kept
+# out of the release workflow. Run this one when convenient: it uploads the
+# Intel build to the latest release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (empty = latest)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-intel:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller pillow
+
+      - name: Build the .icns icon
+        run: |
+          mkdir -p icon.iconset
+          for s in 16 32 64 128 256 512; do
+            sips -z $s $s programme/logo_256.png --out icon.iconset/icon_${s}x${s}.png >/dev/null
+          done
+          iconutil -c icns icon.iconset -o app.icns
+
+      - name: Build
+        run: >
+          pyinstaller --noconfirm --clean --windowed
+          --name CosmologicalDistanceCalculator
+          --icon app.icns --paths programme
+          --osx-bundle-identifier org.arp273.cosmologicaldistances
+          --collect-all astropy --collect-data astropy_iers_data
+          --collect-submodules scipy
+          --hidden-import pyqtgraph --hidden-import i18n --hidden-import help_texts
+          --hidden-import cosmo_core --hidden-import updates
+          --add-data "programme/logo_16.png:." --add-data "programme/logo_32.png:."
+          --add-data "programme/logo_64.png:." --add-data "programme/logo_128.png:."
+          --add-data "programme/logo_256.png:."
+          programme/redshift_distance_gui.py
+
+      - name: Smoke test
+        env:
+          QT_QPA_PLATFORM: offscreen
+          COSMO_NO_UPDATE_CHECK: '1'
+        run: |
+          ./dist/CosmologicalDistanceCalculator.app/Contents/MacOS/CosmologicalDistanceCalculator &
+          PID=$!
+          sleep 45
+          kill -0 $PID || { echo "the app stopped on its own"; exit 1; }
+          kill $PID
+          echo "The app starts and stays alive."
+
+      - name: Package
+        run: |
+          mkdir -p out
+          ( cd dist && zip -qry ../out/CosmologicalDistanceCalculator-macos-intel.zip \
+              CosmologicalDistanceCalculator.app )
+          ls -lh out/
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --json tagName --jq .tagName)
+          fi
+          echo "Uploading to $TAG"
+          gh release upload "$TAG" out/CosmologicalDistanceCalculator-macos-intel.zip --clobber
