@@ -87,18 +87,58 @@ from PyQt6.QtTest import QTest              # noqa: E402
 from PyQt6.QtCore import Qt as _Qt          # noqa: E402
 
 print("\nSaisie clavier :")
+# Deux gestes sont éprouvés, ceux que l'utilisateur fait réellement.
+#
+# A. le champ prend le focus, puis on tape : le contenu doit être remplacé ;
+# B. le champ a déjà le focus, curseur en fin de ligne : la frappe doit au
+#    moins être acceptée.
+#
+# La version précédente de ce test appelait selectAll() avant de taper, ce qu'un
+# utilisateur ne fait jamais, et laissait ainsi passer un défaut où plus aucune
+# frappe n'était acceptée : le champ affichant déjà toutes ses décimales, Qt
+# rejetait tout caractère supplémentaire, et l'intervalle étroit de la courbure
+# rendait invalide chaque valeur intermédiaire.
+w.activateWindow()
+app.processEvents()
+
+print("  A. le champ reçoit le focus, puis on tape")
 for spin, name, cases in (
-        (w.ok_spin, "Ωk", (("0.02", 0.02), ("0,015", 0.015), ("-0.01", -0.01), (".03", 0.03))),
-        (w.z_spin,  "z",  (("3.5", 3.5), ("2,34", 2.34)))):
+        (w.ok_spin, "Ωk", (("0.02", 0.02), ("0,015", 0.015), ("-0.01", -0.01),
+                           (".03", 0.03), ("0", 0.0), ("-0,05", -0.05),
+                           ("9", 0.05))),          # hors bornes : ramené à 0,05
+        (w.z_spin,  "z",  (("3.5", 3.5), ("2,34", 2.34), ("1089.8", 1089.8),
+                           ("0", 0.0)))):
+    other = w.z_spin if spin is w.ok_spin else w.ok_spin
     for typed, expected in cases:
-        spin.lineEdit().selectAll()
+        other.setFocus()                    # le focus vient d'ailleurs…
+        app.processEvents()
+        spin.setFocus()                     # … puis arrive sur le champ visé
+        app.processEvents()
+        assert spin.lineEdit().selectedText(), \
+            f"{name} : le contenu n'est pas sélectionné à la prise de focus"
         QTest.keyClicks(spin.lineEdit(), typed)
         QTest.keyClick(spin, _Qt.Key.Key_Return)
         app.processEvents()
         got = spin.value()
         ok = abs(got - expected) < 1e-9
         print(f"    {name:>3} : frappe « {typed:>7} » -> {got:+.5f}   {'OK' if ok else 'ÉCHEC'}")
-        assert ok, f"saisie « {typed} » non reconnue (valeur lue : {got})"
+        assert ok, f"saisie « {typed} » non reconnue (valeur lue : {got}, attendue : {expected})"
+
+print("  B. le champ a déjà le focus, curseur en fin de ligne")
+for spin, name, typed in ((w.ok_spin, "Ωk", "5"), (w.z_spin, "z", "7")):
+    line = spin.lineEdit()
+    spin.setFocus()
+    app.processEvents()
+    line.deselect()
+    line.setCursorPosition(len(line.text()))
+    before = line.text()
+    QTest.keyClicks(line, typed)
+    app.processEvents()
+    print(f"    {name:>3} : {before!r} + « {typed} » -> {line.text()!r}")
+    assert line.text() != before, \
+        f"{name} : la frappe « {typed} » a été refusée (champ resté à {before!r})"
+    QTest.keyClick(spin, _Qt.Key.Key_Return)
+    app.processEvents()
 w.ok_spin.setValue(0.0)
 w.z_spin.setValue(2.34)
 app.processEvents()

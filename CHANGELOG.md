@@ -8,6 +8,30 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
+## 1.3.1 — 2026-08-21
+
+### Fixed
+
+- **The numeric fields can really be typed into.** Entering a value by keyboard
+  in the curvature field — and, to a lesser extent, in the `z` field — was
+  practically impossible: the field already showed all its decimals
+  (`0.0000`), so Qt rejected any further character, and the narrow range
+  [−0.05, 0.05] made almost every intermediate value invalid, since `0` has to
+  be typed before `0.01`. Every keystroke was refused and the field looked as
+  if it only worked with the arrows.
+- Validation now accepts anything that looks like a number in progress, and the
+  value is only brought into range when it is committed. A value outside the
+  bounds is clamped to the nearest one instead of being discarded: typing 9 in
+  the curvature field gives 0.05.
+- The content is selected when the field takes the focus, so typing replaces it
+  instead of being inserted in the middle of the current value.
+- The headless test now reproduces the real gesture — focus, then type, without
+  selecting anything first. The previous version called `selectAll()`
+  beforehand, which no user does, and that is precisely why the defect went
+  unnoticed.
+
+---
+
 ## 1.3.0 — 2026-08-21
 
 ### Added

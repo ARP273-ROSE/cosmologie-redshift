@@ -161,7 +161,9 @@ pour le décodage sigle par sigle).
 
 ### 3.2 Champ `z` et presets
 
-`z` va de 0 à 1500, avec 5 décimales et un pas de 0,01. Les huit boutons chargent
+`z` va de 0 à 1500, avec 5 décimales et un pas de 0,01. Les huit boutons chargent Le contenu est sélectionné dès que le champ
+prend le focus, de sorte que la frappe le remplace ; une valeur hors bornes est
+ramenée à la limite la plus proche au lieu d'être abandonnée.
 un objet ou une époque ; chacun porte une fiche en infobulle.
 
 | Preset | z | Âge de l'univers à z |

@@ -20,6 +20,7 @@ Langue : menu « Langue / Language », ou variable COSMO_LANG=en, ou --lang en.
 """
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -29,8 +30,10 @@ if str(HERE) not in sys.path:      # importable quel que soit le dossier courant
 
 import numpy as np
 
-from PyQt6.QtCore import Qt, QLocale, QThread, pyqtSignal, QObject, QSettings
-from PyQt6.QtGui import QFont, QPalette, QColor, QAction, QIcon, QPixmap, QActionGroup
+from PyQt6.QtCore import (Qt, QLocale, QThread, pyqtSignal, QObject, QSettings,
+                          QTimer)
+from PyQt6.QtGui import (QFont, QPalette, QColor, QAction, QIcon, QPixmap,
+                         QActionGroup, QValidator)
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QDoubleSpinBox, QPushButton, QGroupBox, QFrame, QSizePolicy,
@@ -218,13 +221,31 @@ def apply_cosmic_theme(app: QApplication):
 # ============================================================================
 
 class NumberSpinBox(QDoubleSpinBox):
-    """QDoubleSpinBox qui accepte la saisie au clavier avec « . » OU « , ».
+    """QDoubleSpinBox où la saisie au clavier fonctionne vraiment.
 
-    Sans cela, sous une locale française, Qt refuse le point décimal et
-    l'utilisateur a l'impression que seules les flèches fonctionnent.
+    Trois obstacles rendaient ces champs quasi impossibles à remplir à la main,
+    au point qu'ils semblaient réservés aux flèches :
+
+    * sous une locale française, Qt refusait le point décimal ;
+    * le champ affichant déjà toutes ses décimales (« 0.0000 » pour la
+      courbure), toute frappe supplémentaire en dépassait le nombre autorisé
+      et se voyait rejetée ;
+    * un intervalle étroit comme [-0,05 ; 0,05] rend invalide presque toute
+      valeur intermédiaire — il faut bien taper « 0 » avant « 0,01 » — et Qt
+      refusait la frappe au lieu d'attendre la suite.
+
+    D'où : les deux séparateurs décimaux acceptés, une validation qui laisse
+    taper tant que le texte est un nombre plausible (la valeur n'est ramenée
+    dans les bornes qu'à la validation), et le contenu sélectionné quand le
+    champ prend le focus, pour que la frappe remplace au lieu de s'insérer au
+    milieu.
+
     `live=False` n'émet valueChanged qu'à la validation (Entrée / perte de
     focus), ce qui évite de recalculer les courbes à chaque frappe.
     """
+
+    # Un nombre en cours de frappe : signe, chiffres, un seul séparateur.
+    _PARTIAL = re.compile(r"^[+-]?\d*\.?\d*$")
 
     def __init__(self, live: bool = True, parent=None):
         super().__init__(parent)
@@ -234,16 +255,45 @@ class NumberSpinBox(QDoubleSpinBox):
 
     @staticmethod
     def _norm(text: str) -> str:
-        return text.replace(",", ".").replace(" ", "").replace(" ", "")
+        return text.replace(",", ".").replace(" ", "").replace(" ", "")
 
     def validate(self, text, pos):                     # noqa: N802 (API Qt)
-        return super().validate(self._norm(text), pos)
+        normalised = self._norm(text)
+        state, fixed, pos = super().validate(normalised, pos)
+        if state == QValidator.State.Invalid and self._PARTIAL.match(normalised):
+            # Saisie encore incomplète ou momentanément hors bornes : on laisse
+            # taper. La valeur sera ramenée dans l'intervalle à la validation.
+            return QValidator.State.Intermediate, normalised, pos
+        return state, fixed, pos
+
+    def fixup(self, text: str) -> str:                 # noqa: N802 (API Qt)
+        """Rend présentable une saisie restée incomplète à la validation.
+
+        Qt appelle cette méthode lorsque le texte est jugé intermédiaire : sans
+        elle, une valeur hors bornes serait purement et simplement abandonnée.
+        Elle est ici ramenée à la borne la plus proche — taper 9 dans la
+        courbure donne 0,05.
+        """
+        try:
+            value = float(self._norm(text) or 0.0)
+        except ValueError:
+            value = self.value()
+        return self.textFromValue(max(self.minimum(), min(self.maximum(), value)))
+
+    def focusInEvent(self, event):                     # noqa: N802 (API Qt)
+        super().focusInEvent(event)
+        # Le clic place le curseur après cet événement : on sélectionne au
+        # tour de boucle suivant, sinon la sélection serait aussitôt défaite.
+        QTimer.singleShot(0, self.selectAll)
 
     def valueFromText(self, text) -> float:            # noqa: N802 (API Qt)
         try:
-            return float(self._norm(text) or 0.0)
+            value = float(self._norm(text) or 0.0)
         except ValueError:
             return self.value()
+        # Une valeur hors domaine est ramenée à la borne la plus proche, plutôt
+        # qu'ignorée en silence : taper 9 dans la courbure donne 0,05.
+        return max(self.minimum(), min(self.maximum(), value))
 
     def textFromValue(self, value: float) -> str:      # noqa: N802 (API Qt)
         return f"{value:.{self.decimals()}f}"

@@ -8,6 +8,30 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## 1.3.1 — 21 août 2026
+
+### Corrigé
+
+- **Les champs numériques acceptent enfin la frappe.** Saisir une valeur au
+  clavier dans le champ de courbure — et, dans une moindre mesure, dans le
+  champ `z` — était pratiquement impossible : le champ affichant déjà toutes
+  ses décimales (`0,0000`), Qt refusait tout caractère supplémentaire, et
+  l'intervalle étroit [−0,05 ; 0,05] rendait invalide presque toute valeur
+  intermédiaire, puisqu'il faut bien taper `0` avant `0,01`. Chaque frappe
+  était rejetée et le champ semblait réservé aux flèches.
+- La validation accepte désormais tout ce qui ressemble à un nombre en cours de
+  frappe, la valeur n'étant ramenée dans les bornes qu'à la validation. Une
+  valeur hors domaine est ramenée à la limite la plus proche au lieu d'être
+  abandonnée : taper 9 dans la courbure donne 0,05.
+- Le contenu est sélectionné quand le champ prend le focus, de sorte que la
+  frappe le remplace au lieu de s'insérer au milieu de la valeur courante.
+- Le test sans écran reproduit maintenant le geste réel — donner le focus, puis
+  taper, sans rien sélectionner au préalable. La version précédente appelait
+  `selectAll()` d'abord, ce qu'aucun utilisateur ne fait, et c'est exactement
+  pour cela que le défaut était passé inaperçu.
+
+---
+
 ## 1.3.0 — 21 août 2026
 
 ### Ajouté

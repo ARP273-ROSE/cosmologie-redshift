@@ -163,7 +163,9 @@ decodes each acronym).
 ### 3.2 The `z` field and the presets
 
 `z` ranges from 0 to 1500, with 5 decimals and a 0.01 step. Both `.` and `,`
-work as decimal separator. The eight buttons load an object or an epoch; each
+work as decimal separator. The whole content is selected when the field takes
+the focus, so typing replaces it; a value outside the allowed range is brought
+back to the nearest bound rather than discarded. The eight buttons load an object or an epoch; each
 carries a fact sheet as a tooltip.
 
 | Preset | z | Age of the universe at z |
