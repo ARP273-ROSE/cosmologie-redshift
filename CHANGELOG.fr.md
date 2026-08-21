@@ -8,6 +8,35 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## 1.2.0 — 21 août 2026
+
+### Modifié
+
+- **Le programme démarre désormais dans la langue de la machine**, anglais par
+  défaut. La langue du système est lue dans les variables POSIX (`LC_ALL`,
+  `LC_MESSAGES`, `LANGUAGE`, `LANG`), puis via l'API Windows
+  (`GetUserDefaultUILanguage`), puis dans les réglages macOS (`AppleLocale`),
+  puis dans le module `locale` de Python. Un système français donne du
+  français ; toute autre langue, ou aucune locale lisible, donne de l'anglais.
+- **La langue choisie dans le menu *Langue* est mémorisée** d'une session à
+  l'autre : la détection automatique n'écrase plus un choix délibéré.
+  `--lang` et `COSMO_LANG` restent prioritaires.
+- Le `README.md` anglais devient la page d'accueil, avec un lien vers
+  `README.fr.md`.
+- Le journal de développement laisse place à ce journal des versions.
+
+### Retiré
+
+- Le rapport d'audit et toutes ses mentions. Les scripts de vérification
+  (`verif_sage/`) et l'annexe de vérification du cours restent en place.
+
+### Corrigé
+
+- La détection de langue reposait sur `getdefaultlocale()`, déprécié et souvent
+  vide sous Windows et macOS ; le programme retombait alors sur le français.
+
+---
+
 ## 1.1.0 — 21 août 2026
 
 Première version publique.

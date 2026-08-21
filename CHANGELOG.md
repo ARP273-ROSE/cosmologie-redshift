@@ -8,6 +8,34 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
+## 1.2.0 — 2026-08-21
+
+### Changed
+
+- **The program now starts in the language of the machine**, English by
+  default. The system language is read from the POSIX variables (`LC_ALL`,
+  `LC_MESSAGES`, `LANGUAGE`, `LANG`), then from the Windows API
+  (`GetUserDefaultUILanguage`), then from the macOS preferences
+  (`AppleLocale`), then from Python's `locale` module. A French system gets
+  French; any other language, or no readable locale, gets English.
+- **The language chosen in the *Language* menu is remembered** between
+  sessions, so automatic detection no longer overrides a deliberate choice.
+  `--lang` and `COSMO_LANG` still take precedence.
+- English `README.md` is now the front page, with a link to `README.fr.md`.
+- The development log is replaced by this changelog.
+
+### Removed
+
+- The audit report and every reference to it. The verification scripts
+  (`verif_sage/`) and the verification appendix of the course remain.
+
+### Fixed
+
+- Language detection relied on `getdefaultlocale()`, which is deprecated and
+  often empty on Windows and macOS; the program then fell back to French.
+
+---
+
 ## 1.1.0 — 2026-08-21
 
 First public release.

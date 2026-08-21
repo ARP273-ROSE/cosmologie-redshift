@@ -32,7 +32,7 @@ __all__ = ["__version__", "VERSION", "GITHUB_REPO", "RELEASES_URL", "DOWNLOAD_UR
 
 # La version est aussi lue par le workflow GitHub pour créer le tag.
 # The GitHub workflow reads this same string to create the tag.
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 VERSION = __version__
 
 GITHUB_REPO = "ARP273-ROSE/cosmologie-redshift"
