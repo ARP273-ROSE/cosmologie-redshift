@@ -36,6 +36,10 @@ where it gets interesting for imagers:
   Neither is wrong — the difference is the galaxy's own motion inside the Virgo
   cluster. Redshift only becomes a reliable distance beyond z ≈ 0.03.
 
+You do not even need to look the redshift up: type the name of your target —
+`m31`, `ngc224`, `3c273`, `Sombrero`, `GN-z11`, whatever spelling comes to
+hand — and it is fetched from SIMBAD.
+
 The program also shows the age of the universe when the light left (435 Myr for
 GN-z11, 372 000 years for the CMB), 1σ error bars, and a comparison with the
 SH0ES value of H₀ — which shortens every distance by 7.4 %, forty times more
@@ -84,6 +88,10 @@ dans le modèle ΛCDM avec les paramètres Planck 2018 :
   la galaxie dans l'amas de la Vierge. Le redshift ne devient une distance
   fiable qu'au-delà de z ≈ 0,03.
 
+Nul besoin de connaître le redshift : il suffit de taper le nom de la cible —
+`m31`, `ngc224`, `3c273`, `Sombrero`, `GN-z11`, dans à peu près n'importe
+quelle orthographe — et il est cherché dans SIMBAD.
+
 Le programme affiche aussi l'âge de l'univers au moment de l'émission (435 Myr
 pour GN-z11, 372 000 ans pour le CMB), les barres d'erreur à 1σ, et une
 comparaison avec la valeur SH0ES de H₀ — qui raccourcit toutes les distances de
@@ -102,15 +110,17 @@ Téléchargement et sources : https://github.com/ARP273-ROSE/cosmologie-redshift
 ## Version courte (commentaire sous une image / short comment)
 
 > Nice capture. If you are curious about where this object actually sits: I made
-> a small free tool that converts a redshift into the four cosmological
-> distances (Planck 2018). The surprise is that beyond z ≈ 1.6 the angular
+> a small free tool that converts a redshift — or just the object's name, looked
+> up in SIMBAD — into the four cosmological distances (Planck 2018). The
+> surprise is that beyond z ≈ 1.6 the angular
 > diameter distance *decreases* — an identical galaxy looks bigger at z = 5 than
 > at z = 1. One file for Windows, macOS or Linux, bilingual, with a course
 > explaining the physics: https://github.com/ARP273-ROSE/cosmologie-redshift
 
 > Belle image. Si tu es curieux de savoir où se trouve vraiment cet objet : j'ai
-> fait un petit outil libre qui convertit un redshift en quatre distances
-> cosmologiques (Planck 2018). La surprise, c'est qu'au-delà de z ≈ 1,6 la
+> fait un petit outil libre qui convertit un redshift — ou simplement le nom de
+> l'objet, cherché dans SIMBAD — en quatre distances cosmologiques
+> (Planck 2018). La surprise, c'est qu'au-delà de z ≈ 1,6 la
 > distance de diamètre angulaire *diminue* — une galaxie identique paraît plus
 > grande à z = 5 qu'à z = 1. Un fichier pour Windows, macOS ou Linux, bilingue, avec un cours
 > qui explique la physique :
