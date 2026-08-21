@@ -194,7 +194,7 @@ jobs:
             Windows) cp dist/CosmologicalDistanceCalculator.exe "out/${{ matrix.asset }}" ;;
             Linux)   cp dist/CosmologicalDistanceCalculator "out/${{ matrix.asset }}"
                      chmod +x "out/${{ matrix.asset }}" ;;
-            macOS)   cd dist && zip -qry "../out/${{ matrix.asset }}" CosmologicalDistanceCalculator.app ;;
+            macOS)   ( cd dist && zip -qry "../out/${{ matrix.asset }}" CosmologicalDistanceCalculator.app ) ;;
           esac
           ls -lh out/
 
