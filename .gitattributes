@@ -1,0 +1,20 @@
+# Les .bat doivent garder des fins de ligne Windows, sinon cmd.exe peut
+# mal interpréter les blocs goto / if.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Les scripts shell restent en LF, même clonés sous Windows.
+*.sh text eol=lf
+
+# Texte normalisé
+*.py    text
+*.md    text
+*.tex   text
+*.sage  text
+*.json  text
+*.txt   text
+
+# Binaires : pas de conversion, pas de diff
+*.pdf   binary
+*.png   binary
+*.svg   text

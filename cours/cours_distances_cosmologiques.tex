@@ -1,0 +1,3000 @@
+%==============================================================================
+%  Distances cosmologiques et redshift — cours complet (3 niveaux)
+%  Niveau 1 : Vulgarisation (lecteur curieux, aucune math)
+%  Niveau 2 : Math Spé (calcul différentiel, intégrales, SR)
+%  Niveau 3 : Bac+5 (RG, tenseurs, FLRW)
+%
+%  Compilation : pdflatex (deux passes)
+%==============================================================================
+\documentclass[11pt,a4paper,openany]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{siunitx}
+\sisetup{output-decimal-marker={,},group-separator={\,}}
+\DeclareSIUnit{\km}{\kilo\metre}
+\DeclareSIUnit{\parsec}{pc}
+\DeclareSIUnit{\kg}{\kilo\gram}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\definecolor{accentcyan}{HTML}{1F4E5F}
+\definecolor{accentpurple}{HTML}{4B3F72}
+\definecolor{accentorange}{HTML}{8B5A1A}
+\definecolor{accentsage}{HTML}{2E5D3F}
+\definecolor{accentred}{HTML}{8C2F2F}
+\definecolor{accentteal}{HTML}{2D6A6A}
+\definecolor{boxbgblue}{HTML}{EAF1F7}
+\definecolor{boxbggreen}{HTML}{EDF5EE}
+\definecolor{boxbgsage}{HTML}{EEF5F0}
+\definecolor{boxbgorange}{HTML}{FFF8EE}
+\definecolor{boxbgred}{HTML}{FBEEEE}
+\definecolor{boxbgteal}{HTML}{E8F1F1}
+
+\usepackage[most]{tcolorbox}
+\tcbset{
+  vulgarisation/.style={
+    enhanced, breakable,
+    colback=boxbgblue, colframe=accentcyan, coltitle=white,
+    fonttitle=\bfseries,
+    title=\textsf{Niveau 1 --- Vulgarisation},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+  mathspe/.style={
+    enhanced, breakable,
+    colback=boxbggreen, colframe=accentsage, coltitle=white,
+    fonttitle=\bfseries,
+    title=\textsf{Niveau 2 --- Math Spé},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+  approfondir/.style={
+    enhanced, breakable,
+    colback=boxbgorange, colframe=accentorange, coltitle=white,
+    fonttitle=\bfseries, title=\textsf{Aller plus loin},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+  numerique/.style={
+    enhanced, breakable,
+    colback=boxbgsage, colframe=accentsage, coltitle=white,
+    fonttitle=\bfseries, title=\textsf{Application numérique},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+  gui/.style={
+    enhanced, breakable,
+    colback=boxbgteal, colframe=accentteal, coltitle=white,
+    fonttitle=\bfseries, title=\textsf{Dans le programme},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+  attention/.style={
+    enhanced, breakable,
+    colback=boxbgred, colframe=accentred, coltitle=white,
+    fonttitle=\bfseries, title=\textsf{Attention --- piège conceptuel},
+    boxrule=0.6pt, arc=2mm, left=4pt, right=4pt, top=4pt, bottom=4pt
+  },
+}
+
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+
+\usepackage[hidelinks,
+            colorlinks=true,
+            linkcolor=accentcyan,
+            urlcolor=accentpurple,
+            citecolor=accentorange]{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eqdef}{\stackrel{\text{déf.}}{=}}
+\newcommand{\dif}{\mathrm{d}}
+\newcommand{\Mpc}{\text{Mpc}}
+\newcommand{\Gly}{\text{G\,al}}
+\newcommand{\Gyr}{\text{Gyr}}
+\newcommand{\al}{\text{al}}
+\newcommand{\kms}{\si{\km\per\second}}
+\newcommand{\Hzero}{H_{0}}
+\newcommand{\Om}{\Omega_{\mathrm{m}}}
+\newcommand{\Or}{\Omega_{\mathrm{r}}}
+\newcommand{\OL}{\Omega_{\Lambda}}
+\newcommand{\Ok}{\Omega_{k}}
+\renewcommand{\v}{\vec}
+\DeclareMathOperator{\arcsinh}{arcsinh}
+
+\newtheorem{theorem}{Théorème}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemme}
+\newtheorem{definition}[theorem]{Définition}
+\newtheorem{remark}[theorem]{Remarque}
+
+\begin{document}
+
+% --- Custom title page with logo ---
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\vspace*{3.5cm}
+
+{\includegraphics[width=4.2cm]{logo.png}}
+
+\vspace{1.5cm}
+
+{\Huge\textbf{Distances cosmologiques}}\\[10pt]
+{\LARGE Du redshift à l'âge de l'univers}\\[6pt]
+{\large \textit{Cours en trois niveaux --- vulgarisation, math spé, bac+5}}
+
+\vspace{2cm}
+
+{\large\itshape Avec le programme interactif \texttt{redshift\_distance\_gui.py}}
+
+\vfill
+
+{\large Édition de mai 2026 --- \textbf{révision d'août 2026}}\\[4pt]
+{\small (toutes les valeurs numériques revérifiées sous \emph{SageMath},
+cf. annexe~\ref{chap:verif})}\\[6pt]
+{\small Cosmologie \emph{Planck 2018} --- $\Hzero=67{,}66~\kms\,\Mpc^{-1}$
+\quad $\Om=0{,}3111$ \quad $\OL=0{,}6889$}
+
+\vspace{1.5cm}
+\end{titlepage}
+
+\vspace*{1cm}
+
+\begin{tcolorbox}[colback=boxbgblue,colframe=accentcyan,arc=2mm]
+\textbf{Objet du document.} Ce cours présente, en détail et avec dérivations,
+les formules physiques qui permettent de convertir un \emph{redshift
+cosmologique} $z$ en plusieurs notions de distance et de temps, dans le cadre
+du modèle standard $\Lambda\text{CDM}$ contraint par les données
+\emph{Planck 2018}~\cite{Planck2018}.
+
+\medskip
+Chaque notion est présentée en trois niveaux~:
+
+\medskip
+\begin{tabular}{ll}
+\textcolor{accentcyan}{\textbf{Niveau 1 --- Vulgarisation}} &
+analogies, image mentale, aucune équation \\
+\textcolor{accentsage}{\textbf{Niveau 2 --- Math Spé}} &
+calcul différentiel, intégrales, sans tenseurs \\
+\textcolor{black}{\textbf{Niveau 3 --- Bac+5}} &
+relativité générale, FLRW, dérivations complètes \\
+\end{tabular}
+
+\medskip
+Le \textbf{chapitre 1} décrit en détail l'interface graphique du programme
+\texttt{redshift\_distance\_gui.py} et explicite chaque donnée affichée,
+y compris la phrase « TT,TE,EE+lowE+lensing+BAO » qui désigne la combinaison
+de données ayant produit les paramètres cosmologiques utilisés.
+
+\medskip
+Toutes les formules numériques utilisées sont celles implémentées dans la
+bibliothèque \texttt{astropy.cosmology} (cosmologie
+\texttt{Planck18})~\cite{astropy}.
+\end{tcolorbox}
+
+\tableofcontents
+\clearpage
+
+%==============================================================================
+\chapter*{Comment lire ce cours}
+\addcontentsline{toc}{chapter}{Comment lire ce cours}
+%==============================================================================
+
+Ce cours est conçu pour être lisible à plusieurs profondeurs.
+
+\begin{tcolorbox}[vulgarisation]
+Pour saisir seulement \emph{l'idée}, il suffit de lire les encadrés bleus
+comme celui-ci : aucune équation, mais l'image du monde. Tout le reste peut
+être ignoré.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+Avec un bagage de premier cycle scientifique, les encadrés verts s'ajoutent à
+la lecture : les formules essentielles et des dérivations courtes n'utilisant
+que le calcul différentiel et intégral, sans relativité générale.
+\end{tcolorbox}
+
+\noindent\textbf{Niveau 3 (texte courant).} Pour un lecteur familier de la
+relativité générale (tenseur métrique, équations d'Einstein, notation
+indicielle), le texte courant donne les dérivations rigoureuses, de la métrique
+FLRW jusqu'aux distances cosmologiques.
+
+\begin{tcolorbox}[approfondir]
+Encadrés oranges « Aller plus loin »~: discussions historiques, débats
+contemporains, subtilités conceptuelles.
+\end{tcolorbox}
+
+\begin{tcolorbox}[numerique]
+Encadrés verts « Application numérique »~: exemples chiffrés pour redshifts
+emblématiques.
+\end{tcolorbox}
+
+\begin{tcolorbox}[gui]
+Encadrés gris-teal « Dans le programme »~: à quoi correspond la grandeur dans
+l'interface \texttt{redshift\_distance\_gui.py} qui accompagne le cours.
+\end{tcolorbox}
+
+\begin{tcolorbox}[attention]
+Encadrés rouges « Attention »~: pièges conceptuels que la vulgarisation
+courante diffuse à tort.
+\end{tcolorbox}
+
+\clearpage
+
+%==============================================================================
+\chapter*{Notations et conventions}
+\addcontentsline{toc}{chapter}{Notations et conventions}
+%==============================================================================
+
+\begin{description}[leftmargin=2.4cm,labelwidth=2.2cm]
+\item[Signature] La métrique est de signature $(-,+,+,+)$.
+\item[Indices grecs] $\mu,\nu \in \{0,1,2,3\}$, indices d'espace-temps.
+\item[Indices latins] $i,j \in \{1,2,3\}$, indices d'espace.
+\item[$c$] $\SI{299792.458}{\km\per\second}$ (valeur exacte par définition
+  depuis 1983). On n'utilise pas la convention $c=1$.
+\item[$\Hzero$] La constante de Hubble aujourd'hui, en
+  $\si{\km\per\second\per\mega\parsec}$. Valeur Planck 2018~: $67{,}66$.
+\item[$h$] Paramètre de Hubble réduit~: $h \equiv \Hzero / (\SI{100}{\km\per\second\per\mega\parsec})$.
+  Vaut $0{,}6766$ en Planck 2018.
+\item[$z$] Redshift cosmologique, sans dimension. Toujours positif pour les
+  objets cosmologiques (l'univers est en expansion).
+\item[$a(t)$] Facteur d'échelle, normalisé tel que $a(t_0) = 1$ aujourd'hui.
+\item[$\Mpc$] Le mégaparsec, $1~\Mpc \approx \SI{3.086e19}{\km}
+  \approx 3{,}262 \times 10^{6}~\al$.
+\item[$\al$] L'année-lumière, $1~\al = \SI{9.461e12}{\km}$.
+\item[$\Gly$] Le giga-année-lumière, $1~\Gly = 10^{9}~\al$.
+\item[$\Gyr$] Le giga-année (109 ans).
+\end{description}
+
+\begin{remark}
+Toutes les distances introduites dans ce cours sont \emph{dépendantes du modèle
+cosmologique}~: il n'existe pas, hors de l'univers local ($z\ll 1$), de notion
+unique de distance. Le passage du redshift à une distance suppose toujours un
+choix de modèle (ici $\Lambda\text{CDM}$ avec les paramètres Planck 2018).
+\end{remark}
+
+\clearpage
+
+%==============================================================================
+\part{Lecture du programme et paramètres Planck 2018}
+%==============================================================================
+
+%==============================================================================
+\chapter{Interface graphique \texttt{redshift\_distance\_gui.py}}
+\label{chap:gui}
+%==============================================================================
+
+Le programme fourni avec ce cours est une application Qt6 (PyQt6 + pyqtgraph)
+qui affiche, pour un redshift $z$ saisi par l'utilisateur, quatre distances
+cosmologiques et plusieurs grandeurs dérivées, ainsi qu'un graphe log-log de
+ces distances en fonction de $z$.
+
+\section{Vue d'ensemble}
+
+L'interface comporte trois zones~:
+
+\begin{enumerate}[topsep=2pt]
+\item \textbf{En-tête}~: titre et phrase de référence cosmologique.
+\item \textbf{Panneau de gauche}~: champ de saisie $z$, boutons de presets,
+puis quatre distances et quatre informations cosmologiques.
+\item \textbf{Panneau de droite}~: tracé interactif des quatre distances
+en fonction de $z$ (axes logarithmiques), avec un curseur vertical à la valeur
+courante de $z$ et des repères verticaux pour $z=1$, GN-z11, CMB.
+\end{enumerate}
+
+\section{La phrase de sous-titre}
+\label{sec:sous_titre}
+
+La phrase affichée sous le titre est~:
+
+\begin{center}\itshape
+Planck 2018 (TT,TE,EE+lowE+lensing+BAO) --- $\Hzero=67{,}66$~km/s/Mpc \quad
+$\Om+\Omega_{\nu} = 0{,}31110$ \quad $\OL = 0{,}68885$ \quad
+$\Omega_{\gamma} = 5{,}402\times10^{-5}$ \quad $t_{0} = 13{,}7869$~Gyr
+\end{center}
+
+\noindent (dans la première version du programme, elle affichait
+$\Om = 0{,}3111$ sans mentionner que le backend sépare matière et neutrinos~;
+voir section~\ref{sec:E_reel}).
+
+\noindent Cette ligne n'est pas anodine~: elle déclare \emph{exactement} quel
+modèle de l'univers le programme utilise. Décodons-la mot à mot.
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{En une phrase.} « Le programme utilise les paramètres de l'univers que la
+mission spatiale Planck a déterminés en 2018 en combinant tout ce qu'on sait sur
+le rayonnement fossile (CMB) plus une autre source indépendante de données. »
+\end{tcolorbox}
+
+\subsection{« Cosmologie Planck 2018 »}
+
+\emph{Planck} est le satellite de l'Agence Spatiale Européenne lancé en 2009
+et qui a observé le fond diffus cosmologique (CMB) jusqu'en 2013, puis dont
+les données ont été progressivement publiées. La publication finale, dite
+« Planck 2018 results » (parue en 2020 dans \emph{A\&A}~641, A6), donne les
+valeurs les plus précises à ce jour des paramètres du modèle standard de la
+cosmologie~\cite{Planck2018}.
+
+\subsection{$\Hzero=67{,}66$~km/s/Mpc --- la constante de Hubble}
+
+C'est la \emph{vitesse} à laquelle l'univers s'étend aujourd'hui. Une galaxie
+située à $1~\Mpc$ de nous (et qui ne subit aucune force locale) s'éloigne en
+moyenne à $67{,}66$~km/s. À $10~\Mpc$, elle s'éloigne dix fois plus vite, et
+ainsi de suite (loi de Hubble).
+
+\begin{tcolorbox}[attention]
+$\Hzero$ a la dimension de l'\emph{inverse d'un temps}~: $\Hzero \approx
+2{,}19\times 10^{-18}$~Hz. Son inverse, le \emph{temps de Hubble}, vaut
+$1/\Hzero \approx 14{,}5$~Gyr, et c'est aussi l'ordre de grandeur de l'âge de
+l'univers ($13{,}79$~Gyr), pas une coïncidence.
+\end{tcolorbox}
+
+\subsection{$\Om = 0{,}3111$ --- la densité totale de matière}
+
+C'est la fraction de l'énergie totale de l'univers, aujourd'hui, qui est
+sous forme de \emph{matière} (au sens « particules massives non relativistes »),
+toutes formes confondues. Elle se décompose en~:
+\begin{itemize}[topsep=2pt]
+\item $\Omega_b \approx 0{,}049$ \emph{baryons} ordinaires (atomes, étoiles,
+  gaz, planètes, etc.)
+\item $\Omega_{\mathrm{cdm}} \approx 0{,}262$ \emph{matière noire froide}
+  (\emph{cold dark matter}), c'est-à-dire des particules massives non
+  collisionnelles dont la nature est inconnue.
+\end{itemize}
+
+Donc seulement $\sim 5\%$ de tout ce qui pèse dans l'univers est fait de
+matière « connue »~; les $\sim 26\%$ restants de matière sont sombres et
+détectés uniquement par leur gravitation.
+
+\subsection{$\OL = 0{,}6889$ --- la constante cosmologique (« énergie sombre »)}
+
+Le reste de l'énergie totale ($\sim 69\%$) prend la forme d'une « énergie
+sombre », attribuée dans le modèle minimal à une \emph{constante cosmologique}
+$\Lambda$ (terme additionnel dans les équations d'Einstein). Elle produit une
+\textbf{accélération} de l'expansion observée pour la première fois en
+1998~\cite{Riess1998,Perlmutter1999}.
+
+\subsection{Pourquoi $\Om + \OL \approx 1$~?}
+
+C'est la \textbf{platitude spatiale} de l'univers. La somme de toutes les
+densités d'énergie (matière + rayonnement + $\Lambda$) doit, à courbure
+nulle, valoir exactement 1. La mesure observe $\Om + \OL = 0{,}9999\pm 0{,}002$,
+ce qui justifie l'hypothèse de platitude. Voir
+chapitre~\ref{chap:lcdm}, section~\ref{sec:Ok}.
+
+\subsection{« TT,TE,EE+lowE+lensing+BAO » --- la phrase énigmatique}
+
+C'est la \textbf{liste des données} combinées par la collaboration Planck pour
+contraindre simultanément tous les paramètres. Chaque sigle désigne un jeu
+d'observations~:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll p{8.7cm}}
+\toprule
+\textbf{Sigle} & \textbf{Nom complet} & \textbf{Ce que ça mesure} \\
+\midrule
+TT & Temperature--Temperature & Spectre angulaire de puissance du CMB en
+    \emph{intensité} (les contrastes de température sur le ciel,
+    $\Delta T/T \sim 10^{-5}$). C'est la mesure « historique » du CMB. \\
+TE & Temperature--E-mode & Corrélation croisée entre température et
+    polarisation E (composante non-rotationnelle de la polarisation). \\
+EE & E-mode--E-mode & Spectre de polarisation E seule. Indépendant de TT. \\
+lowE & low-$\ell$ E-mode polarisation & Le spectre EE à grande échelle
+    angulaire ($\ell < 30$, soit angle $> 6^{\circ}$). Très sensible à
+    l'optique reionisation. \\
+lensing & CMB lensing & Effet de lentille gravitationnelle des grandes
+    structures sur le CMB. La structure cosmique entre le CMB et nous
+    déforme légèrement la carte du CMB~; on extrait cette déformation
+    via une analyse statistique. \\
+BAO & Baryon Acoustic Oscillations & Oscillations acoustiques baryoniques
+    observées \emph{aujourd'hui} dans la distribution des galaxies (SDSS,
+    BOSS, eBOSS). Pic à $\sim 150~\Mpc$ comobile, vestige des ondes sonores
+    de l'univers primordial. \emph{Donnée externe à Planck}, mais
+    combinée. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Pourquoi tout combiner ?} Une seule observation contraint quelques
+paramètres mais en laisse d'autres libres~; en combinant des mesures
+indépendantes, on lève les dégénérescences et on obtient une précision finale
+bien meilleure que chaque mesure séparée. Concrètement, le CMB (TT, TE, EE)
+fixe surtout la géométrie globale et la composition à l'époque de la
+recombinaison, tandis que le BAO calibre l'\emph{échelle} actuelle. Ensemble,
+ils contraignent $\Hzero$, $\Om$, $\OL$ à $\sim 0{,}5\%$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Spectre angulaire de puissance.} On décompose la carte de température
+du CMB sur la sphère céleste en harmoniques sphériques~:
+\[
+\frac{\Delta T}{T}(\theta,\phi) = \sum_{\ell,m} a_{\ell m}\,Y_{\ell m}(\theta,\phi),
+\quad C_{\ell}^{TT} = \frac{1}{2\ell+1}\sum_m |a_{\ell m}|^{2}.
+\]
+$\ell$ est le \emph{multipôle} (analogue à un mode de Fourier sur la sphère)~;
+$\ell\sim 200$ correspond à un angle $\sim 1^{\circ}$. Le spectre $C_{\ell}^{TT}$
+présente une série de pics acoustiques dont les positions et amplitudes
+dépendent des $\Om, \Omega_b, \OL, \Hzero, \ldots$~; c'est en ajustant
+le modèle théorique au spectre observé qu'on en déduit les paramètres.
+\end{tcolorbox}
+
+\section{Détail des champs affichés par le programme}
+
+\subsection{Saisie $z$ et presets}
+
+\begin{tcolorbox}[gui]
+Le champ $z$ accepte une valeur entre $0$ et $1500$. Les boutons
+\textbf{presets} préchargent~:
+\begin{itemize}[topsep=2pt]
+\item \textbf{M 87} ($z=0{,}00428$)~: galaxie elliptique géante de l'amas
+  de la Vierge, célèbre pour avoir hébergé la première image directe d'un
+  trou noir supermassif (EHT, 2019).
+\item \textbf{3C 273} ($z=0{,}158$)~: le quasar le plus brillant connu, et
+  l'un des plus proches.
+\item \textbf{z=1}~: repère pédagogique, limite typique des relevés
+  optiques profonds.
+\item \textbf{z=2.34}~: cas type employé dans tout ce cours.
+\item \textbf{ULAS J1120}~: $z = 7{,}085$, l'un des quasars les plus lointains
+  connus (Mortlock et al. 2011).
+\item \textbf{GN-z11}~: $z=10{,}6$, galaxie observée par JWST en 2022,
+  l'univers n'avait que $435$~Myr.
+\item \textbf{Réionisation}~: $z=20$, époque où les premières étoiles
+  ré-ionisent l'univers neutre.
+\item \textbf{CMB}~: $z=1089{,}80$, surface de dernière diffusion.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection{Distance comobile}
+
+\begin{tcolorbox}[gui]
+\textbf{Définition rapide.} Distance « actuelle » qui nous sépare de l'objet,
+mesurée dans le repère qui s'étend avec l'univers. C'est la distance \emph{telle
+qu'elle est aujourd'hui}, après que l'expansion ait poussé l'objet loin de nous.
+
+\medskip
+Définition rigoureuse et dérivation~: chapitre~\ref{chap:Dc}.
+\end{tcolorbox}
+
+\subsection{Distance de luminosité}
+
+\begin{tcolorbox}[gui]
+\textbf{Définition rapide.} La distance qu'on devrait \emph{mettre dans
+l'équation classique du flux} $F = L/(4\pi D^2)$ pour relier le flux observé
+$F$ à la luminosité intrinsèque $L$ de la source, malgré l'expansion. Elle
+est plus grande que la distance « réelle » car l'expansion fait paraître
+les sources plus pâles qu'elles ne le seraient en univers statique.
+
+\medskip
+Définition rigoureuse et dérivation~: chapitre~\ref{chap:DL}.
+\end{tcolorbox}
+
+\subsection{Distance de diamètre angulaire}
+
+\begin{tcolorbox}[gui]
+\textbf{Définition rapide.} La distance qu'on devrait mettre dans $\theta =
+\ell/D$ (taille angulaire = taille physique / distance) pour relier la
+taille angulaire observée à la taille physique de l'objet.
+
+\medskip
+\textbf{Surprise.} À grand $z$ ($z > 1{,}6$), cette distance \emph{décroît} avec
+$z$ ! Un objet plus lointain peut paraître \emph{plus grand} qu'un objet plus
+proche.
+
+\medskip
+Définition rigoureuse et dérivation~: chapitre~\ref{chap:DA}.
+\end{tcolorbox}
+
+\subsection{Distance de trajet de la lumière}
+
+\begin{tcolorbox}[gui]
+\textbf{Définition rapide.} C'est la valeur \emph{intuitive}~: « la lumière
+a mis tel temps à arriver, donc l'objet est à c $\times$ ce temps
+années-lumière ». Bornée par $c\,t_0 \approx 13{,}79$~Gly (âge $\times$ $c$).
+
+\medskip
+\textbf{Mais.} Cette distance n'a aucune signification métrique propre~: ce
+n'est ni la distance « actuelle » (comobile) ni la distance d'émission
+(angular diameter). C'est juste le produit du temps de trajet par la vitesse
+de la lumière. On la donne pour son usage pédagogique courant.
+
+\medskip
+Définition rigoureuse et dérivation~: chapitre~\ref{chap:Dlt}.
+\end{tcolorbox}
+
+\subsection{Lookback time}
+
+\begin{tcolorbox}[gui]
+Le \emph{lookback time} est la \emph{durée} (en années) écoulée depuis que la
+lumière reçue aujourd'hui a quitté la source. Pour le CMB, c'est $\sim 13{,}79$
+Gyr~; pour une galaxie à $z=1$, c'est $\sim 7{,}9$~Gyr.
+
+\medskip
+Lien avec la distance de trajet de la lumière~: $D_{\text{lt}} = c \times
+t_L$.
+
+\medskip
+Définition rigoureuse~: équation~\eqref{eq:tlookback}.
+\end{tcolorbox}
+
+\subsection{Âge de l'univers à $z$}
+
+\begin{tcolorbox}[gui]
+C'est l'âge qu'avait l'univers \emph{lorsque la lumière a été émise}, en partant
+du Big Bang ($t=0$). Pour le CMB, c'est $\sim 372~000$~ans. Pour
+$z=2{,}34$, c'est $\sim 2{,}8$~Gyr.
+
+\medskip
+La somme « lookback + âge à $z$ = âge actuel ($t_0 = 13{,}79$~Gyr) »
+est donc vérifiée à chaque ligne.
+\end{tcolorbox}
+
+\subsection{Facteur d'échelle $a = 1/(1+z)$}
+
+\begin{tcolorbox}[gui]
+Rappel des notations~: $a(t)$ est le facteur sans dimension qui mesure la
+\emph{taille relative} de l'univers à l'instant $t$, normalisé tel que
+$a(t_0) = 1$ aujourd'hui.
+
+\medskip
+Pour une lumière émise à un redshift $z$, on a $a_{\text{em}} = 1/(1+z)$.
+
+\medskip
+Donc à $z = 2{,}34$~: $a_{\text{em}} = 0{,}2994$. L'univers était environ
+$3{,}34$ fois plus petit (dans toutes les directions) au moment de l'émission.
+\end{tcolorbox}
+
+\subsection{$E(z) = H(z)/\Hzero$}
+
+\begin{tcolorbox}[gui]
+Taux d'expansion à l'époque de l'émission, rapporté à celui d'aujourd'hui.
+C'est la fonction qui est intégrée pour \emph{toutes} les distances~; le
+programme l'affiche pour qu'on voie d'où viennent les nombres. À $z=2{,}34$~:
+$E = 3{,}5056$, soit $H(z) = 237{,}2$~km/s/Mpc. À $z_{*}$~: $E = 23\,053$.
+Sa forme exacte est donnée en~\eqref{eq:E_complet}.
+\end{tcolorbox}
+
+\subsection{Vitesses de récession --- les trois}
+
+\begin{tcolorbox}[gui]
+Le programme affiche \textbf{trois} valeurs, parce qu'elles diffèrent
+radicalement et que deux d'entre elles sont des approximations~:
+
+\medskip
+\begin{tabular}{lll}
+\toprule
+\textbf{Définition} & \textbf{à $z=2{,}34$} & \textbf{statut} \\
+\midrule
+Doppler naïf $v = cz$ & $701\,514$~km/s $=2{,}340\,c$ & valable si $z\ll1$ \\
+Doppler relativiste & $250\,467$~km/s $=0{,}835\,c$ & inadaptée en cosmologie \\
+FLRW $v = \Hzero D_{C}$ & $390\,497$~km/s $=1{,}303\,c$ & \textbf{la bonne} \\
+\bottomrule
+\end{tabular}
+
+\medskip
+La troisième dépasse elle aussi $c$, et c'est parfaitement licite~: ce n'est
+pas une vitesse de propagation \emph{dans} l'espace mais le taux d'étirement de
+l'espace lui-même. Voir le chapitre~\ref{chap:vrec} en entier.
+\end{tcolorbox}
+
+\subsection{Les barres d'erreur}
+
+\begin{tcolorbox}[gui]
+Chaque distance et chaque durée est affichée sous la forme
+\emph{valeur $\pm$ incertitude}, propagée depuis
+$\sigma(\Hzero) = 0{,}42$~km/s/Mpc et $\sigma(\Om) = 0{,}0056$ par dérivées
+partielles numériques, \textbf{en tenant compte de la corrélation} entre les
+deux (section~\ref{sec:incertitudes})~:
+\[
+\sigma_G^{2} = A^{2}\sigma_{\Hzero}^{2} + B^{2}\sigma_{\Om}^{2}
+             + 2\rho\,A\,B\,\sigma_{\Hzero}\sigma_{\Om},
+\qquad A = \pdv{G}{\Hzero},\quad B = \pdv{G}{\Om}.
+\]
+À $z = 2{,}34$~: $D_{C} = 18{,}824 \pm 0{,}033$~G\,al, soit $\pm0{,}17~\%$.
+La barre d'état rappelle ce que donnerait le même calcul \emph{sans} la
+corrélation ($\pm0{,}79~\%$)~: le facteur $4{,}5$ entre les deux n'est pas un
+détail de présentation.
+\end{tcolorbox}
+
+\subsection{Courbure $\Ok$}
+
+\begin{tcolorbox}[gui]
+Le champ \textbf{Courbure $\Ok$} (plage $\pm0{,}05$, défaut $0$) permet de
+sortir de l'univers plat. Dès que $\Ok \ne 0$, une cinquième ligne apparaît~:
+la \textbf{distance comobile transverse} $D_{M}$, donnée
+par~\eqref{eq:DM} --- $\sinh$ si $\Ok>0$, $\sin$ si $\Ok<0$. C'est elle, et
+non $D_{C}$, qui entre alors dans $D_{L} = (1+z)D_{M}$ et
+$D_{A} = D_{M}/(1+z)$.
+
+\medskip
+Le bouton « plat ($\Ok = 0$) » revient à Planck 2018. À noter~: l'âge actuel
+$t_{0}$ change lui aussi avec la courbure ($13{,}744$~Gyr pour
+$\Ok = +0{,}01$), et le contrôle « $t_L + t_{\text{em}} = t_{0}$ » de la barre
+d'état se réfère bien à l'âge \emph{du modèle courant}.
+\end{tcolorbox}
+
+\subsection{Comparaison SH0ES}
+
+\begin{tcolorbox}[gui]
+La case \textbf{« comparer avec SH0ES »} ajoute, sous chaque valeur, la même
+grandeur calculée avec $\Hzero = 73{,}04$~km/s/Mpc (mesure locale,
+Riess~et~al.~2022) et l'écart en pourcentage~; le graphique superpose les
+courbes correspondantes en pointillé.
+
+\medskip
+Toutes les distances raccourcissent de $7{,}4~\%$, les durées aussi. À
+comparer aux barres d'erreur de $0{,}2~\%$~: \textbf{l'incertitude dominante
+sur une distance cosmologique n'est pas statistique aujourd'hui, elle est
+systématique.} C'est tout l'enjeu de la tension de Hubble.
+\end{tcolorbox}
+
+\subsection{Contrôles affichés en barre d'état}
+
+\begin{tcolorbox}[gui]
+La barre d'état affiche en permanence deux contrôles de cohérence~:
+$t_{L}(z) + t_{\text{em}}(z) = t_{0}$ (vérifié à $10^{-4}$~$\mu$Gyr près) et
+l'identité d'Etherington $D_{L}/[(1+z)^{2}D_{A}] = 1$ (vérifiée à la précision
+machine). Si l'un des deux s'écarte, c'est que le backend a changé de version
+ou de cosmologie.
+\end{tcolorbox}
+
+\section{Le graphique log-log}
+
+L'axe horizontal est le redshift $z$ en échelle logarithmique~; l'axe
+vertical est la distance en G\,al en échelle logarithmique. Les quatre courbes
+(comobile, luminosité, diamètre angulaire, trajet lumière) sont précalculées
+sur $z\in[10^{-3}, 1500]$.
+
+\textbf{Zoom adaptatif}~: la fenêtre visible suit la valeur de $z$ courante
+$\bigl[z/30,\;8z\bigr]$, ce qui permet de visualiser correctement les distances
+pour des $z$ très petits (galaxies locales) comme pour le CMB.
+
+Les trois lignes verticales en pointillé marquent~:
+\begin{itemize}[topsep=2pt]
+\item $z=1$~: repère cosmologique typique.
+\item $z = 10{,}6$~: GN-z11, galaxie la plus lointaine confirmée.
+\item $z = 1089{,}8$~: surface de dernière diffusion (CMB).
+\end{itemize}
+
+%==============================================================================
+\chapter{Les objets-cibles présélectionnés}
+\label{chap:presets}
+%==============================================================================
+
+Ce chapitre décrit en détail chacun des huit \emph{presets} cliquables dans
+l'interface, leur intérêt scientifique et leur place dans l'histoire de la
+cosmologie observationnelle.
+
+\section{M~87 --- la galaxie supermassive de la Vierge ($z = 0{,}00428$)}
+
+M~87 (NGC~4486) est une galaxie elliptique géante située au centre de l'amas
+de la Vierge, à environ $55$~Mly. Son redshift est très faible parce qu'elle
+appartient à notre voisinage cosmique immédiat. Elle abrite un trou noir
+supermassif (M~87$^{\star}$) d'environ $6{,}5\times 10^{9}~M_{\odot}$, dont
+l'\emph{Event Horizon Telescope} a publié la première image directe en
+2019~\cite{EHT2019}. Elle émet aussi un jet relativiste extragalactique
+observé sur plusieurs kpc.
+
+Pourquoi en preset~? Pour ancrer l'utilisateur dans l'univers \emph{local}~:
+à si petit $z$, les quatre distances cosmologiques deviennent presque
+indistinguables et valent toutes $cz/\Hzero = 18{,}96~\Mpc = 61{,}8$~Mly
+(les valeurs exactes vont de $61{,}53$~Mly pour $D_{A}$ à $62{,}06$~Mly pour
+$D_{L}$).
+
+\begin{tcolorbox}[attention]
+\textbf{Ne pas confondre $\Mpc$ et Mly.} $cz/\Hzero = 18{,}96~\Mpc$, soit
+$61{,}8$~Mly et non « $19$~Mly ».
+
+\medskip
+\textbf{Et surtout~: cette distance-là est fausse pour M~87.} Les mesures
+directes (fluctuations de brillance de surface, céphéides) donnent
+$\sim 55$~Mly. L'écart de $\sim 12~\%$ n'est pas une erreur de calcul~: dans
+l'amas de la Vierge, la \emph{vitesse propre} des galaxies (plusieurs centaines
+de km/s, dues à la gravité de l'amas) s'ajoute au flot de Hubble et pollue le
+redshift. Convertir $z$ en distance n'a de sens statistique qu'au-delà de
+$z \sim 0{,}03$, quand le flot de Hubble domine les vitesses particulières.
+C'est la limite fondamentale de ce programme dans l'univers local.
+\end{tcolorbox}
+
+\section{3C~273 --- le premier quasar ($z = 0{,}158$)}
+
+3C~273 est le 273$^{\text{e}}$ objet du \emph{Third Cambridge Catalogue of
+Radio Sources}. En 1963, Maarten Schmidt, depuis le télescope du Mont Palomar,
+identifie ses raies d'émission comme du Balmer hydrogène, mais décalées d'un
+facteur $1{,}158$. À magnitude visuelle $\sim 12{,}9$ il est, vu de la Terre,
+le quasar le plus brillant~\cite{Schmidt1963}. Sa luminosité bolométrique
+atteint $\sim 4\times 10^{46}$~erg/s, soit $\sim 10^{13}$ luminosités solaires.
+À $z=0{,}158$, on commence à voir les effets de l'expansion~:
+$D_{C} = \num{2.197}$~Gly, $D_{L} = \num{2.544}$~Gly et
+$D_{A} = \num{1.897}$~Gly --- trois nombres déjà distincts de 34~\% entre
+extrêmes, alors que $z$ reste petit.
+
+\section{$z = 1$ --- repère cosmologique}
+
+À $z=1$, l'univers avait $5{,}851$~Gyr (un peu moins de la moitié de
+son âge actuel). C'est la limite typique des relevés optiques de galaxies
+profonds (avant JWST). Le facteur d'échelle valait $a = 0{,}5$, donc l'univers
+était \emph{deux fois plus petit} dans chaque direction.
+
+\section{$z = 2{,}34$ --- le « cosmic noon »}
+
+Le « midi cosmique » désigne l'époque où la formation d'étoiles et l'activité
+des quasars étaient à leur maximum dans l'univers (typiquement $z \approx
+1{,}5$ à $3$). Les relevés spectroscopiques BOSS/eBOSS visent
+préférentiellement cette tranche, et $z=2{,}34$ est un point de référence
+employé pour les analyses d'oscillations acoustiques baryoniques (BAO) via
+les quasars et la forêt Lyman-$\alpha$~\cite{Bautista2017}.
+
+\section{ULAS J1120+0641 --- un quasar à 749~Myr du Big Bang ($z = 7{,}085$)}
+
+Découvert en 2011 par le relevé infrarouge UKIDSS, ULAS~J1120+0641 fut pendant
+plusieurs années le quasar le plus lointain connu~\cite{Mortlock2011}. Son
+trou noir central pèse $\sim 2\times 10^{9}~M_{\odot}$ alors que l'univers
+n'avait que $749$~Myr d'âge (l'article annonce $770$~Myr, valeur obtenue avec
+la cosmologie WMAP7 de l'époque~; l'écart de $3~\%$ illustre bien que
+« l'âge d'un objet » est une quantité \emph{dépendante du modèle}). Comment former un trou noir aussi massif
+aussi vite reste l'un des grands défis théoriques (effondrement direct ?
+super-Eddington ? germes primordiaux ?).
+
+\section{GN-z11 --- la galaxie à 435~Myr ($z = 10{,}6$)}
+
+GN-z11 a été identifiée d'abord photométriquement par Hubble en 2016
+(Oesch~et~al.), puis confirmée spectroscopiquement par le JWST en
+2022/2023~\cite{Bunker2023}. À $z = 10{,}603$, l'univers n'avait que $\sim
+435$~Myr et GN-z11 forme déjà des étoiles à un rythme intense. Elle reste
+l'un des objets confirmés les plus lointains aujourd'hui (mais le JWST en
+détecte régulièrement de plus lointains).
+
+\section{Réionisation --- $z \approx 6$ à $20$}
+
+Ce preset ne désigne pas un objet mais une \emph{époque}. Après la
+recombinaison (à $z \approx 1100$), l'hydrogène de l'univers est neutre et
+opaque aux photons UV des étoiles. Quand les premières étoiles s'allument
+(Pop~III, $z \sim 30$), leur rayonnement UV ré-ionise progressivement
+l'hydrogène intergalactique. La fin de cette \emph{epoch of reionisation}
+(EoR) se situe vers $z \approx 5{,}5\text{-}6$. Détectée indirectement par~:
+\begin{itemize}[topsep=2pt]
+\item la profondeur optique du CMB ($\tau \approx 0{,}054$, Planck~2018)~;
+\item l'absorption de la forêt Lyman-$\alpha$ des quasars de fond~;
+\item la raie à 21~cm de l'hydrogène neutre (HERA, SKA en cours).
+\end{itemize}
+
+\section{CMB --- la surface de dernière diffusion ($z_{*} = 1089{,}80$)}
+
+Le \emph{Cosmic Microwave Background} est le rayonnement le plus
+ancien que l'on puisse capter directement. Il provient de l'époque où
+l'univers, en se refroidissant, est devenu transparent pour la première fois~:
+les électrons et les protons libres se sont recombinés en atomes d'hydrogène
+neutre, libérant les photons qui circulent depuis. Voir le chapitre dédié,
+ch.~\ref{chap:cmb_observ}, pour le détail.
+
+\clearpage
+
+%==============================================================================
+\part{Cadre théorique}
+%==============================================================================
+
+%==============================================================================
+\chapter{Le principe cosmologique et la métrique FLRW}
+\label{chap:flrw}
+%==============================================================================
+
+\section{Le principe cosmologique}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'idée.} À très grande échelle (au-delà du tiers de milliard
+d'années-lumière), l'univers paraît partout pareil et dans toutes les directions
+pareil. Pas de centre, pas de bord, pas de zone privilégiée. Les amas de
+galaxies se ressemblent statistiquement où qu'on regarde. C'est une
+observation, pas une supposition gratuite.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Reformulation.} On postule qu'il existe un référentiel (celui des
+\emph{observateurs comobiles}, attaché en moyenne aux amas de galaxies) dans
+lequel deux propriétés statistiques sont vraies à grande échelle~:
+\begin{itemize}[topsep=2pt]
+\item \textbf{Homogénéité}~: la densité moyenne $\rho$ ne dépend pas de la
+  position $\vec{x}$.
+\item \textbf{Isotropie}~: $\rho$ et toute observable ne dépendent pas non plus
+  de la direction.
+\end{itemize}
+
+Si \emph{tout observateur} dans l'univers voit les choses isotropes, alors par
+le théorème de Schur, l'univers est forcément homogène~; et la métrique
+spatiale est obligatoirement de courbure constante.
+\end{tcolorbox}
+
+\begin{definition}[Principe cosmologique]
+Il existe un feuilletage privilégié de l'espace-temps en hypersurfaces
+spatiales $\Sigma_t$ orthogonales à un champ de référence (les
+\emph{observateurs fondamentaux}, ou \emph{comobiles}), telles que la métrique
+induite sur chaque $\Sigma_t$ est \textbf{homogène} et \textbf{isotrope}.
+\end{definition}
+
+\section{La métrique de Friedmann--Lemaître--Robertson--Walker}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'image du drap.} Soit un grand drap de caoutchouc sur lequel des
+galaxies sont dessinées comme de petits points. En étirant le drap uniformément
+dans toutes les directions, les points ne bougent pas \emph{sur le drap} mais
+s'éloignent les uns des autres. Le « facteur d'étirement »
+en fonction du temps s'appelle $a(t)$. Toute l'expansion cosmique est
+contenue dans cette idée simple.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Métrique FLRW spatialement plate.} En coordonnées cartésiennes
+$(x,y,z)$ \emph{comobiles} (qui ne changent pas dans le temps pour un
+observateur fondamental), l'élément de distance spatiale à l'instant~$t$
+s'écrit~:
+\[
+\dif s^{2}_{\text{spatial}} = a^{2}(t)\,\bigl(\dif x^{2} + \dif y^{2} + \dif z^{2}\bigr).
+\]
+C'est juste Pythagore avec un facteur $a(t)^{2}$ qui dilate toutes les
+distances dans le temps. Pour ajouter la dimension temporelle, on écrit~:
+\[
+\dif s^{2} = -c^{2}\,\dif t^{2} + a^{2}(t)\,\bigl(\dif x^{2} + \dif y^{2} + \dif z^{2}\bigr).
+\]
+Le signe moins devant le terme temporel traduit le fait qu'on est en
+relativité (espace--temps lorentzien). En coordonnées sphériques comobiles
+$(\chi, \theta, \phi)$ on a~:
+\[
+\dif s^{2} = -c^{2}\dif t^{2} + a^{2}(t)\,\bigl(\dif\chi^{2}
++ \chi^{2}\,(\dif\theta^{2} + \sin^{2}\theta\,\dif\phi^{2})\bigr).
+\]
+\end{tcolorbox}
+
+À une trois-variété riemannienne maximalement symétrique (homogène et isotrope)
+correspondent uniquement trois géométries spatiales~: l'espace euclidien
+$\mathbb{E}^{3}$, la sphère $S^{3}$ ou l'espace hyperbolique $\mathbb{H}^{3}$.
+Leur métrique commune s'écrit, en coordonnées sphériques généralisées
+$(\chi,\theta,\phi)$ centrées sur l'observateur~:
+
+\begin{equation}
+\dif\sigma^{2} = \dif\chi^{2} + S_{k}^{2}(\chi)\,\dif\Omega^{2},
+\quad \dif\Omega^{2} = \dif\theta^{2} + \sin^{2}\theta\,\dif\phi^{2},
+\label{eq:dsigma}
+\end{equation}
+
+\noindent où $\chi$ est une \emph{coordonnée radiale comobile} sans dimension
+et $S_{k}(\chi)$ encode la courbure spatiale de signe $k\in\{-1,0,+1\}$~:
+
+\begin{equation}
+S_{k}(\chi) =
+\begin{cases}
+\sin\chi      & \text{si } k=+1 \text{ (sphère, univers fermé)},\\
+\chi          & \text{si } k=0 \text{ (espace plat)},\\
+\sinh\chi     & \text{si } k=-1 \text{ (univers ouvert)}.
+\end{cases}
+\label{eq:Sk}
+\end{equation}
+
+\noindent En multipliant les hypersurfaces $\Sigma_t$ par un facteur d'échelle
+$a(t)$ et en utilisant le temps cosmique $t$ propre des observateurs comobiles,
+on aboutit à la métrique de Friedmann--Lemaître--Robertson--Walker (FLRW)~:
+
+\begin{equation}
+\boxed{\;\dif s^{2} = -c^{2}\,\dif t^{2} + a^{2}(t)\,\bigl[\dif\chi^{2}
++ S_{k}^{2}(\chi)\,\dif\Omega^{2}\bigr].\;}
+\label{eq:FLRW}
+\end{equation}
+
+\begin{tcolorbox}[approfondir]
+\textbf{Pourquoi cette forme exactement ?} Le théorème de Killing--Hopf classifie
+les variétés riemanniennes complètes, simplement connexes et de courbure
+sectionnelle constante~: ce sont les trois espaces ci-dessus, à isométrie près.
+Sous le principe cosmologique, $\Sigma_t$ admet un groupe d'isométries de
+dimension six (trois translations + trois rotations), ce qui force la courbure
+sectionnelle à être constante (lemme de Schur). On peut donc identifier $\Sigma_t$
+à l'un de ces trois modèles, dilaté par $a(t)$. Le facteur $a(t)$ est commun
+à toutes les directions par isotropie~; ainsi seul \emph{un} degré de liberté
+dépendant du temps existe.
+\end{tcolorbox}
+
+\section{Coordonnée radiale comobile et distance propre instantanée}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{« Coordonnée comobile ».} C'est l'étiquette que porte la galaxie sur le
+drap, et qui ne change pas avec le temps. Si on prend deux galaxies fixes en
+coordonnée et qu'on les laisse vieillir, leur distance \emph{physique} change
+quand le drap s'étire, mais leur coordonnée comobile, elle, ne change pas.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+La \emph{distance propre} entre l'observateur en $\chi=0$ et une source en
+$\chi=\chi_s$ à l'instant $t$ est~$D_{\text{p}}(t) = a(t)\,\chi_s$~; à $t_0$
+aujourd'hui ($a=1$), elle se confond avec~$\chi_s$ et on l'appelle alors
+\emph{distance comobile}.
+\end{tcolorbox}
+
+À l'instant $t$, la \emph{distance propre} (séparation mesurée sur une
+hypersurface $\Sigma_t$) entre un observateur en $\chi=0$ et une source en
+$\chi=\chi_{s}$ est~:
+
+\begin{equation}
+D_{\text{p}}(t) = a(t)\,\chi_{s}.
+\label{eq:Dp}
+\end{equation}
+
+\noindent Aujourd'hui ($a(t_0)=1$) cette distance vaut simplement $\chi_s$,
+ce qui justifie qu'on l'identifie à la \textbf{distance comobile} radiale.
+
+\section{Vitesse de récession et flot de Hubble}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'analogie du ballon.} Imagine un ballon gonflé sur lequel on a
+dessiné des points~: les points eux-mêmes ne bougent pas sur le caoutchouc
+(ils ont une \emph{coordonnée comobile} fixe), mais le caoutchouc s'étire.
+La distance entre deux points augmente, et plus deux points sont éloignés,
+plus vite ils s'écartent. C'est exactement la loi de Hubble.
+
+\medskip
+Deux points très éloignés sur un très grand ballon peuvent s'éloigner plus
+vite que la vitesse maximale d'une fourmi qui marche \emph{dessus}~; ça ne
+viole pas la limite locale, car aucune fourmi ne dépasse cette vitesse.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+On dérive simplement $D_{\text{p}}(t) = a(t)\,\chi_s$ par rapport au temps,
+$\chi_s$ étant constant~:
+\[
+v_{\text{rec}}(t) = \dot D_{\text{p}}(t) = \dot a(t)\,\chi_s
+                  = \frac{\dot a(t)}{a(t)}\,D_{\text{p}}(t)
+                  = H(t)\,D_{\text{p}}(t).
+\]
+$H(t) \equiv \dot a/a$ est le \emph{paramètre de Hubble}. À $t=t_0$ on retrouve
+$v = \Hzero D$~: la loi de Hubble.
+\end{tcolorbox}
+
+En dérivant~\eqref{eq:Dp} on obtient~:
+
+\begin{equation}
+v_{\text{rec}}(t) = \dot D_{\text{p}}(t) = \dot a(t)\,\chi_s
+                  = H(t)\,D_{\text{p}}(t),
+\label{eq:Hubble_flow}
+\end{equation}
+
+\noindent où $H(t) \equiv \dot a/a$ est le \textbf{paramètre de Hubble}. Cette
+relation est la loi de Hubble \emph{exacte} (et non une approximation), valable
+à \emph{instant cosmique fixé}. À grand $D_p$ elle dépasse $c$~: les vitesses
+$v_{\text{rec}}$ ne sont \emph{pas} bornées par $c$ car ce ne sont pas des
+vitesses de particules dans l'espace, mais des taux de variation de la coordonnée
+spatiale due à l'expansion de l'espace lui-même.
+
+%==============================================================================
+\chapter{Le redshift cosmologique}
+\label{chap:redshift}
+%==============================================================================
+
+\section{Définition observationnelle}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Comment on le mesure.} On observe le spectre d'une galaxie lointaine.
+On y reconnaît les « raies » spectrales caractéristiques (par exemple la
+fameuse raie rouge de l'hydrogène à $\SI{656.3}{\nano\metre}$). Mais dans le
+spectre observé, cette raie n'est plus à $656{,}3$~nm~: elle est décalée
+vers le rouge, par exemple à $1969$~nm. Le \emph{redshift} est le rapport de
+décalage~: $(1969-656.3)/656.3 = 2{,}0$. Plus une galaxie est lointaine, plus
+$z$ est grand.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+$\displaystyle z \equiv \frac{\lambda_{\text{obs}} - \lambda_{\text{em}}}{\lambda_{\text{em}}}$,
+sans dimension. Pour une raie observée à $1969$~nm sachant que la raie au repos
+est à $656{,}3$~nm~: $z = (1969 - 656.3)/656.3 = 2{,}00$. On mesure aussi $z$ par
+ajustement global de plusieurs raies dans un même spectre.
+\end{tcolorbox}
+
+\begin{definition}[Redshift]
+Soit une raie spectrale émise par une source distante à la longueur d'onde
+$\lambda_{\text{em}}$ (mesurée dans son référentiel comobile) et observée à
+$\lambda_{\text{obs}}$. Le \emph{redshift} est~:
+\begin{equation}
+z \eqdef \frac{\lambda_{\text{obs}} - \lambda_{\text{em}}}{\lambda_{\text{em}}}
+       = \frac{\lambda_{\text{obs}}}{\lambda_{\text{em}}} - 1.
+\label{eq:z_def}
+\end{equation}
+\end{definition}
+
+\section{Dérivation à partir de la métrique FLRW}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Pourquoi la lumière rougit-elle ?} Pendant le voyage du photon
+émis par la galaxie lointaine jusqu'à nous, l'espace lui-même s'est étendu.
+Or la lumière est une onde~: si son \emph{support} (l'espace) s'étire d'un
+facteur $k$, sa longueur d'onde s'étire aussi d'un facteur $k$. Donc le
+photon, à l'arrivée, a une longueur d'onde plus grande qu'à l'émission~: il
+est « décalé vers le rouge ».
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Résultat clé.} Si $\lambda$ varie comme $a$, et qu'on normalise
+$a(t_0)=1$ aujourd'hui, alors
+\[
+1 + z = \frac{\lambda_{\text{obs}}}{\lambda_{\text{em}}}
+       = \frac{a(t_{\text{obs}})}{a(t_{\text{em}})}
+       = \frac{1}{a(t_{\text{em}})}.
+\]
+Donc connaître $z$ équivaut à connaître $a_{\text{em}}$~: une lumière émise
+à $z=2$ a été émise quand l'univers était $3$ fois plus petit qu'aujourd'hui.
+\end{tcolorbox}
+
+Considérons un photon émis radialement à $t_{\text{em}}$ (en $\chi=\chi_s$) et reçu
+à $t_{\text{obs}}$ (en $\chi=0$). Pour un photon, $\dif s^{2}=0$, soit~:
+
+\begin{equation}
+c\,\dif t = -a(t)\,\dif\chi
+\quad\Longrightarrow\quad
+\int_{t_{\text{em}}}^{t_{\text{obs}}} \frac{c\,\dif t}{a(t)} = \chi_{s}.
+\label{eq:null_geodesic}
+\end{equation}
+
+Considérons maintenant deux crêtes d'onde successives séparées de $\delta t_{\text{em}}$
+à l'émission. Comme $\chi_{s}$ est fixe (la source et l'observateur sont
+\emph{comobiles}), l'intégrale~\eqref{eq:null_geodesic} doit valoir la même
+chose pour la seconde crête~:
+
+\begin{equation}
+\int_{t_{\text{em}}+\delta t_{\text{em}}}^{t_{\text{obs}}+\delta t_{\text{obs}}}
+   \frac{c\,\dif t}{a(t)} = \chi_{s}.
+\end{equation}
+
+En soustrayant et en supposant $\delta t \ll H^{-1}$~:
+
+\begin{equation}
+\frac{\delta t_{\text{obs}}}{a(t_{\text{obs}})}
+= \frac{\delta t_{\text{em}}}{a(t_{\text{em}})}.
+\label{eq:period_scaling}
+\end{equation}
+
+Comme $\lambda = c\,\delta t$~:
+
+\begin{equation}
+\boxed{\;1 + z = \frac{\lambda_{\text{obs}}}{\lambda_{\text{em}}}
+                = \frac{a(t_{\text{obs}})}{a(t_{\text{em}})}
+                = \frac{1}{a(t_{\text{em}})}.\;}
+\label{eq:z_FLRW}
+\end{equation}
+
+\section{Vitesse de récession et apparente violation de $c$}
+\label{sec:vitesse_rec}
+
+\begin{tcolorbox}[attention]
+À grand $z$, le programme affiche $v_{\text{rec}} = cz$, ce qui peut dépasser
+$c$. Ceci ne viole \emph{pas} la relativité~:
+\begin{itemize}[topsep=2pt]
+\item La formule $v=cz$ est l'\emph{approximation Doppler non relativiste}.
+  Elle n'est valide que pour $z\ll 1$.
+\item À $z>1$, l'expansion cosmique n'est pas un mouvement \emph{dans}
+  l'espace~: c'est l'espace \emph{lui-même} qui s'étire. Aucune particule ne
+  dépasse $c$ localement.
+\item Quand $z$ est grand, on peut écrire la formule Doppler relativiste
+  $v/c = ((1+z)^{2}-1)/((1+z)^{2}+1)$, qui sature à $c$ quand $z\to\infty$.
+  Mais même cette formule est conceptuellement fausse car elle suppose un
+  espace-temps de Minkowski.
+\item Plus rigoureusement, la \emph{vitesse de récession} d'un objet à
+  distance propre $D_p$ est $v_{\text{rec}}(t) = H(t)\,D_p(t)$, sans
+  borne supérieure~; c'est une vitesse d'\emph{étirement} de l'espace, pas
+  une vitesse de propagation.
+\end{itemize}
+\end{tcolorbox}
+
+\section{Différents redshifts}
+
+\begin{tcolorbox}[approfondir]
+\textbf{Distinction Doppler / cosmologique / gravitationnel.}
+\begin{itemize}[topsep=2pt]
+\item \textbf{Redshift Doppler relativiste} (source en mouvement local)~:
+  $1+z_{\mathrm{D}} = \sqrt{(1+v/c)/(1-v/c)}$ pour un mouvement radial.
+\item \textbf{Redshift cosmologique} (expansion de l'espace)~:
+  $1+z = 1/a(t_{\text{em}})$ donné par~\eqref{eq:z_FLRW}.
+\item \textbf{Redshift gravitationnel} (source dans un puits de potentiel)~:
+  $z_{\mathrm{g}} \simeq -\Phi/c^{2}$ au premier ordre. Effet
+  utilisé pour la première mesure du redshift de Sirius B (1925) puis
+  pour la précision GPS.
+\end{itemize}
+
+En cosmologie, le redshift observé d'une galaxie distante est une
+\emph{superposition} de la composante cosmologique (dominante) et d'une
+petite composante Doppler liée aux vitesses propres de la galaxie (de l'ordre
+de $\sim 300$~km/s, soit $z_{\mathrm{D}}\sim 10^{-3}$).
+\end{tcolorbox}
+
+\section{Évolution thermique}
+
+\begin{tcolorbox}[mathspe]
+Le rayonnement de corps noir, en raison du redshift universel des photons,
+voit sa température décroître comme $T \propto 1/a$. Donc~:
+\[
+T(z) = T_{0}\,(1+z), \quad T_{0} = \SI{2.7255}{\kelvin}~\text{(CMB aujourd'hui)}.
+\]
+À $z=1089$~: $T \approx 3000$~K, ce qui correspond à la \emph{recombinaison}
+(hydrogène neutralisé, univers transparent). C'est ce qu'on observe comme CMB.
+\end{tcolorbox}
+
+%==============================================================================
+\chapter{Les équations de Friedmann}
+\label{chap:friedmann}
+%==============================================================================
+
+\section{Tenseur énergie--impulsion d'un fluide parfait}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'univers comme un grand fluide.} À grande échelle on traite tout le
+contenu cosmique comme un fluide continu (un peu comme l'eau pour les
+hydrodynamiciens) caractérisé par sa densité et sa pression. Étoiles,
+galaxies, photons, neutrinos, énergie noire~: tout devient des « espèces »
+de fluide.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+Pour chaque espèce, on a une \emph{équation d'état} qui relie sa pression à
+sa densité, $p = w\rho c^{2}$ avec~:
+\[
+\begin{aligned}
+w &= 0     &&\text{(matière froide, poussière)} \\
+w &= 1/3   &&\text{(rayonnement)} \\
+w &= -1    &&\text{(constante cosmologique, énergie noire)}
+\end{aligned}
+\]
+La conservation locale de l'énergie donne, comme on le verra, une loi
+d'évolution simple $\rho \propto a^{-3(1+w)}$~: la matière se dilue
+en $a^{-3}$, le rayonnement en $a^{-4}$, $\Lambda$ reste constant.
+\end{tcolorbox}
+
+Sous le principe cosmologique, le tenseur énergie-impulsion total prend la
+forme d'un \emph{fluide parfait}~:
+
+\begin{equation}
+T^{\mu\nu} = \bigl(\rho + p/c^{2}\bigr)\,u^{\mu}u^{\nu} + p\,g^{\mu\nu},
+\label{eq:T_perfect}
+\end{equation}
+
+\noindent où $\rho$ est la densité d'énergie totale (toutes composantes), $p$ la
+pression, et $u^{\mu}$ la quadrivitesse des observateurs comobiles ($u^{\mu}=
+(c,\v 0)$ en coordonnées FLRW). Composantes diagonales~:
+$T^{0}{}_{0} = -\rho c^{2}$, $T^{i}{}_{j} = p\,\delta^{i}_{j}$.
+
+\section{Équations d'Einstein avec constante cosmologique}
+
+\begin{equation}
+G_{\mu\nu} + \Lambda\,g_{\mu\nu}
+   = \frac{8\pi G}{c^{4}}\,T_{\mu\nu},
+\label{eq:Einstein}
+\end{equation}
+
+\noindent où $G_{\mu\nu} = R_{\mu\nu} - \tfrac{1}{2}R\,g_{\mu\nu}$ est le tenseur
+d'Einstein. La constante cosmologique $\Lambda$ peut être absorbée dans
+$T_{\mu\nu}$ comme un fluide de densité $\rho_{\Lambda} = \Lambda c^{2}/(8\pi G)$
+et de pression $p_{\Lambda} = -\rho_{\Lambda} c^{2}$, ce qu'on adoptera ci-dessous.
+
+\section{Composantes du tenseur de Ricci pour FLRW}
+
+Le calcul direct depuis~\eqref{eq:FLRW} donne~:
+
+\begin{align}
+R_{00} &= -\frac{3\,\ddot a}{c^{2}\,a},\\
+R_{ij} &= \frac{1}{c^{2}}\bigl[a\ddot a + 2\dot a^{2} + 2kc^{2}\bigr]\,\tilde g_{ij}.
+\end{align}
+
+\section{Première équation de Friedmann}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Cette équation dit~:} « connais la composition de l'univers, je te dis
+à quelle vitesse il s'étend ». La densité totale fixe la valeur de $H$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+On peut « dériver » la première équation de Friedmann en mécanique newtonienne
+en considérant une sphère homogène de matière. Pour une coquille à distance $r$
+du centre, l'accélération gravitationnelle vaut $-GM(<r)/r^{2}$, où
+$M(<r) = (4/3)\pi r^{3}\rho$. D'où l'énergie cinétique-potentielle conservée~:
+$\tfrac{1}{2}\dot r^{2} - GM/r = -kc^{2}/2$ (constante). En remplaçant $r=a\chi$
+et en divisant par $a^{2}\chi^{2}$~:
+\[
+\left(\frac{\dot a}{a}\right)^{2} = \frac{8\pi G}{3}\,\rho - \frac{kc^{2}}{a^{2}}.
+\]
+Cette dérivation est heuristique mais elle donne le bon résultat~!
+\end{tcolorbox}
+
+En contractant $G^{0}{}_{0} = (8\pi G/c^{4}) T^{0}{}_{0}$ on obtient~:
+
+\begin{equation}
+\boxed{\;H^{2}(t) \equiv \left(\frac{\dot a}{a}\right)^{2}
+       = \frac{8\pi G}{3}\,\rho - \frac{k c^{2}}{a^{2}}.\;}
+\label{eq:F1}
+\end{equation}
+
+\section{Deuxième équation de Friedmann (équation d'accélération)}
+
+\begin{equation}
+\boxed{\;\frac{\ddot a}{a} = -\frac{4\pi G}{3}\bigl(\rho + 3p/c^{2}\bigr).\;}
+\label{eq:F2}
+\end{equation}
+
+\begin{tcolorbox}[vulgarisation]
+$\rho + 3p/c^{2}$ joue le rôle d'une « densité gravitationnelle effective ».
+Si elle est positive (matière, rayonnement), l'univers décélère. Si elle est
+\emph{négative} (constante cosmologique, $w<-1/3$), l'univers accélère.
+\end{tcolorbox}
+
+\section{Équation de continuité}
+
+\begin{equation}
+\boxed{\;\dot\rho + 3H\,(\rho + p/c^{2}) = 0.\;}
+\label{eq:continuity}
+\end{equation}
+
+Pour une espèce d'équation d'état $p = w\rho c^{2}$~:
+
+\begin{equation}
+\rho(a) = \rho_{0}\,a^{-3(1+w)}.
+\label{eq:rho_evol}
+\end{equation}
+
+\begin{itemize}[topsep=2pt]
+  \item Matière non relativiste (poussière) $w=0$~: $\rho_m \propto a^{-3}$.
+  \item Rayonnement $w=1/3$~: $\rho_r \propto a^{-4}$.
+  \item Constante cosmologique $w=-1$~: $\rho_{\Lambda} = \text{cste}$.
+  \item Courbure (terme effectif) $w=-1/3$~: $\rho_k \propto a^{-2}$.
+\end{itemize}
+
+\section{Forme adimensionnée}
+
+\begin{tcolorbox}[mathspe]
+\textbf{LA formule à retenir.} Si on définit les fractions de densité
+aujourd'hui $\Omega_i = \rho_i/\rho_c$ où $\rho_c = 3\Hzero^{2}/(8\pi G)$ est
+la densité critique, on peut réécrire la première équation de Friedmann
+\emph{en fonction de $z$ seulement}~:
+\[
+\boxed{\;
+E^{2}(z) = \frac{H^{2}(z)}{\Hzero^{2}}
+        = \Or\,(1+z)^{4} + \Om\,(1+z)^{3} + \Ok\,(1+z)^{2} + \OL.\;
+}
+\]
+Chaque puissance de $(1+z)$ correspond à l'évolution d'une composante~:
+rayonnement, matière, courbure, énergie noire. \textbf{Cette équation est le
+moteur de tous les calculs ultérieurs} : toutes les distances cosmologiques
+sont des intégrales de $\dif z / E(z)$.
+\end{tcolorbox}
+
+\begin{equation}
+\boxed{\;\frac{H^{2}(z)}{\Hzero^{2}}
+       = \Or\,(1+z)^{4} + \Om\,(1+z)^{3} + \Ok\,(1+z)^{2} + \OL \equiv E^{2}(z).\;}
+\label{eq:E_z}
+\end{equation}
+
+\noindent Avec la contrainte~:
+
+\begin{equation}
+\Or + \Om + \Ok + \OL = 1.
+\end{equation}
+
+%==============================================================================
+\chapter{Le modèle \texorpdfstring{$\Lambda$}{Lambda}CDM et les paramètres Planck 2018}
+\label{chap:lcdm}
+%==============================================================================
+
+\section{Définition du modèle}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{$\Lambda$CDM} est le « modèle standard » de la cosmologie. Il dit~:
+\begin{enumerate}[topsep=2pt]
+\item Big Bang chaud, expansion régie par la RG.
+\item Matière noire \emph{froide} (\textbf{C}old \textbf{D}ark \textbf{M}atter)~:
+  particules massives lentes qui n'interagissent qu'avec la gravité.
+\item Énergie noire représentée par une constante cosmologique $\Lambda$ qui
+  accélère l'expansion.
+\item Univers spatialement plat.
+\end{enumerate}
+Six paramètres suffisent à le caractériser. C'est le modèle le plus simple
+qui ajuste \emph{toutes} les observations.
+\end{tcolorbox}
+
+Le modèle \emph{$\Lambda$CDM} (Lambda Cold Dark Matter) contient~:
+\begin{enumerate}[topsep=2pt]
+  \item Une composante de matière froide non collisionnelle (CDM) de densité
+        $\Omega_{\mathrm{cdm}}$.
+  \item Une composante baryonique $\Omega_b$.
+  \item Une composante de rayonnement $\Or$ (photons CMB + neutrinos
+        relativistes), fixée par la mesure de $T_{0}$.
+  \item Une constante cosmologique $\Lambda$ paramétrée par $\OL$.
+  \item Une géométrie supposée plate ($\Ok = 0$) ou contrainte
+        observationnellement.
+\end{enumerate}
+
+\section{Valeurs Planck 2018}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Paramètre} & \textbf{Symbole} & \textbf{Valeur} \\
+\midrule
+Hubble aujourd'hui & $\Hzero$ & $67{,}66 \pm 0{,}42~\kms\,\Mpc^{-1}$ \\
+Hubble réduit & $h$ & $0{,}6766$ \\
+Densité matière totale & $\Om$ & $0{,}3111 \pm 0{,}0056$ \\
+Densité baryons & $\Omega_b h^{2}$ & $0{,}02242 \pm 0{,}00014$ \\
+Densité CDM & $\Omega_c h^{2}$ & $0{,}11933 \pm 0{,}00091$ \\
+Densité $\Lambda$ & $\OL$ & $0{,}6889 \pm 0{,}0056$ \\
+Densité courbure & $\Ok$ & $\approx 0$ (à $\sim 2\sigma$) \\
+Densité photons & $\Omega_{\gamma}$ & $5{,}4020\times 10^{-5}$ (déduite de $T_{0}$) \\
+Densité rayonnement équiv. & $\Or$ & $9{,}139\times 10^{-5}$
+   \;{\footnotesize$=\Omega_{\gamma}(1+\tfrac{7}{8}(\tfrac{4}{11})^{4/3}N_{\text{eff}})$} \\
+Neutrinos aujourd'hui & $\Omega_{\nu}$ & $1{,}4397\times 10^{-3}$
+   \;{\footnotesize(non relativistes)} \\
+Espèces effectives & $N_{\text{eff}}$ & $3{,}046$ \\
+Température CMB & $T_{0}$ & $2{,}7255 \pm 0{,}0006$ K \\
+Âge de l'univers & $t_{0}$ & $13{,}787 \pm 0{,}020~\Gyr$ \\
+Décalage CMB & $z_{*}$ & $1089{,}80\pm 0{,}21$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Le $E(z)$ réellement calculé --- et pourquoi $\Om = 0{,}3111$
+n'est pas le $\Om$ d'\texttt{astropy}}
+\label{sec:E_reel}
+
+C'est le point le plus souvent escamoté, y compris par les calculateurs en
+ligne. Le programme n'utilise \emph{pas} la formule à deux termes de la
+vulgarisation, mais~:
+
+\begin{equation}
+\boxed{\;E^{2}(z) = \Or(z)\,(1+z)^{4} + \Om^{\text{astropy}}(1+z)^{3}
+       + \Ok(1+z)^{2} + \OL\;}
+\label{eq:E_complet}
+\end{equation}
+
+\noindent avec deux subtilités~:
+
+\begin{enumerate}[topsep=3pt]
+\item \textbf{Le $\Om$ du papier Planck contient les neutrinos, celui
+d'\texttt{astropy} non.} \texttt{Planck18} porte
+$\Om^{\text{astropy}} = 0{,}30966$ (baryons + matière noire seulement) et
+$\Omega_{\nu} = 0{,}0014397$ à part. Leur somme vaut $0{,}31110$~: c'est
+exactement le « $\Om = 0{,}3111$ » du tableau~2 de Planck. Les neutrinos y sont
+comptés comme de la \emph{matière} parce que, avec $\sum m_{\nu} =
+\SI{0.06}{\electronvolt}$, ils sont non relativistes aujourd'hui.
+
+\item \textbf{$\Or$ dépend de $z$}, car les neutrinos changent de nature~:
+non relativistes à $z=0$ (ils diluent en $(1+z)^{3}$), relativistes au-delà de
+$z \sim 200$ (dilution en $(1+z)^{4}$). \texttt{astropy} écrit
+$\Or(z) = \Omega_{\gamma}\bigl[1 + \rho_{\nu}(z)/\rho_{\gamma}(z)\bigr]$ avec
+\[
+\frac{\rho_{\nu}}{\rho_{\gamma}} = \frac{7}{8}\Bigl(\frac{4}{11}\Bigr)^{4/3}
+\frac{N_{\text{eff}}}{3}\sum_{i} f\!\left(\frac{m_{i}c^{2}}{k_{B}T_{\nu}(z)}\right),
+\quad
+f(y) = \frac{120}{7\pi^{4}}\int_{0}^{\infty}\!\!
+       \frac{x^{2}\sqrt{x^{2}+y^{2}}}{e^{x}+1}\,\dif x ,
+\]
+$f$ étant évaluée par l'ajustement analytique de Komatsu~et~al.~(2011).
+\end{enumerate}
+
+\begin{tcolorbox}[numerique]
+\textbf{Combien coûte la formule simplifiée ?} En comparant
+$E_{\text{simple}} = \sqrt{\Om(1+z)^{3}+\OL}$ (avec $\Om = 0{,}3111$) au
+$E$ complet~:
+
+\medskip
+\begin{tabular}{rrrr}
+\toprule
+$z$ & $E$ complet & $E$ simplifié & écart \\
+\midrule
+$1$      & $1{,}78289$   & $1{,}78261$   & $-0{,}016~\%$ \\
+$2{,}34$ & $3{,}50560$   & $3{,}50434$   & $-0{,}036~\%$ \\
+$10{,}6$ & $22{,}0837$   & $22{,}0518$   & $-0{,}14~\%$ \\
+$100$    & $573{,}82$    & $566{,}15$    & $-1{,}34~\%$ \\
+$1089{,}8$ & $23\,053$   & $20\,094$     & $\mathbf{-12{,}8~\%}$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+Conséquences sur les observables~: $D_{C}(z_{*})$ passe de $45{,}28$ à
+$45{,}49$~G\,al ($+0{,}46~\%$, anodin), mais l'\textbf{âge de l'univers au
+CMB passe de $372$~kyr à $479$~kyr}, soit $+29~\%$. Autrement dit~: pour les
+distances, la formule à deux termes suffit~; pour les \emph{âges} à grand $z$,
+elle est franchement fausse, car l'intégrale de l'âge est dominée par le
+régime radiatif.
+\end{tcolorbox}
+
+\section{Courbure observée}
+\label{sec:Ok}
+
+Planck 2018 mesure $\Ok = 0{,}0007 \pm 0{,}0019$ (compatible avec zéro à
+$\sim 0{,}4\sigma$). En combinant CMB+BAO, on aboutit à $|\Ok| < 0{,}001$.
+Tous les calculs de ce cours adoptent $\Ok = 0$.
+
+\section{Incertitudes et corrélation entre paramètres}
+\label{sec:incertitudes}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'idée.} Les paramètres du modèle ne sont pas connus exactement, donc
+les distances non plus. Mais on ne peut pas se contenter d'additionner les
+erreurs~: les paramètres sont \emph{liés entre eux} par la mesure. Si on se
+trompe sur $\Hzero$, on se trompe de façon compensatoire sur $\Om$, et la
+distance, elle, bouge beaucoup moins qu'on ne le croirait.
+\end{tcolorbox}
+
+\subsection{Propagation à deux paramètres}
+
+\begin{tcolorbox}[mathspe]
+Pour une grandeur $G(\Hzero, \Om)$~:
+\begin{equation}
+\sigma_G^{2} = A^{2}\sigma_{\Hzero}^{2} + B^{2}\sigma_{\Om}^{2}
+             + 2\rho\,A\,B\,\sigma_{\Hzero}\sigma_{\Om},
+\qquad A = \pdv{G}{\Hzero},\quad B = \pdv{G}{\Om},
+\label{eq:propagation}
+\end{equation}
+où $\rho$ est le coefficient de corrélation entre $\Hzero$ et $\Om$. Le
+troisième terme est nul \emph{seulement} si les deux mesures sont
+indépendantes --- ce qui n'est pas le cas ici.
+\end{tcolorbox}
+
+\subsection{D'où vient $\rho = -0{,}976$}
+
+On n'a pas besoin de connaître la matrice de covariance complète de Planck~:
+il suffit de remarquer que la combinaison
+\[
+\omega_{m} \equiv \Om h^{2} = 0{,}14239 \pm 0{,}00092
+\]
+est bien mieux mesurée ($0{,}65~\%$) que $\Om$ ($1{,}8~\%$) ou $h$
+($0{,}62~\%$) pris séparément. C'est la signature de la
+\emph{dégénérescence géométrique}~: le CMB contraint d'abord $\omega_m$ (qui
+fixe l'échelle acoustique), et la séparation entre $\Om$ et $h$ ne vient
+qu'ensuite. En propageant~\eqref{eq:propagation} sur $\omega_m$~:
+\[
+\left(\frac{\sigma_{\omega}}{\omega}\right)^{2}
+ = \left(\frac{\sigma_{\Om}}{\Om}\right)^{2}
+ + 4\left(\frac{\sigma_{h}}{h}\right)^{2}
+ + 4\rho\,\frac{\sigma_{\Om}}{\Om}\frac{\sigma_{h}}{h}
+\;\Longrightarrow\;
+\boxed{\rho = -0{,}9763}
+\]
+(résolution symbolique et application numérique dans
+\texttt{verif\_sage/verif\_courbure\_sigma.sage}).
+
+\subsection{Ce que ça change}
+
+\input{table_sigma.tex}
+
+\noindent Deux enseignements~:
+
+\begin{enumerate}[topsep=3pt]
+\item \textbf{Ignorer $\rho$ surestime l'incertitude d'un facteur 2 à 5.}
+Sur $D_{C}$ à $z = 2{,}34$~: $\pm0{,}17~\%$ au lieu de $\pm0{,}79~\%$.
+\item \textbf{Il existe un redshift « pivot ».} L'incertitude relative sur
+$D_{C}$ décroît de $z=0$ ($\pm0{,}62~\%$, gouvernée par $\Hzero$ seul, puisque
+$D \simeq cz/\Hzero$) jusqu'à $z \approx 5$ ($\pm0{,}13~\%$), puis remonte
+légèrement. Autour de ce pivot, le modèle prédit les distances mieux qu'il ne
+connaît ses propres paramètres.
+\end{enumerate}
+
+\begin{tcolorbox}[attention]
+\textbf{Ces barres d'erreur ne contiennent pas tout.} Elles ignorent
+$\sigma(\Ok)$, $\sigma(T_{0})$, $\sigma(N_{\text{eff}})$ et
+$\sigma(\sum m_{\nu})$ --- négligeables ici --- mais surtout elles ne disent
+rien de l'\textbf{erreur de modèle}~: si $\Lambda$CDM est faux, aucun $\pm$ ne
+le signalera. Et elles sont sans commune mesure avec la tension de Hubble
+(section suivante), qui déplace tout de $7~\%$.
+\end{tcolorbox}
+
+\section{La tension de Hubble}
+
+\begin{tcolorbox}[attention]
+\textbf{Tension à $\sim 5\sigma$ aujourd'hui.} Les mesures locales (échelle
+de distance fondée sur les Céphéides et les supernovae Type Ia, programme
+SH0ES~\cite{Riess2022}) donnent~:
+\[
+\Hzero^{\text{loc}} = 73{,}04 \pm 1{,}04~\kms\,\Mpc^{-1},
+\]
+soit $\sim 5\sigma$ au-dessus de la valeur Planck $67{,}66$. Cette tension est
+l'une des questions ouvertes majeures de la cosmologie contemporaine. Aucune
+nouvelle physique n'est aujourd'hui consensuelle pour l'expliquer.
+\end{tcolorbox}
+
+\clearpage
+
+%==============================================================================
+\part{Distances cosmologiques}
+%==============================================================================
+
+%==============================================================================
+\chapter{Distance comobile}
+\label{chap:Dc}
+%==============================================================================
+
+\section{Distance de Hubble}
+
+\begin{tcolorbox}[mathspe]
+On définit une « unité naturelle » de distance cosmologique~:
+\[
+D_{H} \equiv \frac{c}{\Hzero}.
+\]
+Numériquement, avec $\Hzero = 67{,}66$~km/s/Mpc, c'est
+$D_{H} = \num{4430.87}~\Mpc = 1{,}3587$~Gpc $= 14{,}4516$~G\,al.
+C'est exactement la distance à laquelle la vitesse de récession FLRW
+$v = \Hzero D$ atteint $c$~: la \emph{sphère de Hubble}.
+\end{tcolorbox}
+
+\begin{equation}
+D_{H} \equiv \frac{c}{\Hzero} = \num{4430.87}~\Mpc = 1{,}3587~\text{Gpc}
+     = 14{,}4516~\Gly .
+\label{eq:DH}
+\end{equation}
+
+\begin{tcolorbox}[attention]
+\textbf{Piège d'unités.} $1~\Mpc = 3{,}2616\times 10^{6}~\al$, donc
+$\num{4430.87}~\Mpc$ ne fait \emph{pas} $4{,}43$~G\,al mais $14{,}45$~G\,al.
+Confondre les deux revient à diviser toutes les distances par $3{,}26$~; c'est
+l'erreur la plus fréquente dans les calculs faits à la main. Le rapport
+$D_{C}/z$ tend vers $D_{H} = 14{,}45$~G\,al quand $z\to 0$, pas vers $4{,}4$.
+\end{tcolorbox}
+
+\section{Distance comobile radiale}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'idée.} On veut la distance « actuelle » qui nous sépare de l'objet
+distant, comme si on pouvait geler l'univers à l'instant présent et y tendre
+un mètre infiniment long. C'est la distance comobile.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Formule clé.}
+\[
+D_{C}(z) = D_{H}\,\int_{0}^{z}\frac{\dif z'}{E(z')}
+         \underset{\substack{\text{si on néglige}\\\text{le rayonnement}}}{\simeq}
+           \frac{c}{\Hzero}\int_{0}^{z}\frac{\dif z'}{\sqrt{\Om(1+z')^{3} + \OL}}.
+\]
+L'intégrale n'est pas calculable à la main mais se fait facilement
+numériquement (en quelques millisecondes par méthode de Simpson).
+
+\medskip
+\textbf{Attention}, la seconde écriture est une \emph{approximation}~: le
+$E(z)$ complet contient aussi le rayonnement, cf. équation~\eqref{eq:E_complet}
+et section~\ref{sec:E_reel}. Elle est excellente jusqu'à $z\sim 10$
+(erreur $< 0{,}04~\%$ sur $D_{C}$) mais fausse de $0{,}46~\%$ à $z_{*}$, et
+surtout elle donnerait un âge de l'univers au CMB de $479$~kyr au lieu de
+$372$~kyr.
+\end{tcolorbox}
+
+\begin{definition}
+La \emph{distance comobile radiale} $D_{C}$ d'une source de redshift $z$ est la
+distance \emph{actuelle} ($t=t_0$) qui la sépare de l'observateur, mesurée le long
+de la ligne de visée à temps cosmique fixé.
+\end{definition}
+
+D'après~\eqref{eq:null_geodesic} et~\eqref{eq:z_FLRW} (en passant de $t$ à $z$
+via $\dif t = -\dif a/(aH) = \dif z / [(1+z)H(z)]$)~:
+
+\begin{equation}
+\boxed{\;D_{C}(z) = D_{H}\int_{0}^{z}\frac{\dif z'}{E(z')}\;}
+\label{eq:DC}
+\end{equation}
+
+\section{Distance comobile transverse}
+
+\begin{equation}
+D_{M}(z) =
+\begin{cases}
+\dfrac{D_{H}}{\sqrt{\Ok}}\,\sinh\!\left[\sqrt{\Ok}\,D_{C}(z)/D_{H}\right] & \Ok>0,\\[6pt]
+D_{C}(z) & \Ok=0,\\[6pt]
+\dfrac{D_{H}}{\sqrt{|\Ok|}}\,\sin\!\left[\sqrt{|\Ok|}\,D_{C}(z)/D_{H}\right] & \Ok<0.
+\end{cases}
+\label{eq:DM}
+\end{equation}
+
+\noindent Dans Planck 2018, $\Ok \approx 0$, donc $D_{M} = D_{C}$.
+
+\begin{tcolorbox}[gui]
+Le programme implémente les trois cas. Tant que le champ « Courbure $\Ok$ »
+vaut 0, $D_{M}$ n'est pas affichée puisqu'elle est confondue avec $D_{C}$~;
+dès qu'on s'en écarte, elle apparaît. Quelques valeurs à $z = 2{,}34$
+(vérifiées sous SageMath à cinq décimales)~:
+
+\medskip
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$\Ok$ & $D_{C}$ (G\,al) & $D_{M}$ (G\,al) & $D_{M}/D_{C}$ \\
+\midrule
+$-0{,}01$ & $18{,}8928$ & $18{,}8390$ & $0{,}99715$ \\
+$0$       & $18{,}8240$ & $18{,}8240$ & $1$ \\
+$+0{,}01$ & $18{,}7560$ & $18{,}8087$ & $1{,}00281$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+Noter la compensation~: à $\Ok = +0{,}01$, $D_{C}$ \emph{diminue} de
+$0{,}36~\%$ (le contenu en énergie noire change) tandis que la géométrie
+hyperbolique \emph{augmente} $D_M$ de $0{,}28~\%$ par rapport à $D_C$. Au
+total $D_{M}$ ne bouge que de $0{,}08~\%$ : c'est pourquoi la courbure est si
+difficile à mesurer avec des distances seules.
+\end{tcolorbox}
+
+%==============================================================================
+\chapter{Distance de luminosité}
+\label{chap:DL}
+%==============================================================================
+
+\section{Définition et motivation}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Le problème pratique.} En astronomie, on connaît la « vraie » luminosité
+de certains objets (les chandelles standards comme les supernovae~Ia). On mesure
+le flux qui nous arrive. On voudrait en déduire la distance. La formule
+classique $F = L/(4\pi D^{2})$ marcherait... en univers statique. En univers en
+expansion, il faut une distance \emph{effective} pour que cette formule reste
+valide. C'est la distance de luminosité.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Trois effets diluent le flux.}
+\begin{enumerate}[topsep=2pt]
+\item \emph{Étalement géométrique.} Le rayonnement se répand sur une sphère
+  d'aire $4\pi a_{0}^{2} D_{M}^{2}$.
+\item \emph{Perte d'énergie par photon.} $E_{\gamma} \to E_{\gamma}/(1+z)$.
+\item \emph{Dilatation du temps.} Le taux d'arrivée des photons est divisé
+  par $(1+z)$.
+\end{enumerate}
+Au total~: $F = L/[4\pi D_{M}^{2}\,(1+z)^{2}]$, donc
+$D_{L} = (1+z)\,D_{M}$.
+\end{tcolorbox}
+
+\begin{definition}
+\begin{equation}
+D_{L} \eqdef \sqrt{\frac{L}{4\pi F}}.
+\label{eq:DL_def}
+\end{equation}
+\end{definition}
+
+\section{Dérivation à partir de la métrique FLRW}
+
+\paragraph{(i) Étalement géométrique.} À l'instant $t_0$, les photons d'une
+source située à $D_{C}$ se sont répartis sur une sphère d'aire propre
+$4\pi a_{0}^{2} D_{M}^{2}(z)$.
+
+\paragraph{(ii) Décalage énergétique.} Chaque photon perd un facteur $(1+z)$
+d'énergie.
+
+\paragraph{(iii) Dilatation temporelle.} Le taux d'arrivée des photons est
+ralenti d'un facteur $(1+z)$.
+
+\noindent Au total~:
+
+\begin{equation}
+F = \frac{L}{4\pi D_{M}^{2}(z)\,(1+z)^{2}}.
+\label{eq:F_obs}
+\end{equation}
+
+\begin{equation}
+\boxed{\;D_{L}(z) = (1+z)\,D_{M}(z).\;}
+\label{eq:DL}
+\end{equation}
+
+\section{Module de distance et supernovae}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{Comment on a découvert l'accélération de l'expansion.} En 1998-1999,
+deux équipes ont observé des supernovae de type Ia (qui ont toujours
+presque la même luminosité absolue) à $z\sim 0{,}5$. Elles paraissaient
+\emph{plus pâles} que prévu dans un univers décéléré, donc plus
+\emph{lointaines}. La seule explication~: l'expansion s'accélère. Prix Nobel
+2011 pour Riess, Schmidt et Perlmutter.
+\end{tcolorbox}
+
+\begin{equation}
+\mu(z) \equiv m - M = 5\log_{10}(D_{L}/\text{Mpc}) + 25.
+\label{eq:mu}
+\end{equation}
+
+%==============================================================================
+\chapter{Distance de diamètre angulaire}
+\label{chap:DA}
+%==============================================================================
+
+\section{Définition}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'idée.} Si je connais la taille \emph{physique} d'un objet (en km),
+et que je vois sa taille \emph{angulaire} (en arcsec), la distance qui lie les
+deux est la distance de diamètre angulaire $\theta = \ell/D_{A}$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Formule clé.} Comme la lumière a été émise quand l'univers
+était plus petit d'un facteur $(1+z)$~:
+\[
+D_{A}(z) = \frac{D_{M}(z)}{1+z} = \frac{D_{C}(z)}{1+z}~\text{(en univers plat)}.
+\]
+\end{tcolorbox}
+
+\begin{definition}
+\begin{equation}
+D_{A} \eqdef \frac{\ell}{\theta}.
+\label{eq:DA_def}
+\end{equation}
+\end{definition}
+
+\section{Dérivation}
+
+\begin{equation}
+\boxed{\;D_{A}(z) = \frac{D_{M}(z)}{1+z}.\;}
+\label{eq:DA}
+\end{equation}
+
+\section{Le maximum de \texorpdfstring{$D_{A}$}{D\_A}}
+
+\begin{tcolorbox}[attention]
+\textbf{Anti-intuitif !} Dans $\Lambda$CDM, $D_{A}(z)$ croît jusqu'à un
+maximum vers $z \approx 1{,}6$, puis \emph{décroît}. Un objet à $z = 5$ aura
+en général une taille angulaire \emph{plus grande} qu'un objet identique à
+$z = 1$. La raison~: l'objet émettait sa lumière à un instant où il était
+physiquement \emph{proche} de nous~; il « projette » donc un grand angle.
+\end{tcolorbox}
+
+\section{Théorème de réciprocité d'Etherington}
+
+\begin{theorem}[Etherington, 1933~\cite{Etherington1933}]
+Pour toute géodésique nulle dans une géométrie lorentzienne quelconque~:
+\begin{equation}
+\boxed{\;D_{L}(z) = (1+z)^{2}\,D_{A}(z).\;}
+\label{eq:Etherington}
+\end{equation}
+\end{theorem}
+
+%==============================================================================
+\chapter{Temps de lookback et distance de trajet de la lumière}
+\label{chap:Dlt}
+%==============================================================================
+
+\section{Lookback time}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{La question.} Combien de temps la lumière a-t-elle voyagé pour
+arriver jusqu'à nous ?
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\[
+t_L(z) = \int_{0}^{z}\frac{\dif z'}{(1+z')H(z')}.
+\]
+C'est encore une intégrale en $\dif z/E(z)$, mais pondérée par $1/(1+z)$.
+\end{tcolorbox}
+
+\begin{equation}
+t_{L}(z) = t_{0} - t_{\text{em}}(z) = \int_{0}^{z}\frac{\dif z'}{(1+z')\,H(z')}
+        = \frac{1}{\Hzero}\int_{0}^{z}\frac{\dif z'}{(1+z')\,E(z')}.
+\label{eq:tlookback}
+\end{equation}
+
+\section{Distance de trajet de la lumière}
+
+\begin{equation}
+D_{\text{lt}}(z) \equiv c\,t_{L}(z).
+\label{eq:Dlt}
+\end{equation}
+
+\begin{tcolorbox}[attention]
+$D_{\text{lt}}$ est la valeur la plus \emph{intuitive} mais elle n'a pas de
+signification métrique propre. Elle est bornée par $c\,t_{0}\approx 13{,}79$
+G\,al, quel que soit $z$~: même pour le CMB ($z=1089{,}8$), on ne dépasse pas
+cette borne. La distance comobile, elle, peut dépasser cette valeur
+(le CMB est à $D_C \approx 45{,}5$~G\,al).
+\end{tcolorbox}
+
+\section{Âge de l'univers à $z$}
+
+\begin{equation}
+t_{\text{em}}(z) = \int_{z}^{\infty}\frac{\dif z'}{(1+z')\,H(z')}.
+\label{eq:t_z}
+\end{equation}
+
+%==============================================================================
+\chapter{Récapitulatif}
+%==============================================================================
+
+\section{Tableau récapitulatif}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{p{4.2cm}p{4.8cm}p{6cm}}
+\toprule
+\textbf{Distance} & \textbf{Formule} & \textbf{Usage} \\
+\midrule
+Comobile radiale $D_{C}$
+ & $\displaystyle D_{H}\int_{0}^{z}\frac{\dif z'}{E(z')}$
+ & Distance « actuelle » de la source \\
+Comobile transverse $D_{M}$
+ & $D_{C}$ si $\Ok=0$
+ & Échelle transverse, BAO \\
+Luminosité $D_{L}$
+ & $(1+z)\,D_{M}$
+ & Photométrie, supernovae \\
+Diamètre angulaire $D_{A}$
+ & $D_{M}/(1+z)$
+ & Tailles angulaires apparentes \\
+Trajet lumière $D_{\text{lt}}$
+ & $c\,t_{L}(z)$
+ & Vulgarisation, $\le c\,t_{0}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Identité d'Etherington}
+\[
+D_{L} = (1+z)^{2}\,D_{A}, \qquad D_{L} = (1+z)\,D_{M}, \qquad D_{A} = D_{M}/(1+z).
+\]
+
+\section{Comportements asymptotiques}
+
+\paragraph{Petit $z$ ($z\ll 1$).}
+\[
+D_{C} \simeq \frac{cz}{\Hzero}\Bigl[1 - \tfrac{1}{2}(1+q_{0})z + \mathcal{O}(z^{2})\Bigr],
+\qquad
+D_{L} \simeq \frac{cz}{\Hzero}\Bigl[1 + \tfrac{1}{2}(1-q_{0})z + \mathcal{O}(z^{2})\Bigr],
+\]
+avec $q_{0} = \tfrac{1}{2}\Om - \OL = -\num{0.5334}$ (Planck 2018).
+
+\paragraph{Grand $z$.}
+$D_{C}$ tend vers la distance comobile à l'horizon des particules,
+$\chi_{\text{hor}} = 46{,}20$~G\,al en Planck 2018. Donc
+$D_{A}\to \chi_{\text{hor}}/(1+z)$ (décroît) et
+$D_{L}\to \chi_{\text{hor}}(1+z)$ (croît linéairement)~: c'est bien
+$\chi_{\text{hor}} = 46{,}2$~G\,al qui apparaît, et non $D_{H} = 14{,}45$~G\,al.
+Vérification à $z_{*}$~: $46{,}20/1090{,}8 = 0{,}0424$~G\,al, à comparer à la
+valeur exacte $D_{A}(z_{*}) = 0{,}04152$~G\,al (l'écart de 2~\% vient de ce que
+$D_{C}(z_{*}) = 45{,}28$ n'a pas encore tout à fait saturé).
+
+\clearpage
+
+%==============================================================================
+\part{Phénomènes observés : CMB, univers observable, vitesses superluminiques}
+%==============================================================================
+
+%==============================================================================
+\chapter{Le fond diffus cosmologique --- CMB}
+\label{chap:cmb_observ}
+%==============================================================================
+
+\section{Qu'est-ce que le CMB ?}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{La lumière la plus ancienne.} Le CMB (« Cosmic Microwave Background »,
+ou « fond diffus cosmologique » en français) est la lumière la plus ancienne
+que l'on puisse voir. Elle remplit \emph{tout} l'espace et arrive de partout à
+la fois, dans la gamme des micro-ondes (longueurs d'onde du millimètre). Elle
+a été émise quand l'univers avait $\sim$ 372~000~ans (valeur Planck 2018 ; l'ancienne
+valeur WMAP de 380~000~ans est encore souvent citée), et elle voyage depuis
+$\sim$ 13{,}8 milliards d'années.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+Le CMB est un rayonnement de corps noir presque parfait à
+$T_{0} = 2{,}7255$~K, avec des fluctuations relatives $\Delta T/T \sim 10^{-5}$
+qui contiennent l'information cosmologique. Son spectre est compatible avec
+celui d'un corps noir à $\sim 10^{-9}$ près, ce qui est le spectre de corps
+noir le mieux mesuré de toute la physique.
+\end{tcolorbox}
+
+\section{Pourquoi on le voit encore aujourd'hui}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'image du brouillard.} Soit un nuage de brouillard chaud. Tant que
+le nuage est dense, la lumière qui s'y propage est constamment absorbée et
+réémise~: le nuage est \emph{opaque}. Quand le nuage se refroidit et se
+dilue, à un certain moment, les molécules ne piègent plus la lumière~: le
+nuage devient \emph{transparent}. Toute la lumière piégée s'échappe d'un seul
+coup, dans toutes les directions.
+
+\medskip
+C'est ce qui s'est passé pour l'univers, à $z \approx 1100$. Avant, la
+matière était assez chaude pour ioniser l'hydrogène en plasma~; les photons
+y étaient piégés par diffusion sur les électrons libres (\emph{Thomson
+scattering}). À environ $T = 3000$~K, l'hydrogène s'est neutralisé
+(\emph{recombinaison})~: les électrons se sont collés aux protons, et les
+photons ont pu enfin se propager librement.
+
+\medskip
+Cette « libération » des photons se produit dans toutes les régions de
+l'univers à la même époque (à la précision près des fluctuations). Donc
+\emph{de partout autour de nous}, à $13{,}79$~milliards d'années-lumière (en
+distance de trajet de la lumière), nous voyons cette « surface de dernière
+diffusion ». Comme l'univers est globalement transparent depuis, ce
+rayonnement nous parvient sans avoir subi d'autre interaction.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Pourquoi à $T \approx 3000$~K et non $T \approx 13{,}6$~eV~$\approx 158\,000$~K
+(énergie d'ionisation de l'hydrogène) ?} Parce que les photons sont
+\emph{beaucoup} plus nombreux que les baryons (rapport $n_{\gamma}/n_b \approx
+1{,}6\times 10^{9}$). Même quand l'énergie moyenne $k_B T$ tombe largement
+sous $13{,}6$~eV, la queue de Wien de la distribution de Planck contient
+encore assez de photons UV pour maintenir l'ionisation. Le calcul de Saha
+montre que la recombinaison se produit autour de $T \approx 3700$~K, raffinée
+par la non-équilibre (équation de Peebles) à $T_{\text{rec}} \approx 3000$~K
+soit $z_{*} = 1089{,}80$ d'après Planck~2018~\cite{Planck2018}.
+\end{tcolorbox}
+
+\section{Pourquoi ce redshift précis $z_{*} = 1089{,}80$ ?}
+
+La température du rayonnement de corps noir décroît comme $T \propto 1/a
+\propto (1+z)$. Connaissant la température actuelle du CMB, $T_{0} =
+\SI{2.7255}{\kelvin}$, et la température de recombinaison de l'hydrogène
+($T_{\text{rec}} \approx \SI{2970}{\kelvin}$ d'après l'équation de Peebles),
+on calcule~:
+\[
+1 + z_{*} = \frac{T_{\text{rec}}}{T_{0}}
+          = \frac{\num{2970}}{\num{2.7255}} \approx 1090.
+\]
+\textbf{Le redshift $z_{*}$ n'est donc pas un nombre arbitraire}~: c'est le
+rapport entre la température à laquelle l'univers est devenu transparent et la
+température actuelle du rayonnement émis à ce moment-là.
+
+\section{Découverte du CMB et missions successives}
+
+\begin{description}[leftmargin=2.2cm]
+\item[1948] Alpher, Herman et Gamow prédisent un rayonnement résiduel
+à $\sim 5$~K dans le cadre du modèle de Big Bang chaud~\cite{Alpher1948}.
+\item[1965] A.~Penzias et R.~Wilson détectent par accident un excès de bruit
+isotrope à 4080~MHz à Bell Labs (\emph{Holmdel Horn}). Prix Nobel 1978~\cite{Penzias1965}.
+\item[1989-1993] Mission \emph{COBE} (NASA)~: confirme le spectre de corps noir
+parfait (FIRAS), détecte les premières anisotropies (DMR). Prix Nobel
+2006 (Mather, Smoot)~\cite{Mather1994,Smoot1992}.
+\item[2001-2010] Mission \emph{WMAP} (NASA)~: cartographie haute résolution,
+contraint $\Hzero$, $\Om$, $\OL$ à quelques pour cent.
+\item[2009-2013] Mission \emph{Planck} (ESA)~: la plus précise à ce jour. C'est
+la source des paramètres utilisés par ce programme~\cite{Planck2018}.
+\end{description}
+
+%==============================================================================
+\chapter{Anatomie des quatre courbes du graphique}
+\label{chap:courbes}
+%==============================================================================
+
+Le programme trace simultanément quatre distances en fonction de $z$. À petit
+$z$ elles sont \emph{toutes confondues}, puis à grand $z$ elles divergent
+de façon spectaculaire. Ce chapitre explique pourquoi.
+
+\section{Les quatre équations, rassemblées}
+
+\begin{equation}
+\label{eq:rassemble}
+\boxed{
+\begin{aligned}
+D_{C}(z)        &= \frac{c}{\Hzero}\,\int_{0}^{z}\frac{\dif z'}{E(z')} &&
+\text{\small (distance comobile)} \\[4pt]
+D_{L}(z)        &= (1+z)\,D_{C}(z) &&
+\text{\small (distance de luminosité)} \\[4pt]
+D_{A}(z)        &= \frac{D_{C}(z)}{1+z} &&
+\text{\small (distance de diamètre angulaire)} \\[4pt]
+D_{\text{lt}}(z) &= c\,\int_{0}^{z}\frac{\dif z'}{(1+z')\,H(z')}
+                  = \frac{c}{\Hzero}\,\int_{0}^{z}\frac{\dif z'}{(1+z')\,E(z')} &&
+\text{\small (trajet de la lumière)}
+\end{aligned}
+}
+\end{equation}
+
+\noindent où $E(z) = \sqrt{\Or(1+z)^{4} + \Om(1+z)^{3} + \Ok(1+z)^{2} + \OL}$.
+
+\section{Signification de chacune}
+
+\subsection*{$D_{C}$ --- distance comobile}
+
+Distance \emph{actuelle} ($t = t_{0}$) entre nous et la source, mesurée dans le
+repère qui s'étend avec l'univers. C'est la « vraie » distance dans l'espace
+tel qu'il est aujourd'hui.
+
+\textbf{Origine de l'équation.} Distance qu'un photon a parcourue dans le
+repère comobile, intégrée le long de la géodésique nulle de la métrique FLRW.
+\hfill\emph{(détail au chapitre~\ref{chap:Dc})}
+
+\subsection*{$D_{L}$ --- distance de luminosité}
+
+Distance \emph{effective pour la photométrie}~: celle qui fait que
+$F = L/(4\pi D_{L}^{2})$ reste valable malgré l'expansion.
+
+\textbf{Origine du facteur $(1+z)$.} Deux puissances de $(1+z)$ s'ajoutent à
+$D_{C}$~: le photon perd un facteur $(1+z)$ en énergie (redshift), et le taux
+d'arrivée des photons diminue d'un facteur $(1+z)$ supplémentaire (dilatation
+du temps). \hfill\emph{(détail au chapitre~\ref{chap:DL})}
+
+\subsection*{$D_{A}$ --- distance de diamètre angulaire}
+
+Distance \emph{pour les tailles angulaires}~: $\theta = \ell / D_{A}$.
+
+\textbf{Origine du diviseur $(1+z)$.} La source était plus proche au moment
+de l'émission qu'aujourd'hui, donc elle apparaît angulairement plus grande
+qu'attendu. \hfill\emph{(détail au chapitre~\ref{chap:DA})}
+
+\subsection*{$D_{\text{lt}}$ --- distance de trajet de la lumière}
+
+Produit du \emph{temps de trajet} de la lumière par~$c$.
+
+\textbf{Origine.} Intégration directe de $\dif t$ entre l'instant d'émission
+$t_{\text{em}}$ et celui de réception $t_{0}$~:
+\[
+D_{\text{lt}} = c\int_{t_{\text{em}}}^{t_{0}}\dif t
+              = c\int_{0}^{z}\frac{\dif z'}{(1+z')\,H(z')}.
+\]
+\hfill\emph{(détail au chapitre~\ref{chap:Dlt})}
+
+\section{Pourquoi elles se confondent à petit $z$}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'intuition.} À très petit $z$, l'univers a peu changé pendant le
+trajet du photon. Du coup, peu importe la définition précise de la distance~:
+toutes les distances cosmologiques tendent vers la même valeur, celle qu'on
+calcule avec la loi de Hubble usuelle, $D \approx cz/\Hzero$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Développement à l'ordre dominant.} Pour $z \ll 1$, on a $E(z) \approx
+1$ et~$(1+z)^{\pm 1} \approx 1$. Donc~:
+\[
+D_{C} \approx \frac{c}{\Hzero}\,z, \qquad
+D_{L} \approx (1+z) D_{C} \approx D_{C}, \qquad
+D_{A} \approx D_{C}/(1+z) \approx D_{C}.
+\]
+Et pour $D_{\text{lt}}$~:
+\[
+D_{\text{lt}} \approx \frac{c}{\Hzero}\int_{0}^{z}\frac{\dif z'}{(1+z')} \approx
+              \frac{c}{\Hzero}\,z \approx D_{C}.
+\]
+\textbf{Les quatre se confondent} à $cz/\Hzero$ au premier ordre en $z$.
+\end{tcolorbox}
+
+\subsection{Développement au second ordre (premiers écarts)}
+
+\begin{align}
+D_{C}(z)         &= \frac{c}{\Hzero}\Bigl[z - \tfrac{1}{2}(1+q_{0})\,z^{2} + \mathcal{O}(z^{3})\Bigr],
+\label{eq:DL2_DC}\\
+D_{L}(z)         &= \frac{c}{\Hzero}\Bigl[z + \tfrac{1}{2}(1-q_{0})\,z^{2} + \mathcal{O}(z^{3})\Bigr],
+\label{eq:DL2_DL}\\
+D_{A}(z)         &= \frac{c}{\Hzero}\Bigl[z - \tfrac{1}{2}(3+q_{0})\,z^{2} + \mathcal{O}(z^{3})\Bigr],
+\label{eq:DL2_DA}\\
+D_{\text{lt}}(z) &= \frac{c}{\Hzero}\Bigl[z - \tfrac{1}{2}(2+q_{0})\,z^{2} + \mathcal{O}(z^{3})\Bigr],
+\label{eq:DL2_Dlt}
+\end{align}
+
+\noindent où $q_{0} = \tfrac{1}{2}\Om - \OL$ est le \emph{paramètre de
+décélération} (négatif aujourd'hui, car l'expansion accélère)~:
+\[
+q_{0} = \tfrac{1}{2}(0{,}3111) - 0{,}6889 = -0{,}53335
+\quad\text{(soit $-0{,}5325$ avec le rayonnement, $q_0=\tfrac{\Om}{2}+\Or-\OL$).}
+\]
+C'est à partir du second ordre que les quatre courbes commencent à se
+distinguer. Numériquement, avec $\Om = 0{,}3111$~:
+\[
+D_{C}/D_{H} = z - 0{,}2333\,z^{2},\quad
+D_{L}/D_{H} = z + 0{,}7667\,z^{2},\quad
+D_{A}/D_{H} = z - 1{,}2333\,z^{2},\quad
+D_{\text{lt}}/D_{H} = z - 0{,}7333\,z^{2}.
+\]
+
+\begin{tcolorbox}[attention]
+\textbf{Le piège classique.} Beaucoup de textes donnent
+$z + \tfrac12(1-q_0)z^2$ pour $D_{C}$~: c'est le développement de la distance
+de \emph{luminosité} (formule de Weinberg / Hubble--Sandage). Les quatre
+coefficients ci-dessus se déduisent l'un de l'autre par les facteurs $(1+z)^{\pm1}$
+et ont été revérifiés par calcul formel (annexe~\ref{chap:verif})~; ils sont
+séparés d'une unité entière chacun, ce qui se voit sur les nombres ci-dessus.
+\end{tcolorbox}
+
+\section{Pourquoi elles divergent à grand $z$}
+
+\subsection{Comportement asymptotique}
+
+\begin{tcolorbox}[mathspe]
+À grand $z$, le terme dominant de $E(z)$ est $E(z) \sim \sqrt{\Om}\,(1+z)^{3/2}$,
+donc~:
+\[
+\int_{0}^{z}\frac{\dif z'}{E(z')} \sim \frac{2}{\sqrt{\Om}}\Bigl[1 - (1+z)^{-1/2}\Bigr]
+\xrightarrow[z\to\infty]{} \frac{2}{\sqrt{\Om}}.
+\]
+\textbf{$D_{C}$ sature donc à une valeur finie}~: la distance comobile à
+l'horizon des particules, $46{,}20~\Gly$.
+
+\medskip
+\emph{Attention à l'usage de cette estimation}~: elle suppose l'univers dominé
+par la matière \emph{sur toute la plage}, ce qui est faux à petit $z$ (où
+$\Lambda$ domine) et à très grand $z$ (où le rayonnement domine). Elle donne
+$2D_{H}/\sqrt{\Om} = 51{,}8~\Gly$, à comparer à la valeur exacte
+$46{,}20~\Gly$~: bonne à $12~\%$, ce qui suffit pour comprendre \emph{pourquoi}
+l'intégrale converge, pas pour en tirer un nombre.
+
+\medskip
+$D_{L} = (1+z) D_{C} \xrightarrow[z\to\infty]{} (1+z) \times D_{\text{H,com}}$
+\textbf{diverge linéairement avec $z$}.
+
+\medskip
+$D_{A} = D_{C}/(1+z) \xrightarrow[z\to\infty]{} D_{\text{H,com}}/(1+z) \to 0$,
+\textbf{décroît vers zéro}.
+
+\medskip
+$D_{\text{lt}} \le c\,t_{0} \approx 13{,}79~\Gly$ \textbf{est borné} (la lumière a
+au plus voyagé pendant l'âge de l'univers).
+\end{tcolorbox}
+
+\subsection{Valeurs limites pour le CMB ($z = 1089{,}8$)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lr}
+\toprule
+\textbf{Distance} & \textbf{Valeur} \\
+\midrule
+$D_{C}(z_{*})$        & $45{,}285~\Gly$ \\
+$D_{L}(z_{*})$        & $49\,397~\Gly$ \\
+$D_{A}(z_{*})$        & $0{,}04152~\Gly = 41{,}5~\text{Mly}$ \\
+$D_{\text{lt}}(z_{*})$ & $13{,}7865~\Gly$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Ces quatre nombres, qui désignent « la distance au CMB », couvrent
+\emph{six ordres de grandeur} (de $\sim 40$~Mly à $\sim 50\,000$~Gly) !
+C'est la divergence visible sur le graphique du programme.
+
+\section{Le maximum de $D_{A}$ vers $z = 1{,}6$}
+
+\begin{tcolorbox}[approfondir]
+La distance angulaire $D_A = D_{C}/(1+z)$ est le produit d'une fonction qui
+croît ($D_{C}$) par une fonction qui décroît ($1/(1+z)$). Sa dérivée
+s'annule là où $\dif D_C / \dif z = D_C/(1+z)$, soit en Planck~2018 à $z
+\approx 1{,}6$. Pour $z > 1{,}6$, augmenter $z$ \emph{réduit} $D_A$.
+
+\medskip
+\textbf{Conséquence observable.} Une galaxie de taille physique $30$~kpc à
+$z = 5$ apparaît angulaire ment plus grande qu'une galaxie identique à
+$z = 1$. C'est contre-intuitif et fondamental pour interpréter les images
+JWST.
+\end{tcolorbox}
+
+\section{Repère graphique}
+
+Sur l'échelle log-log du programme, les quatre courbes sont confondues à
+$z \lesssim 0{,}1$, divergent visiblement à partir de $z \sim 1$, et au
+voisinage du CMB elles s'étalent sur 6 décades. La courbe verte (trajet
+lumière) plafonne à $\sim 13{,}79$~Gly, la violette (angulaire) redescend, la
+cyan (comobile) sature, l'orange (luminosité) explose.
+
+%==============================================================================
+\chapter{Pourquoi le redshift n'est pas linéaire en distance}
+\label{chap:nonlinear}
+%==============================================================================
+
+\section{La loi de Hubble linéaire et son domaine de validité}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{À petit $z$.} Pour les galaxies proches ($z < 0{,}1$), on a la
+\textbf{loi de Hubble} :
+\[
+v \approx \Hzero \times D, \qquad cz \approx \Hzero \times D.
+\]
+La vitesse de récession est proportionnelle à la distance, et donc le redshift
+aussi. C'est une relation linéaire, observée par Hubble en 1929. Tant qu'on
+reste dans cette régime, doubler la distance double le redshift.
+
+\medskip
+\textbf{Mais ça casse quand on va loin.} Cette belle linéarité repose sur deux
+hypothèses qui deviennent fausses à grand $z$~:
+\begin{enumerate}[topsep=2pt]
+\item L'univers s'étend à la même vitesse pendant tout le trajet de la lumière.
+  Faux : $H(z)$ change avec le temps.
+\item Le décalage Doppler $v = cz$ s'applique. Faux : c'est l'expansion de
+  l'espace lui-même qui décale les longueurs d'onde, pas un mouvement à
+  travers l'espace.
+\end{enumerate}
+\end{tcolorbox}
+
+\section{Forme exacte de la relation}
+
+\begin{tcolorbox}[mathspe]
+\textbf{La vraie relation entre $z$ et la distance comobile.}
+\[
+D_{C}(z) = \frac{c}{\Hzero}\int_{0}^{z}\frac{\dif z'}{E(z')},
+\quad E(z) \simeq \sqrt{\Om(1+z)^{3} + \OL}
+\quad\text{\small(sans le rayonnement, cf.~\eqref{eq:E_complet})}.
+\]
+À petit $z$ : $E(z) \approx 1$, donc $D_C \approx (c/\Hzero)\,z$, linéaire.
+
+\medskip
+À grand $z$ (régime dominé par la matière) : $E(z) \sim \sqrt{\Om}\,(1+z)^{3/2}$,
+donc l'intégrale \emph{sature} :
+\[
+\int_{0}^{z}\frac{\dif z'}{(1+z')^{3/2}}
+  = 2\left[1 - (1+z)^{-1/2}\right] \xrightarrow[z\to\infty]{} 2.
+\]
+\textbf{Conclusion} : $D_C$ tend vers une \emph{valeur finie} quand $z\to\infty$,
+appelée \textbf{rayon de l'horizon des particules}.
+\end{tcolorbox}
+
+\section{Calcul numérique pour quelques redshifts}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{rrrr}
+\toprule
+\textbf{$z$} & \textbf{$D_C$ (G al)} & \textbf{$D_C / z$ (G al)} & \textbf{$cz$ (km/s)} \\
+\midrule
+$0{,}01$   & $0{,}1442$          & $14{,}42$  & $2\,998$ \\
+$0{,}1$    & $1{,}4108$          & $14{,}11$  & $29\,979$ \\
+$0{,}5$    & $6{,}3484$          & $12{,}70$  & $149\,896$ \\
+$1$        & $11{,}0751$         & $11{,}08$  & $299\,792$ \\
+$2{,}34$   & $18{,}8240$         & $8{,}04$   & $701\,514$ \\
+$5$        & $25{,}9173$         & $5{,}18$   & $1\,498\,962$ \\
+$10{,}6$   & $31{,}8379$         & $3{,}00$   & $3\,177\,800$ \\
+$1089{,}8$ & $45{,}2848$         & $0{,}0416$ & $326\,713\,821$ \\
+$\infty$   & $46{,}2005$ (horizon) & $0$      & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Le rapport $D_C/z$ part de $D_H = 14{,}45$~G\,al aux faibles $z$
+puis tend vers $0$ : la distance « sature » et c'est $z$ qui diverge.
+La colonne $cz$ est donnée pour mémoire~: dès $z\sim 1$ elle dépasse $c$ et
+n'a plus de sens physique (cf.\ chapitre~\ref{chap:vrec}).
+
+%==============================================================================
+\chapter{L'univers observable et sa taille}
+\label{chap:observable}
+%==============================================================================
+
+\section{Définition}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{L'univers observable} est la sphère centrée sur nous qui contient
+toutes les régions d'où la lumière a eu le temps d'arriver jusqu'ici depuis
+le Big Bang. Au-delà, ce qui s'y passe ne peut pas (encore) nous influencer.
+C'est donc une boule, pas tout l'univers (qui pourrait être infini ou
+beaucoup plus grand).
+\end{tcolorbox}
+
+\section{Trois rayons à ne pas confondre}
+
+\begin{tcolorbox}[attention]
+On entend souvent que « l'univers observable a un rayon de
+13{,}8 milliards d'années-lumière ». \textbf{C'est faux.} Il faut distinguer
+trois nombres très différents.
+\end{tcolorbox}
+
+\begin{enumerate}
+\item \textbf{La distance que la lumière a parcourue}~:
+$c\,t_0 = c \times 13{,}79~\Gyr = 13{,}79~\Gly$. C'est juste le produit de
+l'âge de l'univers par la vitesse de la lumière. \textbf{Cette valeur n'est
+pas la taille de l'univers observable}~: pendant que la lumière voyageait,
+l'espace s'étendait.
+
+\item \textbf{Le rayon comobile de l'horizon des particules}~:
+\[
+D_{\text{H,com}} = D_{H}\int_{0}^{\infty}\frac{\dif z'}{E(z')} \approx 46{,}2005~\Gly.
+\]
+C'est la distance \emph{actuelle} à la sphère d'où provient la lumière la plus
+ancienne (en pratique le CMB, à $D_C \approx 45{,}5$~G\,al qui en est très
+proche). \textbf{C'est la « taille » de l'univers observable au sens
+moderne}.
+
+\item \textbf{Le rayon de l'horizon des événements}~:
+$16{,}58$~G\,al en comobile (calcul en annexe~\ref{chap:verif}). C'est la limite au-delà de laquelle un signal
+émis \emph{aujourd'hui} ne pourra plus jamais nous atteindre, à cause de
+l'expansion accélérée. Voir~\cite{Davis2004} pour une discussion claire.
+\end{enumerate}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Pourquoi 46~Gly et pas 13{,}8 ?} Pendant la traversée de la
+lumière, l'espace s'est dilaté d'un facteur $(1+z)$ pour chaque pas. Donc le
+photon CMB a été émis à $D_A \approx 42$~Mly (distance angulaire, c'est-à-dire
+distance physique \emph{à l'instant de l'émission}) et il a voyagé pendant
+$13{,}79$~Gyr, mais pendant ce temps l'objet d'émission est emporté par
+l'expansion. Aujourd'hui, ce même objet est à $D_C = 45{,}5$~Gly~:
+\[
+D_C = (1+z_*)\,D_A = 1090 \times 0{,}04152~\Gly \approx 45{,}28~\Gly.
+\]
+\end{tcolorbox}
+
+\section{Diamètre total}
+
+Le \emph{diamètre} de l'univers observable est donc $\sim 92{,}4$~Gly, et son
+\emph{volume} $\sim 4\times 10^{32}$ années-lumière cube. Il contient environ
+$2\times 10^{12}$ galaxies (estimation JWST 2023).
+
+\section{Qu'y a-t-il au-delà ?}
+
+\begin{tcolorbox}[approfondir]
+\textbf{On ne le sait pas, par définition.} Mais quelques bornes
+théoriques~:
+\begin{itemize}[topsep=2pt]
+\item Si l'univers est \emph{plat} (Planck~2018 : $\Ok = 0$ à $\sim 0{,}5\%$
+  près), il pourrait être \emph{infini}.
+\item Si on tient à un univers fini, sa taille totale doit être au moins
+  $\sim 250$ fois plus grande que la partie observable (contrainte sur
+  $\Ok$).
+\item Au-delà de l'horizon des événements, l'expansion accélérée par
+  $\Lambda$ \emph{nous éloignera à jamais} de nouvelles régions, qui
+  resteront inobservables.
+\end{itemize}
+\end{tcolorbox}
+
+%==============================================================================
+\chapter{Vitesses de récession et univers superluminique}
+\label{chap:vrec}
+%==============================================================================
+
+\section{Le problème}
+
+Le programme affiche, pour $z = 2{,}34$, une « vitesse de récession » de
+$\sim 700\,000$~km/s $= 2{,}34\,c$. Pour le CMB ($z = 1089{,}8$), cette
+valeur deviendrait $\sim 1089\,c$. \textbf{Qu'est-ce que ça veut dire ?
+Cela viole-t-il la relativité ?}
+
+\section{Trois manières de calculer la « vitesse de récession »}
+
+\subsection{Formule Doppler classique : $v = cz$}
+
+\begin{tcolorbox}[vulgarisation]
+C'est la formule du décalage Doppler dans la vie courante~: une voiture qui
+s'éloigne à $30$~m/s décale un son de 1000~Hz à $\sim 999{,}9$~Hz, soit
+$z\approx 10^{-7}$. On en déduit $v = cz$ pour la lumière. C'est ce que le
+programme affiche~: $v = cz$. \textbf{C'est l'approximation à très faible $z$
+seulement}.
+\end{tcolorbox}
+
+Pour $z=2{,}34$~: $v_{\text{Doppler}} = 2{,}34\,c$. C'est ce que le programme
+indique. Mais c'est l'\emph{approximation} et pas la « vraie » vitesse.
+
+\subsection{Formule Doppler relativiste}
+
+En relativité restreinte, le décalage d'une source qui s'éloigne radialement
+à $v$ vaut~:
+\[
+1 + z = \sqrt{\frac{1 + v/c}{1 - v/c}}, \qquad
+\frac{v}{c} = \frac{(1+z)^{2} - 1}{(1+z)^{2} + 1}.
+\]
+Cette formule est \emph{bornée par $c$} (limite $z \to \infty$ donne $v\to c$).
+Pour $z=2{,}34$~: $v/c = (3{,}34^{2}-1)/(3{,}34^{2}+1) \approx 0{,}833$, soit
+$83\%$ de $c$. Pour le CMB ($z\to 1090$)~: $v/c \to 0{,}999\,998\,3$, donc
+\emph{99{,}9998\%} de $c$.
+
+\begin{tcolorbox}[attention]
+\textbf{La formule Doppler relativiste est conceptuellement fausse en
+cosmologie.} Elle suppose que la source se déplace \emph{à travers} un
+espace-temps de Minkowski statique. Or l'univers FLRW n'est pas plat
+globalement, et la source comobile ne se déplace \emph{pas} dans l'espace~:
+c'est l'espace qui s'étire entre elle et nous. Il faut donc un autre concept.
+\end{tcolorbox}
+
+\subsection{Vitesse de récession FLRW : $v_{\text{rec}} = H(t)\,D_p(t)$}
+
+\begin{tcolorbox}[mathspe]
+\textbf{La « vraie » vitesse cosmologique.} Pour deux observateurs comobiles
+séparés par une distance propre $D_p(t) = a(t)\,\chi$ à l'instant $t$,
+\[
+v_{\text{rec}}(t) = \dot D_p(t) = \dot a(t)\,\chi = H(t)\,D_p(t).
+\]
+Cette vitesse est \emph{non bornée}~: pour $D_p$ assez grand, $v_{\text{rec}} > c$.
+Mais ce n'est pas une vitesse de propagation \emph{à travers} l'espace~: c'est
+une vitesse d'\emph{étirement} de l'espace lui-même.
+\end{tcolorbox}
+
+Aujourd'hui, pour le CMB~:
+\[
+v_{\text{rec}}(t_0) = \Hzero \times D_C(\text{CMB})
+   = 67{,}66~\text{km/s/Mpc} \times 13\,884~\Mpc
+   = 939\,400~\text{km/s} = 3{,}134\,c.
+\]
+\textbf{Donc même la vitesse de récession « bien définie » est superluminique}
+pour les objets très distants. Pas seulement la valeur naïve $cz \approx
+1090\,c$, mais aussi la valeur cosmologiquement correcte $\sim 3\,c$.
+
+\section{Pourquoi ça ne viole pas la relativité}
+
+\begin{tcolorbox}[vulgarisation]
+\textbf{La règle de Einstein, version stricte.} Aucune particule, aucun
+signal, aucune information ne peut se propager \emph{à travers l'espace}
+plus vite que la lumière. Mesurée par un observateur \emph{local}, la
+vitesse d'un objet dans son voisinage immédiat est toujours $<c$.
+
+\medskip
+\textbf{Mais l'expansion cosmique n'est pas un mouvement à travers
+l'espace.} C'est l'espace lui-même qui se dilate. Deux observateurs comobiles
+sont \emph{immobiles}~: leur coordonnée comobile $\chi$ ne change pas.
+Seulement, la distance physique qui les sépare grandit avec le temps. Aucun
+objet ne fait $1{,}3\times 10^{6}$~km/s dans le voisinage de qui que ce
+soit.
+\end{tcolorbox}
+
+\begin{tcolorbox}[mathspe]
+\textbf{Énoncé rigoureux.} En RG, la limite $c$ s'applique \emph{localement},
+au sein du cône de lumière en chaque point. La relativité n'interdit pas que
+deux régions d'espace s'écartent à une vitesse coordonnée arbitrairement
+grande. La règle $v\le c$ n'est valide qu'en relativité \emph{restreinte},
+c'est-à-dire dans un espace-temps de Minkowski global. En cosmologie, on est
+dans un espace-temps courbe~; les vitesses entre points distants n'ont pas
+de définition unique, et celle qu'on utilise ($H D$) peut excéder~$c$.
+\end{tcolorbox}
+
+\section{Les galaxies superluminiques sont-elles observables ?}
+
+\textbf{Oui.} Étonnamment, on peut voir des objets dont la vitesse de
+récession dépasse $c$ aujourd'hui. La condition pour qu'un signal émis
+aujourd'hui par un objet à $D_p$ nous atteigne un jour n'est pas $v_{\text{rec}}
+\le c$ mais que $D_p$ soit \emph{plus petit que l'horizon des événements}.
+Numériquement, $D_{\text{event}} = 16{,}58$~G\,al, alors que la sphère où
+$v_{\text{rec}}(t_0) = c$ (sphère de Hubble) n'est qu'à $D_H \approx
+14{,}45$~G\,al. Donc des galaxies dans la couronne entre $14{,}45$ et $16{,}58$~G\,al
+s'écartent de nous plus vite que $c$ mais émettent une lumière qui finira par
+nous arriver (très atténuée par le redshift). Voir~\cite{Davis2004} pour
+le détail.
+
+\clearpage
+
+%==============================================================================
+\part{Applications numériques}
+%==============================================================================
+
+%==============================================================================
+\chapter{Calculs pour quelques redshifts emblématiques}
+%==============================================================================
+
+\section{Cas type \texorpdfstring{$z=2{,}34$}{z=2.34}}
+
+\begin{tcolorbox}[numerique]
+\textbf{Données.} $z=2{,}34$, cosmologie Planck 2018.
+
+\medskip
+\noindent\textbf{Résultats.}
+\begin{itemize}[topsep=2pt]
+  \item $D_{C} = D_{M} = \num{18.82}~\Gly$
+  \item $D_{L} = (1+z)\,D_{C} = \num{62.87}~\Gly$
+  \item $D_{A} = D_{C}/(1+z) = \num{5.64}~\Gly$
+  \item $t_{L} = \num{10.99}~\Gyr$,\quad $D_{\text{lt}} = c\,t_{L} = \num{10.99}~\Gly$
+  \item $t_{\text{em}} = t_{0} - t_{L} = \num{2.80}~\Gyr$
+  \item $a(t_{\text{em}}) = 1/(1+z) = \num{0.2994}$
+  \item Vitesse de récession (approximation Doppler) $v \approx 2{,}34\,c$
+\end{itemize}
+
+\medskip
+\noindent\textbf{Interprétation.} La lumière a été émise quand l'univers avait
+$2{,}80~\Gyr$ (sur $13{,}79$). À ce moment l'objet était à $D_{A}=5{,}64$~G\,al.
+La lumière a voyagé $10{,}99$~Gyr. Pendant ce temps l'univers s'est dilaté
+d'un facteur $3{,}34$ et l'objet se trouve aujourd'hui à $D_{C}=18{,}82$~G\,al.
+$D_{L}$ atteint $62{,}87$~G\,al à cause des trois effets cumulés.
+\end{tcolorbox}
+
+\section{Cas type \texorpdfstring{$z=1$}{z=1}}
+
+\begin{tcolorbox}[numerique]
+$D_{C} = \num{11.075}~\Gly$,\quad $D_{L} = \num{22.150}~\Gly$,\quad
+$D_{A} = \num{5.538}~\Gly$,\quad
+$t_{L} = \num{7.9355}~\Gyr$,\quad $t_{\text{em}} = \num{5.8513}~\Gyr$.
+\end{tcolorbox}
+
+\section{Cas type \texorpdfstring{$z=10{,}6$}{z=10.6} (GN-z11)}
+
+\begin{tcolorbox}[numerique]
+$D_{C} = \num{31.838}~\Gly$,\quad $D_{L} = \num{369.32}~\Gly$,\quad
+$D_{A} = \num{2.7446}~\Gly$,\quad
+$t_{L} = \num{13.3517}~\Gyr$,\quad $t_{\text{em}} = \num{435}~\text{Myr}$.
+
+\medskip
+GN-z11 est l'une des galaxies les plus lointaines confirmées (JWST 2022/23)~;
+en cosmologie Planck 2018 l'univers avait $435$~Myr. La valeur « $\sim 400$~Myr »
+souvent citée provient des cosmologies antérieures et de $z = 11{,}09$
+(estimation photométrique de 2016, corrigée en $z = 10{,}60$ par la
+spectroscopie JWST).
+\end{tcolorbox}
+
+\section{Cas type \texorpdfstring{$z=1089{,}8$}{z=1089.8} (CMB)}
+
+\begin{tcolorbox}[numerique]
+$D_{C} = \num{45.285}~\Gly$,\quad $D_{L} = \num{49397}~\Gly$ (énorme),\quad
+$D_{A} = \num{0.04152}~\Gly = \num{41.5}~\text{Mly}$,\quad
+$t_{L} = \num{13.7865}~\Gyr$,\quad $t_{\text{em}} = \num{372}~\text{kyr}$.
+
+\medskip
+La distance comobile au CMB est très proche du rayon de l'horizon des
+particules. La distance angulaire est de seulement $\sim 42$~Mly~: une zone
+causale du CMB sous-tend $\sim 1^{\circ}$ sur le ciel (premier pic
+acoustique).
+\end{tcolorbox}
+
+\clearpage
+
+%==============================================================================
+\chapter{Implémentation numérique}
+%==============================================================================
+
+\section{Évaluation des intégrales}
+
+L'intégrale~\eqref{eq:DC} \textbf{n'a pas} d'expression en fonctions
+élémentaires dans $\Lambda$CDM~: la substitution $u = (1+z)^{-3/2}$ y laisse un
+facteur $u^{-2/3}$ irréductible, et la forme fermée fait intervenir une
+fonction hypergéométrique (ou une intégrale elliptique incomplète). On la
+calcule donc numériquement.
+
+\paragraph{Ce qui, en revanche, a bien une forme fermée : l'âge.} Dans le cas
+$\Lambda$CDM plat en négligeant le rayonnement ($\Or = 0$), l'intégrale de
+l'\emph{âge} se fait exactement, car le poids $1/(1+z)$ supplémentaire rend la
+substitution complète~:
+
+\begin{equation}
+\boxed{\;t(z) = \frac{2}{3\,\Hzero\sqrt{\OL}}\;
+\arcsinh\!\left[\sqrt{\frac{\OL}{\Om}}\;(1+z)^{-3/2}\right]\;}
+\label{eq:age_ferme}
+\end{equation}
+
+\noindent Contrôle numérique ($\Om = 0{,}3111$, $\OL = 0{,}6889$,
+$1/\Hzero = 14{,}4516$~Gyr)~:
+\[
+t(0) = 13{,}7915~\Gyr, \quad t(1) = 5{,}8555~\Gyr, \quad
+t(2{,}34) = 2{,}8025~\Gyr,
+\]
+à comparer aux valeurs exactes (\emph{avec} rayonnement) $13{,}7869$,
+$5{,}8513$ et $2{,}7991$~Gyr. L'accord est meilleur que $0{,}04~\%$ tant que
+$z \lesssim 10$~; à $z_{*}$ la formule donne $479$~kyr contre $372$~kyr, car
+elle ignore l'ère de radiation. Cette formule fermée a été vérifiée par calcul
+formel puis numériquement (annexe~\ref{chap:verif})~; elle est utile pour
+contrôler à la main un résultat du programme.
+
+\begin{tcolorbox}[attention]
+Le facteur est bien $\tfrac{2}{3\sqrt{\OL}}$ et non $\tfrac{2}{\sqrt{\OL}}$~;
+et cette expression donne l'\emph{âge} $t(z)$, pas la distance comobile.
+Le lookback time s'en déduit par $t_{L}(z) = t(0) - t(z)$.
+\end{tcolorbox}
+
+\section{Listing Python}
+
+\begin{verbatim}
+from astropy.cosmology import Planck18 as cosmo
+from astropy import units as u, constants as const
+
+z = 2.34
+D_C  = cosmo.comoving_distance(z).to(u.Glyr)
+D_L  = cosmo.luminosity_distance(z).to(u.Glyr)
+D_A  = cosmo.angular_diameter_distance(z).to(u.Glyr)
+t_L  = cosmo.lookback_time(z).to(u.Gyr)
+D_lt = (t_L * const.c).to(u.Glyr)
+age  = cosmo.age(z).to(u.Gyr)
+
+# les trois "vitesses de recession" (cf. chapitre dedie)
+c_kms  = const.c.to_value(u.km / u.s)
+v_cz   = c_kms * z                                   # Doppler naif
+v_sr   = c_kms * ((1+z)**2 - 1) / ((1+z)**2 + 1)     # Doppler relativiste
+v_flrw = cosmo.H0.value * cosmo.comoving_distance(z).to_value(u.Mpc)   # FLRW
+\end{verbatim}
+
+\begin{tcolorbox}[attention]
+L'unité giga-année-lumière s'écrit \texttt{u.Glyr} dans \texttt{astropy}
+(de \texttt{lyr}), \emph{pas} \texttt{u.Gly}~: cette dernière n'existe pas et
+lève une \texttt{AttributeError}. De même \texttt{u.lyr} et non \texttt{u.ly}.
+\end{tcolorbox}
+
+\noindent Le programme complet, doté d'une interface graphique Qt6
+reproduisant le tracé log-log et l'ensemble des quatre distances en fonction
+de $z$, est disponible dans \texttt{redshift\_distance\_gui.py}.
+
+\clearpage
+
+%==============================================================================
+\part{Annexes}
+%==============================================================================
+
+\appendix
+
+%==============================================================================
+\chapter{Constantes physiques}
+%==============================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Constante} & \textbf{Symbole} & \textbf{Valeur} \\
+\midrule
+Vitesse de la lumière & $c$ & $\SI{299792.458}{\km\per\second}$ (exact) \\
+Constante de Newton & $G$ & $\SI{6.67430e-11}{\meter\cubed\per\kg\per\second\squared}$ \\
+Parsec & $\text{pc}$ & $\SI{3.0857e13}{\km}$ \\
+Année julienne & $\text{yr}$ & $\SI{3.15576e7}{\second}$ \\
+Année-lumière & $\al$ & $\SI{9.4607e12}{\km}$ \\
+Mégaparsec & $\Mpc$ & $\SI{3.0857e19}{\km} = \num{3.2616e6}~\al$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%==============================================================================
+\chapter{Vérification indépendante des calculs (SageMath)}
+\label{chap:verif}
+%==============================================================================
+
+Ce cours et le programme s'appuient sur \texttt{astropy.cosmology.Planck18}.
+Faire confiance à une seule chaîne de calcul est une mauvaise habitude~: toutes
+les valeurs ont donc été \textbf{recalculées de zéro sous SageMath}, sans
+astropy, en précision étendue.
+
+\section{Méthode}
+
+\begin{enumerate}[topsep=3pt]
+\item \textbf{Reconstruction des paramètres} à partir des seules constantes
+CODATA 2022 et de $(\Hzero, \Om, T_{0}, N_{\text{eff}}, m_{\nu})$~:
+\[
+\rho_{c,0} = \frac{3\Hzero^{2}}{8\pi G},\quad
+\Omega_{\gamma} = \frac{a_{B}T_{0}^{4}}{\rho_{c,0}c^{2}},\quad
+a_{B} = \frac{\pi^{2}k_{B}^{4}}{15\hbar^{3}c^{3}},\quad
+T_{\nu 0} = \Bigl(\tfrac{4}{11}\Bigr)^{1/3}T_{0}.
+\]
+\item \textbf{Neutrinos par l'intégrale de Fermi--Dirac exacte}
+$f(y) = \frac{120}{7\pi^{4}}\int_{0}^{\infty}\frac{x^{2}\sqrt{x^{2}+y^{2}}}{e^{x}+1}\dif x$,
+au lieu de l'ajustement analytique de Komatsu~et~al.~(2011) qu'emploie astropy.
+\item \textbf{Intégrales} $D_{C}$, $t_{L}$, $t(z)$ par quadrature adaptative
+\texttt{mpmath} à 25 chiffres significatifs, avec le changement de variable
+$u = 1/(1+z)$ pour la borne infinie de l'âge.
+\item \textbf{Développements limités} et forme fermée de l'âge vérifiés en
+\emph{calcul formel} (Sage symbolique), pas seulement numériquement.
+\end{enumerate}
+
+\section{Paramètres reconstruits}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lll}
+\toprule
+\textbf{Grandeur} & \textbf{SageMath (reconstruit)} & \textbf{astropy} \\
+\midrule
+$\rho_{c,0}$ & $8{,}598814\times10^{-30}$ g/cm$^{3}$ & $8{,}598814\times10^{-30}$ \\
+$\Omega_{\gamma}$ & $5{,}4020151\times10^{-5}$ & $5{,}4020151\times10^{-5}$ \\
+$T_{\nu 0}$ & $1{,}9453688$~K & $1{,}9453688$~K \\
+$\Omega_{\nu}$ (Fermi--Dirac exacte) & $1{,}4397093\times10^{-3}$ &
+   $1{,}4396743\times10^{-3}$ (Komatsu) \\
+$\OL$ (déduit de la platitude) & $0{,}68884627$ & $0{,}68884631$ \\
+$\Om + \Omega_{\nu}$ & $0{,}31109971$ & $0{,}31109968$ \\
+$t_{0}$ & $13{,}786892$~Gyr & $13{,}786885$~Gyr \\
+$D_{H} = c/\Hzero$ & $14{,}4515552$~G\,al & $14{,}4515552$~G\,al \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent L'ajustement de Komatsu s'écarte de l'intégrale exacte de
+$-0{,}0024~\%$ à $z=0$ et au plus de $0{,}12~\%$ (vers $z\sim 10$, dans la
+transition relativiste/non relativiste des neutrinos). Comme
+$\Omega_{\nu} \sim 10^{-3}$, l'effet sur les observables reste
+$\lesssim 1{,}5\times10^{-5}$.
+
+\section{Accord entre les deux chaînes de calcul}
+
+\input{table_reference.tex}
+
+\noindent \textbf{Conclusion~:} les deux calculs, indépendants du choix des
+constantes jusqu'à la méthode de quadrature, coïncident bien mieux que
+l'incertitude des paramètres cosmologiques eux-mêmes ($\sim 0{,}5~\%$, et
+$\sim 8~\%$ si l'on tient compte de la tension de Hubble). \textbf{Le programme
+est numériquement fiable}~; sa limite est le \emph{modèle}, pas l'arithmétique.
+
+\section{Contrôles indépendants}
+
+\begin{itemize}[topsep=3pt]
+\item \textbf{Etherington} $D_{L} = (1+z)^{2}D_{A}$~: vérifié à
+$2\times10^{-16}$ (précision machine) sur toute la plage.
+\item \textbf{Conservation du temps} $t_{L}(z) + t_{\text{em}}(z) = t_{0}$~:
+vérifié à $2\times10^{-10}$~Gyr.
+\item \textbf{Forme fermée de l'âge}~\eqref{eq:age_ferme}~: retrouvée à
+$10^{-9}$ près par comparaison avec la quadrature, pour le modèle sans
+rayonnement.
+\item \textbf{Développements limités}~\eqref{eq:DL2_DC}--\eqref{eq:DL2_Dlt}~:
+les quatre coefficients $-\tfrac{1+q_{0}}{2}$, $+\tfrac{1-q_{0}}{2}$,
+$-\tfrac{3+q_{0}}{2}$, $-\tfrac{2+q_{0}}{2}$ sont obtenus par
+\texttt{series()} symbolique et confirmés numériquement à $z=0{,}1$
+($D_{C}$~: $1{,}41076$ contre $1{,}41077$ exact).
+\item \textbf{Maximum de $D_{A}$}~: racine de $(1+z)/E(z) = D_{C}(z)/D_{H}$,
+soit $z = 1{,}592133$ et $D_{A} = 5{,}84629$~G\,al, identique par les deux
+méthodes à $4\times10^{-7}$.
+\item \textbf{Horizons}~: horizon des particules $46{,}2005$~G\,al, sphère de
+Hubble $14{,}4516$~G\,al, horizon des événements $16{,}5808$~G\,al
+$= D_{H}\int_{1}^{\infty} \dif a/[a^{2}E(a)]$.
+\end{itemize}
+
+\section{Les scripts}
+
+Les deux scripts sont livrés avec le programme, dans le dossier
+\texttt{verif\_sage/}~:
+
+\begin{description}[leftmargin=3.4cm,labelwidth=3.2cm]
+\item[\texttt{verif\_cosmo.sage}] reconstruction complète et table de
+référence (exécution $\sim 50$~s)~;
+\item[\texttt{verif\_DL\_symbolique.sage}] vérification en calcul formel des
+développements limités et de la forme fermée de l'âge~;
+\item[\texttt{verif\_courbure\_sigma.sage}] dérivation symbolique de la
+corrélation $\rho(\Hzero,\Om)$ et contrôle des distances avec courbure
+($\Ok = \pm0{,}01$), au modèle près identique à celui d'astropy.
+\end{description}
+
+\begin{tcolorbox}[numerique]
+\textbf{Contrôle croisé de la courbure} (août 2026). Les distances calculées
+par le programme et par SageMath coïncident à cinq décimales pour
+$\Ok = -0{,}01$, $0$ et $+0{,}01$, à $z = 0{,}5$, $2{,}34$, $10{,}6$ et
+$1089{,}8$. L'écart SH0ES/Planck sur $D_{C}$ vaut $-7{,}35~\%$ par les deux
+chaînes.
+\end{tcolorbox}
+
+\noindent Lancement~:
+\begin{verbatim}
+sage verif_sage/verif_cosmo.sage
+\end{verbatim}
+
+%==============================================================================
+\chapter{Bibliographie commentée et sources}
+\label{chap:biblio}
+%==============================================================================
+
+Toutes les valeurs numériques de ce cours proviennent de la cosmologie
+Planck 2018, telle qu'implémentée dans \texttt{astropy.cosmology.Planck18}.
+Les sources sont organisées par thème.
+
+\section{Mesure des paramètres cosmologiques}
+
+\paragraph{Planck 2018 (paramètres de référence).}
+N.~Aghanim \emph{et al.} (Planck Collaboration), \emph{Planck 2018 results.
+VI. Cosmological parameters}, Astron.\ Astrophys.\ \textbf{641}, A6 (2020).
+\href{https://doi.org/10.1051/0004-6361/201833910}{DOI}~|
+\href{https://arxiv.org/abs/1807.06209}{arXiv:1807.06209}.
+Source primaire des paramètres utilisés
+(Tableau 2, colonne TT,TE,EE+lowE+lensing+BAO).
+
+\paragraph{SH0ES (tension de Hubble).}
+A.~G.~Riess \emph{et al.}, ApJL \textbf{934}, L7 (2022).
+\href{https://arxiv.org/abs/2112.04510}{arXiv:2112.04510}.
+
+\paragraph{Découverte de l'accélération.}
+A.~G.~Riess \emph{et al.}, AJ \textbf{116}, 1009 (1998)~;
+S.~Perlmutter \emph{et al.}, ApJ \textbf{517}, 565 (1999).
+Prix Nobel 2011.
+
+\section{Formules de distance cosmologique}
+
+\paragraph{Référence pratique.}
+D.~W.~Hogg, \emph{Distance measures in cosmology}, arXiv:astro-ph/9905116
+(1999, mis à jour 2000).
+\href{https://arxiv.org/abs/astro-ph/9905116}{arXiv}.
+Toutes les formules de distance dans un document de 11 pages~; bibliographie d'usage quotidien.
+
+\paragraph{Théorème de réciprocité.}
+I.~M.~H.~Etherington, \emph{On the definition of distance in general relativity},
+Phil.\ Mag.\ \textbf{15}, 761 (1933)~; réimprimé dans Gen.\ Rel.\ Grav.\
+\textbf{39}, 1055 (2007).
+
+\paragraph{Approche pédagogique.}
+E.~L.~Wright, \emph{A Cosmology Calculator for the World Wide Web},
+PASP \textbf{118}, 1711 (2006).
+\href{https://arxiv.org/abs/astro-ph/0609593}{arXiv:astro-ph/0609593}.
+Description de la calculatrice
+\href{https://www.astro.ucla.edu/~wright/CosmoCalc.html}
+     {astro.ucla.edu/$\sim$wright/CosmoCalc.html} encore très utilisée.
+
+\section{Articles fondateurs}
+
+\paragraph{Équations de Friedmann.}
+A.~Friedmann, \emph{Über die Krümmung des Raumes}, Z.\ Phys.\ \textbf{10},
+377 (1922).
+
+\paragraph{Loi de Lemaître--Hubble.}
+G.~Lemaître, Annales de la Société Scientifique de Bruxelles \textbf{A47}, 49
+(1927). Première proposition d'une loi vitesse--distance, deux ans avant Hubble.
+\hfill
+E.~Hubble, PNAS \textbf{15}, 168 (1929). Mise en évidence observationnelle.
+
+\paragraph{Métrique FLRW.}
+H.~P.~Robertson, ApJ \textbf{82}, 284 (1935)~; A.~G.~Walker, Proc.\ London Math.\
+Soc.\ \textbf{42}, 90 (1937). Caractérisation rigoureuse.
+
+\section{Ouvrages de référence}
+
+\paragraph{Cours d'introduction (M1 / cycle ingénieur).}
+\begin{description}[leftmargin=1.6cm,itemsep=2pt]
+\item[Ryden 2017] B.~Ryden, \emph{Introduction to Cosmology}, 2$^{\text{e}}$
+  éd., Cambridge University Press. Le standard pour démarrer.
+\item[Liddle 2015] A.~Liddle, \emph{An Introduction to Modern Cosmology},
+  3$^{\text{e}}$ éd., Wiley. Très court, accessible.
+\end{description}
+
+\paragraph{Cours avancé (M2 / doctorat).}
+\begin{description}[leftmargin=1.6cm,itemsep=2pt]
+\item[Mukhanov 2005] V.~Mukhanov, \emph{Physical Foundations of Cosmology},
+  Cambridge.
+\item[Dodelson \& Schmidt 2020] S.~Dodelson and F.~Schmidt, \emph{Modern
+  Cosmology}, 2$^{\text{e}}$ éd., Academic Press. Référence M2 actuelle pour
+  les perturbations et le CMB.
+\item[Weinberg 2008] S.~Weinberg, \emph{Cosmology}, Oxford. Magistral.
+\item[Carroll 2004] S.~M.~Carroll, \emph{Spacetime and Geometry}, Addison-Wesley.
+  Chapitre 8 = cosmologie depuis la RG.
+\end{description}
+
+\section{Discussion conceptuelle}
+
+\paragraph{Origine du redshift cosmologique.}
+E.~F.~Bunn and D.~W.~Hogg, \emph{The kinematic origin of the cosmological redshift},
+Am.\ J.\ Phys.\ \textbf{77}, 688 (2009).
+\href{https://arxiv.org/abs/0808.1081}{arXiv:0808.1081}.
+Discussion accessible sur l'interprétation Doppler vs. expansion.
+
+\paragraph{Vitesses de récession.}
+T.~M.~Davis and C.~H.~Lineweaver, \emph{Expanding Confusion: Common
+Misconceptions of Cosmological Horizons and the Superluminal Expansion of the
+Universe}, PASA \textbf{21}, 97 (2004).
+\href{https://arxiv.org/abs/astro-ph/0310808}{arXiv:astro-ph/0310808}.
+Référence sur les vitesses superluminiques et les horizons.
+
+\paragraph{Distance-duality.}
+B.~A.~Bassett and M.~Kunz, \emph{Cosmic distance-duality as a probe of exotic
+physics and acceleration}, Phys.\ Rev.\ D \textbf{69}, 101305 (2004).
+
+\section{Outils en ligne}
+
+\begin{itemize}[topsep=2pt,leftmargin=*]
+\item \textbf{NED} (NASA/IPAC Extragalactic Database) Cosmology Calculator\\
+  \href{https://ned.ipac.caltech.edu/help/cosmology_calc.html}{ned.ipac.caltech.edu / help / cosmology\_calc.html}
+\item \textbf{Ned Wright (UCLA) Cosmology Calculator}\\
+  \href{https://www.astro.ucla.edu/~wright/CosmoCalc.html}{astro.ucla.edu / $\sim$wright / CosmoCalc.html}
+\item \textbf{ICRAR Cosmology Calculator}\\
+  \href{https://cosmocalc.icrar.org/}{cosmocalc.icrar.org}
+\item \textbf{Astropy} (documentation cosmologie)\\
+  \href{https://docs.astropy.org/en/stable/cosmology/}{docs.astropy.org / en / stable / cosmology}
+\end{itemize}
+
+\section{Code source}
+
+La bibliothèque \texttt{astropy.cosmology} implémente toutes les formules de
+ce cours. La cosmologie \texttt{Planck18} est définie dans
+\texttt{astropy/cosmology/realizations.py}. Le code source est disponible
+sur \href{https://github.com/astropy/astropy}{github.com/astropy/astropy}.
+
+Le programme \texttt{redshift\_distance\_gui.py} qui accompagne ce cours
+utilise PyQt6 pour l'interface et pyqtgraph pour le tracé vectoriel.
+
+%==============================================================================
+% Bibliographie manuelle (pour les \cite)
+%==============================================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{Planck2018}
+Planck Collaboration: N. Aghanim \emph{et al.},
+\textit{Planck 2018 results. VI. Cosmological parameters},
+A\&A \textbf{641}, A6 (2020).
+\href{https://arxiv.org/abs/1807.06209}{arXiv:1807.06209}.
+
+\bibitem{Hogg1999}
+D.~W. Hogg, \textit{Distance measures in cosmology},
+arXiv:astro-ph/9905116 (1999).
+
+\bibitem{Weinberg2008}
+S. Weinberg, \textit{Cosmology}, Oxford University Press, 2008.
+
+\bibitem{Dodelson2020}
+S. Dodelson and F. Schmidt, \textit{Modern Cosmology}, 2nd ed.,
+Academic Press, 2020.
+
+\bibitem{Mukhanov2005}
+V. Mukhanov, \textit{Physical Foundations of Cosmology},
+Cambridge University Press, 2005.
+
+\bibitem{Ryden2017}
+B. Ryden, \textit{Introduction to Cosmology}, 2nd ed.,
+Cambridge University Press, 2017.
+
+\bibitem{Carroll2004}
+S.~M. Carroll, \textit{Spacetime and Geometry}, Addison-Wesley, 2004.
+
+\bibitem{Etherington1933}
+I.~M.~H. Etherington,
+\textit{On the definition of distance in general relativity},
+Phil.\ Mag.\ \textbf{15}, 761 (1933).
+
+\bibitem{Riess2022}
+A.~G. Riess \emph{et al.},
+ApJL \textbf{934}, L7 (2022).
+\href{https://arxiv.org/abs/2112.04510}{arXiv:2112.04510}.
+
+\bibitem{Hubble1929}
+E. Hubble, PNAS \textbf{15}, 168 (1929).
+
+\bibitem{Lemaitre1927}
+G. Lemaître,
+Annales de la Société Scientifique de Bruxelles \textbf{A47}, 49 (1927).
+
+\bibitem{Friedmann1922}
+A. Friedmann, Z.\ Phys.\ \textbf{10}, 377 (1922).
+
+\bibitem{Robertson1935}
+H.~P. Robertson, ApJ \textbf{82}, 284 (1935).
+
+\bibitem{Walker1937}
+A.~G. Walker, Proc.\ London Math.\ Soc.\ \textbf{42}, 90 (1937).
+
+\bibitem{Wright2006}
+E.~L. Wright, PASP \textbf{118}, 1711 (2006).
+\href{https://arxiv.org/abs/astro-ph/0609593}{arXiv:astro-ph/0609593}.
+
+\bibitem{Riess1998}
+A.~G. Riess \emph{et al.}, AJ \textbf{116}, 1009 (1998).
+
+\bibitem{Perlmutter1999}
+S. Perlmutter \emph{et al.}, ApJ \textbf{517}, 565 (1999).
+
+\bibitem{Bunn2009}
+E.~F. Bunn and D.~W. Hogg,
+Am.\ J.\ Phys.\ \textbf{77}, 688 (2009).
+\href{https://arxiv.org/abs/0808.1081}{arXiv:0808.1081}.
+
+\bibitem{Bassett2004}
+B.~A. Bassett and M. Kunz, Phys.\ Rev.\ D \textbf{69}, 101305 (2004).
+
+\bibitem{Davis2004}
+T.~M. Davis and C.~H. Lineweaver, PASA \textbf{21}, 97 (2004).
+\href{https://arxiv.org/abs/astro-ph/0310808}{arXiv:astro-ph/0310808}.
+
+\bibitem{astropy}
+Astropy Collaboration, ApJ \textbf{935}, 167 (2022).
+\href{https://www.astropy.org}{astropy.org}.
+
+\bibitem{EHT2019}
+Event Horizon Telescope Collaboration,
+\textit{First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole},
+ApJL \textbf{875}, L1 (2019).
+\href{https://arxiv.org/abs/1906.11238}{arXiv:1906.11238}.
+
+\bibitem{Schmidt1963}
+M. Schmidt,
+\textit{3C 273 : A Star-Like Object with Large Red-Shift},
+Nature \textbf{197}, 1040 (1963).
+
+\bibitem{Mortlock2011}
+D. J. Mortlock \emph{et al.},
+\textit{A luminous quasar at a redshift of $z=7.085$},
+Nature \textbf{474}, 616 (2011).
+\href{https://arxiv.org/abs/1106.6088}{arXiv:1106.6088}.
+
+\bibitem{Bunker2023}
+A. J. Bunker \emph{et al.},
+\textit{JADES NIRSpec Spectroscopy of GN-z11},
+A\&A \textbf{677}, A88 (2023).
+\href{https://arxiv.org/abs/2302.07256}{arXiv:2302.07256}.
+
+\bibitem{Bautista2017}
+J. E. Bautista \emph{et al.},
+\textit{Measurement of baryon acoustic oscillation correlations at $z = 2.3$
+with SDSS DR12 Ly$\alpha$-Forests},
+A\&A \textbf{603}, A12 (2017).
+\href{https://arxiv.org/abs/1702.00176}{arXiv:1702.00176}.
+
+\bibitem{Alpher1948}
+R. A. Alpher, H. Bethe, G. Gamow,
+\textit{The Origin of Chemical Elements},
+Phys.\ Rev.\ \textbf{73}, 803 (1948).
+Le célèbre article « $\alpha\beta\gamma$ » prédisant un rayonnement résiduel.
+
+\bibitem{Penzias1965}
+A. A. Penzias and R. W. Wilson,
+\textit{A Measurement of Excess Antenna Temperature at 4080 Mc/s},
+ApJ \textbf{142}, 419 (1965). Prix Nobel de physique 1978.
+
+\bibitem{Mather1994}
+J. C. Mather \emph{et al.},
+\textit{Measurement of the Cosmic Microwave Background Spectrum by the COBE FIRAS Instrument},
+ApJ \textbf{420}, 439 (1994). Prix Nobel de physique 2006.
+
+\bibitem{Smoot1992}
+G. F. Smoot \emph{et al.},
+\textit{Structure in the COBE Differential Microwave Radiometer First-Year Maps},
+ApJL \textbf{396}, L1 (1992). Prix Nobel de physique 2006.
+
+\end{thebibliography}
+
+\end{document}
