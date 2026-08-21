@@ -26,6 +26,24 @@
 
 ## Historique
 
+### 2026-08-21 (suite) — Zéro prérequis sur les trois systèmes
+
+- **Exécutables autonomes pour Windows, macOS (Intel et Apple Silicon) et
+  Linux**, construits, testés au démarrage et publiés par GitHub Actions à
+  chaque nouvelle version. Plus besoin de Python du tout.
+- **Les lanceurs installent Python eux-mêmes** s'il est absent : winget puis
+  l'installeur officiel sous Windows (avec recherche de l'exécutable aux
+  emplacements standard, le PATH du processus courant n'étant pas encore à
+  jour) ; Homebrew sous macOS, installé au besoin ; apt, dnf, pacman, zypper ou
+  apk sous Linux. Le module `venv` manquant (Debian) est installé de la même
+  façon. Une confirmation est demandée ; `COSMO_AUTO_INSTALL=1` la donne
+  d'avance.
+- Sous macOS, `find_python` vérifie que l'interpréteur s'exécute réellement :
+  le système fournit un `python3` factice qui ne fait qu'ouvrir une fenêtre
+  d'installation.
+- Historique du dépôt réduit à un commit unique avant publication ; adresse de
+  commit remplacée par l'adresse noreply GitHub.
+
 ### 2026-08-21 — Publication
 
 - Dépôt rendu **public**, première **release v1.0.0**.

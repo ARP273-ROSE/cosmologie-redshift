@@ -26,6 +26,22 @@
 
 ## History
 
+### 2026-08-21 (continued) — No prerequisite on any of the three systems
+
+- **Standalone executables for Windows, macOS (Intel and Apple Silicon) and
+  Linux**, built, smoke-tested and published by GitHub Actions on every new
+  version. Python is no longer needed at all.
+- **The launchers install Python themselves** when it is missing: winget then
+  the official installer on Windows (looking for the interpreter in the
+  standard locations, since the current process PATH is not refreshed yet);
+  Homebrew on macOS, installed if needed; apt, dnf, pacman, zypper or apk on
+  Linux. A missing `venv` module (Debian) is installed the same way. The user
+  is asked for confirmation; `COSMO_AUTO_INSTALL=1` grants it in advance.
+- On macOS, `find_python` checks that the interpreter really runs: the system
+  ships a stub `python3` that only opens an installation dialog.
+- The repository history was squashed to a single commit before publication,
+  and the commit address replaced by the GitHub noreply one.
+
 ### 2026-08-21 — Publication
 
 - Repository made **public**, first **v1.0.0 release**.
