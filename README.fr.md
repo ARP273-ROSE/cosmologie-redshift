@@ -31,7 +31,7 @@ ou variable `COSMO_LANG=en`. Le cours existe dans les deux langues.
 
 **Documents à lire** :
 - [`MANUEL.md`](MANUEL.md) — installation, utilisation, recompilation, dépannage
-- [`PROGRESSION.md`](PROGRESSION.md) — état du projet, historique, ce qui reste à faire
+- [`CHANGELOG.fr.md`](CHANGELOG.fr.md) — ce que chaque version apporte
 
 ---
 

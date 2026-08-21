@@ -3,8 +3,8 @@
 *[English version](MANUAL.md)*
 
 Tout ce qu'il faut pour installer, utiliser, modifier, recompiler et vérifier.
-Pour l'aperçu du projet, voir [`README.fr.md`](README.fr.md) ; pour l'état d'avancement,
-[`PROGRESSION.md`](PROGRESSION.md).
+Pour l'aperçu du projet, voir [`README.fr.md`](README.fr.md) ; pour l'historique
+des versions, [`CHANGELOG.fr.md`](CHANGELOG.fr.md).
 
 ---
 

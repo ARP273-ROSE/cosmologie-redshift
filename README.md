@@ -31,7 +31,7 @@ The program is **bilingual** (French / English): use the *Language* menu,
 
 **Documents to read**:
 - [`MANUAL.md`](MANUAL.md) — installation, usage, rebuilding, troubleshooting
-- [`PROGRESS.md`](PROGRESS.md) — project status, history, what is left to do
+- [`CHANGELOG.md`](CHANGELOG.md) — what each version brings
 
 ---
 

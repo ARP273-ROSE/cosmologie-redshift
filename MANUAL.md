@@ -3,8 +3,8 @@
 *[Version française](MANUEL.md)*
 
 Everything needed to install, use, modify, rebuild and verify the program.
-For an overview see [`README.md`](README.md); for the current status,
-[`PROGRESS.md`](PROGRESS.md).
+For an overview see [`README.md`](README.md); for the version history,
+[`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
