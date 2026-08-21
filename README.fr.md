@@ -24,7 +24,7 @@ ou variable `COSMO_LANG=en`. Le cours existe dans les deux langues.
 | Dossier / fichier | Contenu |
 |---|---|
 | `launch.bat` / `launch.sh` | lanceurs Windows et Linux/macOS (venv + dépendances automatiques) |
-| `programme/` | l'application Qt6, sa version console et le noyau de calcul |
+| `programme/` | l'application Qt6, sa version console, le noyau de calcul et la recherche SIMBAD |
 | `cours/` | le cours en français (`cours_distances_cosmologiques.pdf`, 68 p.) et en anglais (`course_cosmological_distances.pdf`, 64 p.) |
 | `verif_sage/` | scripts de vérification (SageMath sans astropy + calcul formel) |
 | `requirements.txt` | numpy, scipy, astropy, PyQt6, pyqtgraph |
@@ -92,6 +92,13 @@ Pour un redshift `z` entre 0 et 1500 :
 
 **Quatre distances** — comobile `D_C`, luminosité `D_L = (1+z)D_C`,
 diamètre angulaire `D_A = D_C/(1+z)`, trajet de la lumière `D_lt = c·t_L`.
+
+**Recherche d'un objet par son nom** — taper `m31`, `NGC 224`, `3c273`,
+`Sombrero` ou `GN-z11` suffit : le redshift est demandé à
+[SIMBAD](https://simbad.u-strasbg.fr/), la base du CDS à Strasbourg. La casse,
+les espaces et les tirets n'ont pas d'importance. Quand SIMBAD ne reconnaît pas
+un nom, des variantes sont essayées et tous les identifiants correspondants
+sont proposés en liste.
 
 **Barres d'erreur** — chaque valeur est donnée avec son incertitude 1σ, propagée
 de σ(H₀) = 0,42 et σ(Ωm) = 0,0056 **en tenant compte de leur corrélation**

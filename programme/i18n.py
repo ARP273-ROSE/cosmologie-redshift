@@ -194,6 +194,35 @@ STRINGS: dict[str, dict[str, str]] = {
     "presets_tip":    ("Objets-cibles présélectionnés. Voir menu Aide → « Les objets-cibles »\n"
                        "pour les détails de chaque objet."),
 
+    # --- recherche d'un objet dans SIMBAD
+    "object_label":   "Objet :",
+    "object_tip":     ("Nom d'un objet du ciel, tapé librement : « m31 », « NGC 224 »,\n"
+                       "« 3c273 », « Sombrero », « GN-z11 ». La casse, les espaces et les\n"
+                       "tirets n'ont pas d'importance. Son redshift est demandé à SIMBAD\n"
+                       "(base de données du CDS, Strasbourg) et reporté dans le champ z."),
+    "object_hint":    "nom d'objet (m31, 3c273, GN-z11…)",
+    "object_search":  "Chercher",
+    "object_search_tip": ("Interroge SIMBAD et reporte le redshift trouvé.\n"
+                          "La touche Entrée fait la même chose."),
+    "object_working": "Recherche dans SIMBAD…",
+    "object_found":   "{name} — {otype} — z = {z}",
+    "object_none":    "Aucun objet de ce nom dans SIMBAD.",
+    "object_offline": "SIMBAD est injoignable ({error}).",
+    "object_no_z":    "{name} — {otype} : SIMBAD ne donne pas de redshift pour cet objet.",
+    "object_neg_z":   ("{name} : z = {z}, décalage vers le bleu. L'objet s'approche ;\n"
+                       "son mouvement propre l'emporte sur l'expansion, et les distances\n"
+                       "cosmologiques n'ont pas de sens ici."),
+    "object_near":    ("Attention : à z = {z}, le mouvement propre de l'objet dans son\n"
+                       "amas domine encore l'expansion. La distance déduite du redshift\n"
+                       "reste indicative en deçà de z ≈ 0,03."),
+    "object_choose_title": "Plusieurs objets correspondent",
+    "object_choose_text":  ("SIMBAD renvoie {n} objets pour « {query} ».\n"
+                            "Le plus proche de la demande est en tête."),
+    "object_col_name":     "Identifiant",
+    "object_col_type":     "Type",
+    "object_col_z":        "Redshift",
+    "object_unknown_z":    "—",
+
     # --- modèle
     "box_model":      "Modèle",
     "curvature":      "Courbure Ωk =",
@@ -290,6 +319,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "act_planck":     "Comprendre &Planck 2018",
     "act_recession":  "Vitesses de &récession superluminiques",
     "act_presets":    "Les &objets-cibles présélectionnés",
+    "act_simbad":     "Chercher un objet par son &nom",
     "act_verif":      "&Vérification des calculs (SageMath)",
     "act_sigma":      "&Incertitudes, courbure et tension de Hubble",
     "act_about":      "À &propos",
@@ -297,6 +327,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "title_planck":   "Cosmologie Planck 2018",
     "title_recession": "Vitesses de récession",
     "title_presets":  "Objets-cibles présélectionnés",
+    "title_simbad":   "Chercher un objet par son nom",
     "title_verif":    "Vérification des calculs",
     "title_sigma":    "Incertitudes, courbure et tension de Hubble",
     "title_about":    "À propos",
@@ -338,10 +369,14 @@ STRINGS: dict[str, dict[str, str]] = {
     "cli_col_object": "objet",
     "cli_col_age":    "âge à z",
     "cli_horizon":    "  horizon des particules : {ph:.3f} G al   ·   c·t₀ = {ct0:.3f} G al",
-    "cli_prompt":     "  Tapez un redshift, 'table' pour la liste des presets, 'q' pour quitter.",
+    "cli_prompt":     ("  Tapez un redshift, ou le nom d'un objet à chercher dans SIMBAD.\n"
+                       "  'table' donne la liste des presets, 'q' quitte."),
+    "cli_object_searching": "  Recherche de « {query} » dans SIMBAD…",
+    "cli_object_choose":    "  {n} objets correspondent. Indiquez un numéro, ou Entrée pour renoncer :",
+    "cli_object_prompt":    "  n° = ",
     "cli_curvature":  "  Courbure imposée : Ωk = {ok:+.4f}",
     "cli_bye":        "  Au revoir.",
-    "cli_bad_input":  "  Entrée invalide : tapez un nombre, 'table' ou 'q'.",
+    "cli_bad_input":  "  Entrée invalide : tapez un nombre, un nom d'objet, 'table' ou 'q'.",
     "cli_negative":   "  Le redshift ne peut pas être négatif.",
     "cli_opaque":     ("  Au-delà de z = 1500 l'univers est opaque (avant la recombinaison) :\n"
                        "  les « distances » n'y sont plus observables. Calcul quand même effectué."),
@@ -351,6 +386,7 @@ STRINGS: dict[str, dict[str, str]] = {
   --table, -t         table des huit presets
   --omega-k VALEUR    courbure spatiale Ωk (défaut 0 = univers plat)
   --no-shoes          ne pas afficher la comparaison SH0ES
+  --object NOM, -o    chercher le redshift d'un objet dans SIMBAD
   --lang fr|en        langue d'affichage
   --help, -h          cette aide
 """,
@@ -412,6 +448,35 @@ STRINGS: dict[str, dict[str, str]] = {
     "presets":        "Presets:",
     "presets_tip":    ("Preselected targets. See Help → « The preselected targets »\n"
                        "for details on each one."),
+
+    # --- SIMBAD object lookup
+    "object_label":   "Object:",
+    "object_tip":     ("Name of a sky object, typed freely: \"m31\", \"NGC 224\",\n"
+                       "\"3c273\", \"Sombrero\", \"GN-z11\". Case, spaces and hyphens do not\n"
+                       "matter. Its redshift is requested from SIMBAD (the CDS database\n"
+                       "in Strasbourg) and copied into the z field."),
+    "object_hint":    "object name (m31, 3c273, GN-z11…)",
+    "object_search":  "Look up",
+    "object_search_tip": ("Queries SIMBAD and copies the redshift it returns.\n"
+                          "Pressing Enter does the same."),
+    "object_working": "Querying SIMBAD…",
+    "object_found":   "{name} — {otype} — z = {z}",
+    "object_none":    "No object of that name in SIMBAD.",
+    "object_offline": "SIMBAD cannot be reached ({error}).",
+    "object_no_z":    "{name} — {otype}: SIMBAD lists no redshift for this object.",
+    "object_neg_z":   ("{name}: z = {z}, a blueshift. The object is approaching; its own\n"
+                       "motion outweighs the expansion, and cosmological distances are\n"
+                       "meaningless here."),
+    "object_near":    ("Careful: at z = {z} the object's own motion inside its cluster\n"
+                       "still dominates the expansion. A distance derived from redshift\n"
+                       "remains indicative below z ≈ 0.03."),
+    "object_choose_title": "Several objects match",
+    "object_choose_text":  ("SIMBAD returns {n} objects for \"{query}\".\n"
+                            "The closest match to the request comes first."),
+    "object_col_name":     "Identifier",
+    "object_col_type":     "Type",
+    "object_col_z":        "Redshift",
+    "object_unknown_z":    "—",
 
     "box_model":      "Model",
     "curvature":      "Curvature Ωk =",
@@ -504,6 +569,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "act_planck":     "Understanding &Planck 2018",
     "act_recession":  "Superluminal &recession velocities",
     "act_presets":    "The preselected &targets",
+    "act_simbad":     "Looking up an object by &name",
     "act_verif":      "&Verification of the calculations (SageMath)",
     "act_sigma":      "&Uncertainties, curvature and the Hubble tension",
     "act_about":      "&About",
@@ -511,6 +577,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "title_planck":   "Planck 2018 cosmology",
     "title_recession": "Recession velocities",
     "title_presets":  "Preselected targets",
+    "title_simbad":   "Looking up an object by name",
     "title_verif":    "Verification of the calculations",
     "title_sigma":    "Uncertainties, curvature and the Hubble tension",
     "title_about":    "About",
@@ -550,10 +617,14 @@ STRINGS: dict[str, dict[str, str]] = {
     "cli_col_object": "object",
     "cli_col_age":    "age at z",
     "cli_horizon":    "  particle horizon: {ph:.3f} Gly   ·   c·t₀ = {ct0:.3f} Gly",
-    "cli_prompt":     "  Type a redshift, 'table' for the preset list, 'q' to quit.",
+    "cli_prompt":     ("  Type a redshift, or the name of an object to look up in SIMBAD.\n"
+                       "  'table' lists the presets, 'q' quits."),
+    "cli_object_searching": "  Looking up \"{query}\" in SIMBAD…",
+    "cli_object_choose":    "  {n} objects match. Give a number, or press Enter to give up:",
+    "cli_object_prompt":    "  no. = ",
     "cli_curvature":  "  Imposed curvature: Ωk = {ok:+.4f}",
     "cli_bye":        "  Goodbye.",
-    "cli_bad_input":  "  Invalid input: type a number, 'table' or 'q'.",
+    "cli_bad_input":  "  Invalid input: type a number, an object name, 'table' or 'q'.",
     "cli_negative":   "  The redshift cannot be negative.",
     "cli_opaque":     ("  Beyond z = 1500 the universe is opaque (before recombination):\n"
                        "  « distances » there are not observable. Computing anyway."),
@@ -563,6 +634,7 @@ STRINGS: dict[str, dict[str, str]] = {
   --table, -t         table of the eight presets
   --omega-k VALUE     spatial curvature Ωk (default 0 = flat universe)
   --no-shoes          do not show the SH0ES comparison
+  --object NAME, -o   look up an object's redshift in SIMBAD
   --lang fr|en        display language
   --help, -h          this help
 """,

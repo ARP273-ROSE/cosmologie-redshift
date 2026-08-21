@@ -103,6 +103,40 @@ w.ok_spin.setValue(0.0)
 w.z_spin.setValue(2.34)
 app.processEvents()
 
+# --- recherche d'un objet : le champ, puis le traitement de la réponse ------
+# SIMBAD n'est pas interrogé ici : la réponse est fournie telle qu'elle
+# arriverait du réseau, pour que le contrôle reste valable hors ligne.
+import simbad                                  # noqa: E402
+
+print("\nRecherche d'un objet :")
+w.obj_edit.clear()
+QTest.keyClicks(w.obj_edit, "3c273")
+print(f"    frappe « 3c273 » -> champ = {w.obj_edit.text()!r}")
+assert w.obj_edit.text() == "3c273"
+
+w._simbad_query = "3c273"
+for label, answer, expect_z in (
+        ("objet trouvé",  ([simbad.SimbadObject("3C 273", "Quasar", 0.157568)], None), 0.157568),
+        ("objet proche",  ([simbad.SimbadObject("M  87", "AGN", 0.0042)], None), 0.0042),
+        ("sans redshift", ([simbad.SimbadObject("LBN 110", "HII Region", None)], None), None),
+        ("blueshift",     ([simbad.SimbadObject("M  31", "AGN", -0.001)], None), None),
+        ("introuvable",   ([], None), None),
+        ("hors ligne",    ([], "timed out"), None)):
+    before = w.z_spin.value()
+    w._on_simbad_done(answer)
+    app.processEvents()
+    got = w.z_spin.value()
+    ok = abs(got - expect_z) < 1e-5 if expect_z is not None else abs(got - before) < 1e-12
+    status = w.obj_status.text().splitlines()[0]
+    print(f"    {label:<14} z = {got:<10.6f} {status[:52]}   {'OK' if ok else 'ÉCHEC'}")
+    assert ok, f"{label} : z attendu {expect_z}, obtenu {got}"
+    assert status.strip(), f"{label} : aucun message affiché"
+
+w.obj_edit.clear()
+w._set_object_status(None)          # les captures ne doivent pas garder ce message
+w.z_spin.setValue(2.34)
+app.processEvents()
+
 w.z_spin.setValue(2.34)
 app.processEvents()
 w.grab().save(str(OUT / "gui_z2.34.png"))

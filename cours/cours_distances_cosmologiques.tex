@@ -282,7 +282,8 @@ L'interface comporte trois zones~:
 \begin{enumerate}[topsep=2pt]
 \item \textbf{En-tête}~: titre et phrase de référence cosmologique.
 \item \textbf{Panneau de gauche}~: champ de saisie $z$, boutons de presets,
-puis quatre distances et quatre informations cosmologiques.
+champ de recherche d'un objet par son nom, puis quatre distances et quatre
+informations cosmologiques.
 \item \textbf{Panneau de droite}~: tracé interactif des quatre distances
 en fonction de $z$ (axes logarithmiques), avec un curseur vertical à la valeur
 courante de $z$ et des repères verticaux pour $z=1$, GN-z11, CMB.
@@ -450,6 +451,38 @@ Le champ $z$ accepte une valeur entre $0$ et $1500$. Les boutons
   ré-ionisent l'univers neutre.
 \item \textbf{CMB}~: $z=1089{,}80$, surface de dernière diffusion.
 \end{itemize}
+\end{tcolorbox}
+
+\subsection{Chercher un objet par son nom}
+\label{sec:simbad}
+
+\begin{tcolorbox}[gui]
+Le champ \textbf{Objet} évite d'avoir à connaître le redshift par c\oe ur~: le
+nom y est tapé librement (\texttt{m31}, \texttt{ngc224}, \texttt{3c273},
+\texttt{Sombrero}, \texttt{GN-z11}), et la question est posée à \textbf{SIMBAD},
+la base de données astronomiques du Centre de données astronomiques de
+Strasbourg. La casse, les espaces et les tirets sont indifférents.
+
+\medskip
+Deux précautions valent d'être retenues, car elles touchent à la physique
+autant qu'à l'informatique.
+
+\medskip
+\textbf{Un redshift n'est pas toujours une distance.} En deçà de
+$z \approx 0{,}03$, le mouvement propre de l'objet dans son amas, quelques
+centaines de \si{\km\per\second}, reste comparable à la vitesse
+d'expansion~: la « distance » déduite du redshift n'y est qu'indicative.
+M~31 en donne le cas extrême, avec $z = -0{,}001$~: la galaxie d'Andromède
+s'approche de nous à \SI{300}{\km\per\second}, et sa distance
+cosmologique n'a tout simplement aucun sens. Le programme le signale au lieu
+de calculer.
+
+\medskip
+\textbf{Les homonymes existent.} \texttt{GN-z11} désigne la galaxie lointaine à
+$z = 10{,}6$~; \texttt{GNz11}, sans tiret, désigne l'objet n\textsuperscript{o}
+11 du catalogue GNZ, une galaxie proche à $z = 0{,}053$. SIMBAD répond
+exactement à ce qu'on lui demande~: l'identifiant retenu s'affiche à côté du
+champ, et c'est lui qu'il faut lire.
 \end{tcolorbox}
 
 \subsection{Distance comobile}

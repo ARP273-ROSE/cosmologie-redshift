@@ -8,6 +8,48 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## 1.3.0 — 21 août 2026
+
+### Ajouté
+
+- **Recherche d'un objet par son nom.** Un champ `Objet` convertit un nom en
+  redshift : `m31`, `M 31`, `ngc224`, `Messier 31`, `3c273`, `Sombrero`,
+  `GN-z11` fonctionnent tous. La question est posée à
+  [SIMBAD](https://simbad.u-strasbg.fr/), la base du Centre de données
+  astronomiques de Strasbourg, dans un fil séparé : l'interface ne se fige
+  jamais.
+- Casse, espaces, tirets, soulignés et zéros de tête sont ignorés, et les
+  abréviations de catalogues usuelles sont développées (`abell` → `ACO`,
+  `messier` → `M`). Quand SIMBAD ne reconnaît pas le nom tel quel, des
+  variantes locales sont essayées, puis les identifiants sont fouillés par
+  sous-chaîne — c'est ainsi que `gn-z11` retrouve `[OBV2016] GN-z11`.
+- **Une liste de choix dès que la réponse relève de la conjecture.** Les noms
+  que SIMBAD résout lui-même sont appliqués directement ; ceux qui ne sont
+  trouvés qu'en cherchant sont présentés en liste de candidats, le plus proche
+  de la demande en tête.
+- La version console reçoit `--object NOM`, et à l'invite interactive tout ce
+  qui n'est pas un nombre est pris pour un nom d'objet.
+- Nouvelle entrée d'aide, *Chercher un objet par son nom* (F7), dans les deux
+  langues.
+- Les objets sans redshift utilisable sont expliqués au lieu d'être appliqués
+  en silence : absence de redshift dans SIMBAD, décalage vers le bleu (M 31
+  s'approche), ou z < 0,03, où le mouvement propre dans l'amas l'emporte encore
+  sur l'expansion.
+- `verif_sage/test_simbad.py` contrôle hors ligne la normalisation des noms,
+  les variantes engendrées, le classement des correspondances et les motifs de
+  recherche, puis résout une série de noms réels dont la réponse est connue. La
+  partie réseau est ignorée, sans faire échouer le contrôle, quand SIMBAD est
+  injoignable.
+
+### À savoir
+
+SIMBAD répond exactement à ce qui est demandé, et les homonymes existent :
+`GN-z11` est la galaxie lointaine à z = 10,6, tandis que `GNz11` sans tiret est
+l'objet n° 11 du catalogue GNZ, à z = 0,053. L'identifiant qui a répondu est
+toujours affiché à côté du champ.
+
+---
+
 ## 1.2.0 — 21 août 2026
 
 ### Modifié

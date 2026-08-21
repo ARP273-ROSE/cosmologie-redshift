@@ -132,12 +132,17 @@ Options :
 ./launch.sh console 2.34                  # calcul direct
 ./launch.sh console 2.34 --omega-k 0.01  # avec courbure
 ./launch.sh console 2.34 --no-shoes      # sans la comparaison SH0ES
+./launch.sh console --object m31         # redshift d'un objet, via SIMBAD
 ./launch.sh console --help               # rappel des options
 ```
 
 En interactif : taper un nombre, `table` pour la liste des presets, `q` pour quitter. La virgule
 décimale est acceptée (`2,34` comme `2.34`). Au-delà de z = 1500, le programme
 prévient que l'univers était opaque, puis calcule quand même.
+
+Tout ce qui n'est pas un nombre est pris pour un nom d'objet et cherché dans
+SIMBAD, exactement comme au paragraphe 3.3. Si plusieurs objets répondent, ils
+sont numérotés et le choix se fait en tapant le numéro.
 
 ---
 
@@ -174,7 +179,50 @@ Ces âges sont ceux calculés **en Planck 2018**. Ils diffèrent parfois des val
 des articles d'origine, qui utilisaient les cosmologies WMAP de leur époque
 (ULAS J1120 : 770 Myr dans l'article, 749 ici).
 
-### 3.3 Le panneau « Modèle » : courbure et comparaison SH0ES
+### 3.3 Chercher un objet par son nom
+
+À la place d'un redshift, le champ `Objet` accepte le nom d'un objet du ciel :
+`m31`, `M 31`, `ngc224`, `Messier 31`, `3c273`, `Sombrero`, `GN-z11`. La touche
+Entrée ou le bouton interrogent **SIMBAD**, la base de données astronomiques du
+Centre de données astronomiques de Strasbourg (environ onze millions d'objets),
+et le redshift renvoyé est reporté dans le champ `z`. La recherche a lieu dans
+un fil séparé : l'interface ne se fige jamais, même sur une liaison lente.
+
+La tolérance est volontaire. Casse, espaces, tirets, soulignés et zéros de tête
+sont ignorés, et les abréviations de catalogues usuelles sont développées
+(`abell` → `ACO`, `messier` → `M`). La recherche procède en quatre temps et
+s'arrête au premier qui répond :
+
+| Étape | Ce qui est essayé | Exemple |
+|---|---|---|
+| 1 | le nom tel quel, confié au résolveur de SIMBAD | `abell2218` → `ACO 2218` |
+| 2 | variantes locales : séparateurs ajoutés ou retirés, catalogue développé | `ngc224` → `NGC 224` |
+| 3 | identifiants contenant la chaîne, casse indifférente | `gn-z11` → `[OBV2016] GN-z11` |
+| 4 | fouille de tous les identifiants connus | `ulas j1120` → 7 candidats |
+
+Les étapes 1 et 2 sont des réponses du résolveur de SIMBAD et valent certitude.
+Les étapes 3 et 4 relèvent de la conjecture : tout ce qui correspond est alors
+présenté en liste, le plus proche de la demande en tête, et le choix revient à
+l'utilisateur.
+
+**L'identifiant affiché mérite d'être lu.** SIMBAD répond exactement à ce qui
+est demandé, et les homonymes existent : `GN-z11` est la galaxie lointaine à
+z = 10,6, tandis que `GNz11` sans tiret est l'objet n° 11 du catalogue GNZ, à
+z = 0,053.
+
+Trois cas donnent un message au lieu d'une valeur :
+
+| Cas | Exemple | Message |
+|---|---|---|
+| aucun redshift dans SIMBAD | une nébuleuse de la Voie lactée | *SIMBAD ne donne pas de redshift pour cet objet* |
+| décalage vers le bleu | M 31, qui s'approche à 300 km/s | *l'objet s'approche… les distances cosmologiques n'ont pas de sens ici* |
+| z < 0,03 | M 87 | la valeur est appliquée, avec un avertissement : le mouvement propre domine encore |
+
+La recherche exige une connexion à Internet ; sans réseau, seul ce champ
+devient inopérant. La variable d'environnement `COSMO_NO_UPDATE_CHECK` est sans
+effet ici : elle ne concerne que la vérification des mises à jour.
+
+### 3.4 Le panneau « Modèle » : courbure et comparaison SH0ES
 
 | Contrôle | Effet |
 |---|---|
@@ -188,7 +236,7 @@ Planck 2018 + BAO mesure Ωk = 0,0007 ± 0,0019, d'où le défaut à zéro.
 Attention : l'âge actuel t₀ dépend lui aussi de la courbure (13,744 Gyr pour
 Ωk = +0,01) ; le contrôle « t_L + âge = t₀ » se réfère au modèle courant.
 
-### 3.4 Les barres d'erreur
+### 3.5 Les barres d'erreur
 
 Chaque valeur est donnée avec son incertitude 1σ, propagée de
 σ(H₀) = 0,42 km/s/Mpc et σ(Ωm) = 0,0056 par dérivées numériques :
@@ -215,7 +263,7 @@ un **minimum vers z ≈ 5** — un redshift « pivot » où le modèle prédit l
 distances mieux qu'il ne connaît ses propres paramètres. Et surtout : la
 tension de Hubble déplace tout de 7,4 %, soit 40 fois les barres d'erreur.
 
-### 3.5 Les quatre distances
+### 3.6 Les quatre distances
 
 | Affichage | Formule | À quoi ça sert |
 |---|---|---|
@@ -228,7 +276,7 @@ tension de Hubble déplace tout de 7,4 %, soit 40 fois les barres d'erreur.
 identique paraît plus grand à z = 5 qu'à z = 1. C'est le point le plus
 contre-intuitif du lot, et il est repéré sur le graphe.
 
-### 3.6 Grandeurs cosmologiques
+### 3.7 Grandeurs cosmologiques
 
 - **Lookback time** `t_L(z) = ∫₀^z dz'/[(1+z')H(z')]` — durée du trajet de la lumière.
 - **Âge de l'univers à z** `t_em(z) = ∫_z^∞ dz'/[(1+z')H(z')]` — bascule
@@ -237,14 +285,14 @@ contre-intuitif du lot, et il est repéré sur le graphe.
 - **E(z) = H(z)/H₀** et `H(z)` : c'est la fonction intégrée dans toutes les
   distances, affichée pour qu'on voie d'où viennent les nombres.
 
-### 3.7 Les trois vitesses de récession
+### 3.8 Les trois vitesses de récession
 
 Aide **F3** pour la discussion complète. En résumé : seule la troisième
 (`v = H₀·D_C`) est correcte en cosmologie ; elle dépasse `c` au-delà de
 z ≈ 1,48 et c'est parfaitement licite — ce n'est pas une vitesse de propagation
 dans l'espace mais un taux d'étirement de l'espace.
 
-### 3.8 Barre d'état — les contrôles permanents
+### 3.9 Barre d'état — les contrôles permanents
 
 ```
 z = 2.34 · contrôle : t_L + âge = 13.786885 Gyr (t₀ = 13.786885 Gyr, écart 0.00 µGyr)
@@ -255,13 +303,13 @@ Ces deux identités doivent rester vraies quelle que soit `z`. Si l'une s'écart
 c'est qu'astropy a changé de version ou de cosmologie par défaut : ne pas
 ignorer.
 
-### 3.9 Le graphe
+### 3.10 Le graphe
 
 Échelle log-log, zoom adaptatif sur `[z/30, 8z]`. Repères verticaux : `z=1`,
 maximum de `D_A`, GN-z11, CMB. Asymptotes horizontales : `c·t₀` (que la courbe
 verte ne franchit jamais) et l'horizon des particules (que la cyan approche).
 
-### 3.10 Menu Aide
+### 3.11 Menu Aide
 
 | Touche | Contenu |
 |---|---|
@@ -278,6 +326,7 @@ verte ne franchit jamais) et l'horizon des particules (que la cyan approche).
 ```
 programme/
 ├── cosmo_core.py                     TOUTE la physique
+├── simbad.py                         recherche d'objets par leur nom (SIMBAD)
 ├── redshift_distance_gui.py          interface Qt6 (affichage seul)
 ├── redshift_distance_calculator.py   version console (affichage seul)
 ├── make_logo.py                      génération du logo
@@ -308,6 +357,10 @@ Le dossier `cache/` est ignoré par git. Pour désactiver : variable
 d'environnement `COSMO_NO_CACHE=1`, ou `curves(..., use_cache=False)`.
 | `format_distance()`, `format_time()` | mise en forme (al/kal/Mal/Gal, Gyr/Myr/kyr) |
 | `PRESETS` | les huit objets, avec leurs infobulles |
+
+`simbad.py` fait bande à part : c'est le seul module qui touche au réseau, il
+ne dépend que de la bibliothèque standard, et il expose `resolve(nom)`, qui
+renvoie la liste des objets candidats.
 | `T0_GYR`, `D_H_GLYR`, `PARTICLE_HORIZON_GLYR`, `EVENT_HORIZON_GLYR`, `Z_DA_MAX`, `DA_MAX_GLYR` | constantes dérivées |
 
 ### Changer de cosmologie
@@ -384,9 +437,27 @@ Depuis la racine du dépôt, sur n'importe quelle plateforme :
 
 Le script force lui-même `QT_QPA_PLATFORM=offscreen`. Il balaye 8 valeurs de `z`
 (dont les cas limites 0 et 1500), imprime les contrôles de cohérence, ouvre les
-six boîtes d'aide et réécrit les captures de `captures/`.
+huit boîtes d'aide dans les deux langues, vérifie que les champs numériques
+acceptent la frappe avec l'un ou l'autre séparateur décimal, éprouve le champ
+de recherche d'objet sur des réponses SIMBAD simulées — trouvé, sans redshift,
+décalage vers le bleu, introuvable, hors ligne — et réécrit les captures de
+`captures/`.
 **C'est le test à relancer après toute modification de la GUI.**
 
+
+### 6.4 Contrôler la recherche SIMBAD
+
+```bash
+.venv/bin/python verif_sage/test_simbad.py            # Linux / macOS
+.venv\Scripts\python.exe verif_sage\test_simbad.py    # Windows
+```
+
+Hors ligne, il vérifie la normalisation des noms, les variantes engendrées, le
+classement des correspondances et les motifs de recherche. Puis il résout une
+série de noms réels dont la réponse est connue (`m31`, `ngc224`, `3c273`,
+`abell2218`, `gn-z11`…), y compris le piège des homonymes `GN-z11` / `GNz11`.
+La partie réseau est ignorée, sans faire échouer le contrôle, quand SIMBAD est
+injoignable.
 ---
 
 ## 7. Recompiler les documents LaTeX

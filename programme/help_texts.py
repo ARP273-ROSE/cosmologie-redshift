@@ -21,7 +21,8 @@ from i18n import current_language
 
 __all__ = ["help_html", "HELP_KEYS"]
 
-HELP_KEYS = ("distances", "planck", "recession", "presets", "verif", "sigma", "about")
+HELP_KEYS = ("distances", "planck", "recession", "presets", "simbad",
+             "verif", "sigma", "about")
 
 
 def help_html(key: str, ctx: dict) -> str:
@@ -247,6 +248,47 @@ la réionisation s'achève vers z ≈ 5,5-6.</p>
 puisse capter, émise quand l'univers avait <b>372 000 ans</b> (valeur Planck
 2018 ; l'ancienne valeur WMAP de 380 000 ans est encore souvent citée) et est
 devenu transparent pour la première fois.</p>
+""",
+
+"simbad": """
+<h2 style="color:#94b8c8;">Chercher un objet par son nom</h2>
+
+<p>Le champ <i>Objet</i> évite d'avoir à connaître le redshift par cœur. Le nom
+y est tapé librement&nbsp;: <code>m31</code>, <code>M&nbsp;31</code>,
+<code>ngc224</code>, <code>Messier&nbsp;31</code> et <code>andromeda</code>
+désignent le même objet. La casse, les espaces, les tirets et les zéros de
+tête n'ont pas d'importance.</p>
+
+<p>La question est posée à <b>SIMBAD</b>, la base de données astronomiques du
+Centre de données stellaires de Strasbourg, qui recense environ onze millions
+d'objets et leurs mesures publiées. Le redshift renvoyé est reporté dans le
+champ <i>z</i>, et l'identifiant retenu s'affiche à côté du bouton&nbsp;: il
+faut le lire, car c'est lui qui dit quel objet a réellement répondu.</p>
+
+<h3 style="color:#a8a0c0;">Quand plusieurs objets répondent</h3>
+<p>Si SIMBAD ne reconnaît pas le nom tel quel, le programme essaie des
+variantes, puis cherche la chaîne de caractères parmi tous les identifiants
+connus. Les objets trouvés sont alors présentés dans une liste, le plus proche
+de la demande en tête&nbsp;: c'est à l'utilisateur de trancher.</p>
+
+<h3 style="color:#a8a0c0;">Deux avertissements</h3>
+<p><b>Les homonymes existent.</b> <code>GN-z11</code> est la galaxie lointaine
+à <i>z</i>&nbsp;=&nbsp;10,6&nbsp;; <code>GNz11</code> sans tiret est
+l'objet n°&nbsp;11 du catalogue GNZ, une galaxie proche à
+<i>z</i>&nbsp;=&nbsp;0,053. SIMBAD répond exactement à ce qui est demandé,
+d'où l'importance de vérifier l'identifiant affiché.</p>
+
+<p><b>Tous les objets n'ont pas de redshift utilisable.</b> Une étoile ou une
+nébuleuse de la Voie lactée n'en a pas au sens cosmologique. Une galaxie proche
+peut même être en décalage vers le bleu&nbsp;: M&nbsp;31 s'approche à
+300&nbsp;km/s. En deçà de <i>z</i>&nbsp;&asymp;&nbsp;0,03, le mouvement propre
+de l'objet dans son amas l'emporte encore sur l'expansion, et la distance
+déduite du redshift n'est qu'indicative&nbsp;; le programme le signale.</p>
+
+<p style="color:#7a8498;font-size:9pt;">La recherche exige une connexion à
+Internet. Sans réseau, le reste du programme fonctionne normalement&nbsp;: seul
+ce champ devient inopérant. Version console&nbsp;:
+<code>--object&nbsp;m31</code>, ou un nom tapé directement à l'invite.</p>
 """,
 
 "verif": """
@@ -568,6 +610,46 @@ around z ≈ 5.5-6.</p>
 the universe was <b>372 000 years</b> old (Planck 2018 value; the older WMAP
 figure of 380 000 years is still often quoted) and became transparent for the
 first time.</p>
+""",
+
+"simbad": """
+<h2 style="color:#94b8c8;">Looking up an object by name</h2>
+
+<p>The <i>Object</i> field saves having to remember redshifts. Names are typed
+freely: <code>m31</code>, <code>M&nbsp;31</code>, <code>ngc224</code>,
+<code>Messier&nbsp;31</code> and <code>andromeda</code> all point at the same
+galaxy. Case, spaces, hyphens and leading zeros do not matter.</p>
+
+<p>The question goes to <b>SIMBAD</b>, the astronomical database of the
+Strasbourg astronomical Data Center, which holds some eleven million objects
+together with their published measurements. The redshift that comes back is
+copied into the <i>z</i> field, and the identifier that answered is shown next
+to the button — it is worth reading, since it says which object actually
+replied.</p>
+
+<h3 style="color:#a8a0c0;">When several objects answer</h3>
+<p>If SIMBAD does not recognise the name as typed, the program tries variants,
+then searches for the string among every known identifier. Whatever it finds is
+offered as a list, closest match first, and the choice is left to the user.</p>
+
+<h3 style="color:#a8a0c0;">Two warnings</h3>
+<p><b>Homonyms exist.</b> <code>GN-z11</code> is the distant galaxy at
+<i>z</i>&nbsp;=&nbsp;10.6; <code>GNz11</code> without the hyphen is object
+no.&nbsp;11 of the GNZ catalogue, a nearby galaxy at
+<i>z</i>&nbsp;=&nbsp;0.053. SIMBAD answers exactly what it is asked, which is
+why the identifier on display should be checked.</p>
+
+<p><b>Not every object has a usable redshift.</b> A star or a nebula in the
+Milky Way has none in the cosmological sense. A nearby galaxy may even be
+blueshifted: M&nbsp;31 is approaching at 300&nbsp;km/s. Below
+<i>z</i>&nbsp;&asymp;&nbsp;0.03 an object's own motion inside its cluster still
+outweighs the expansion, and a distance derived from redshift is merely
+indicative; the program says so.</p>
+
+<p style="color:#7a8498;font-size:9pt;">The lookup needs an internet
+connection. Without one the rest of the program works normally and only this
+field goes idle. Console version: <code>--object&nbsp;m31</code>, or simply a
+name typed at the prompt.</p>
 """,
 
 "verif": """

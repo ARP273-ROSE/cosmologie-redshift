@@ -101,6 +101,10 @@ def collect(win) -> list[tuple[str, str]]:
                     continue
                 if isinstance(txt, str) and txt.strip():
                     out.append((type(wid).__name__, txt))
+        if hasattr(wid, "placeholderText"):
+            hint = wid.placeholderText()
+            if hint.strip():
+                out.append((type(wid).__name__ + ".placeholder", hint))
         tip = wid.toolTip()
         if tip.strip():
             out.append((type(wid).__name__ + ".tooltip", tip))

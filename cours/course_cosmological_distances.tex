@@ -278,7 +278,8 @@ The interface has four areas:
 
 \begin{enumerate}[topsep=2pt]
 \item \textbf{Header}: title and the cosmological reference line.
-\item \textbf{Redshift panel}: the $z$ field and the preset buttons.
+\item \textbf{Redshift panel}: the $z$ field, the preset buttons and the
+field that looks up an object by its name.
 \item \textbf{Model panel}: spatial curvature $\Ok$ and the SH0ES comparison.
 \item \textbf{Left panel}: four distances and the cosmological quantities;
 \textbf{right panel}: an interactive plot of the four distances against $z$
@@ -437,6 +438,36 @@ The $z$ field accepts values between $0$ and $1500$, with five decimals; both
   the neutral universe.
 \item \textbf{CMB} ($z=1089.80$): the last-scattering surface.
 \end{itemize}
+\end{tcolorbox}
+
+\subsection{Looking up an object by name}
+\label{sec:simbad}
+
+\begin{tcolorbox}[gui]
+The \textbf{Object} field saves having to remember redshifts: a name is typed
+freely (\texttt{m31}, \texttt{ngc224}, \texttt{3c273}, \texttt{Sombrero},
+\texttt{GN-z11}) and the question goes to \textbf{SIMBAD}, the astronomical
+database of the Strasbourg astronomical Data Center. Case, spaces and hyphens
+do not matter.
+
+\medskip
+Two cautions are worth keeping in mind, as they belong to the physics as much
+as to the software.
+
+\medskip
+\textbf{A redshift is not always a distance.} Below $z \approx 0.03$, an
+object's own motion inside its cluster --- a few hundred
+\si{\km\per\second} --- remains comparable to the expansion velocity, so a
+``distance'' derived from redshift is merely indicative there. M~31 is the
+extreme case, at $z = -0.001$: the Andromeda galaxy is approaching us at
+\SI{300}{\km\per\second}, and its cosmological distance simply has no meaning.
+The program says so instead of computing.
+
+\medskip
+\textbf{Homonyms exist.} \texttt{GN-z11} is the distant galaxy at $z = 10.6$;
+\texttt{GNz11}, without the hyphen, is object no.~11 of the GNZ catalogue, a
+nearby galaxy at $z = 0.053$. SIMBAD answers exactly what it is asked: the
+identifier that replied is shown next to the field, and it is the one to read.
 \end{tcolorbox}
 
 \subsection{Comoving distance}

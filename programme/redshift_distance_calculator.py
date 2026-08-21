@@ -15,6 +15,7 @@ Usage :
     python redshift_distance_calculator.py 2.34 --omega-k 0.01  # univers ouvert
     python redshift_distance_calculator.py 2.34 --no-shoes      # sans comparaison
     python redshift_distance_calculator.py 2.34 --lang en       # in English
+    python redshift_distance_calculator.py --object m31         # nom d'objet (SIMBAD)
 
 Les valeurs sont données avec leur incertitude 1σ, propagée depuis
 σ(H₀) = 0,42 et σ(Ωm) = 0,0056 en tenant compte de leur corrélation.
@@ -40,6 +41,7 @@ from cosmo_core import (
 )
 from i18n import t, set_language
 from updates import __version__, latest_version, is_newer, RELEASES_URL
+import simbad
 
 SEP = "=" * 78
 
@@ -111,6 +113,59 @@ def table() -> None:
     print(SEP)
 
 
+
+def _say(message: str) -> None:
+    """Affiche un message en gardant l'indentation sur toutes ses lignes."""
+    print("  " + message.replace("\n", "\n  "))
+
+
+def lookup(query: str, interactive: bool = False):
+    """Cherche un objet dans SIMBAD et renvoie son redshift, ou None.
+
+    Quand plusieurs objets répondent au même nom, ils sont numérotés : en mode
+    interactif l'utilisateur choisit, sinon la liste est simplement affichée.
+    """
+    print(t("cli_object_searching", query=query))
+    try:
+        objects, _ = simbad.resolve(query)
+    except simbad.SimbadError as exc:
+        _say(t("object_offline", error=exc))
+        return None
+    if not objects:
+        _say(t("object_none"))
+        return None
+
+    obj = objects[0]
+    if len(objects) > 1:
+        print(t("cli_object_choose", n=len(objects)))
+        for i, candidate in enumerate(objects, 1):
+            z = t("object_unknown_z") if candidate.redshift is None \
+                else fmt_num(candidate.redshift, 6)
+            print(f"    {i:2d}. {candidate.name:<32} {candidate.otype:<28} z = {z}")
+        if not interactive:
+            return None
+        try:
+            raw = input(t("cli_object_prompt")).strip()
+        except (KeyboardInterrupt, EOFError):
+            return None
+        if not raw.isdigit() or not 1 <= int(raw) <= len(objects):
+            return None
+        obj = objects[int(raw) - 1]
+
+    otype = obj.otype or "?"
+    if obj.redshift is None:
+        _say(t("object_no_z", name=obj.name, otype=otype))
+        return None
+    if obj.redshift <= 0.0:
+        _say(t("object_neg_z", name=obj.name, z=fmt_num(obj.redshift, 6)))
+        return None
+    _say(t("object_found", name=obj.name, otype=otype,
+             z=fmt_num(obj.redshift, 6)))
+    if obj.redshift < 0.03:
+        _say(t("object_near", z=fmt_num(obj.redshift, 6)))
+    return obj.redshift
+
+
 def main() -> None:
     args = list(sys.argv[1:])
 
@@ -148,6 +203,19 @@ def main() -> None:
         if abs(Ok) > 0.05:
             sys.exit("|Ωk| ≤ 0.05 (Planck: 0.0007 ± 0.0019)")
 
+    for flag in ("--object", "-o"):
+        if flag in args:
+            i = args.index(flag)
+            name = args[i + 1] if i + 1 < len(args) else ""
+            del args[i:i + 2]
+            if not name:
+                sys.exit(t("cli_usage"))
+            z = lookup(name)
+            if z is None:
+                return
+            show(min(z, 1500.0), Ok=Ok, shoes=shoes)
+            return
+
     if args and args[0] in ("--table", "-t"):
         table()
         return
@@ -172,15 +240,15 @@ def main() -> None:
 
     while True:
         try:
-            raw = input("\n  z = ").strip().lower()
+            raw = input("\n  z = ").strip()
         except (KeyboardInterrupt, EOFError):
             print("\n" + t("cli_bye"))
             return
 
-        if raw in ("q", "quit", "exit"):
+        if raw.lower() in ("q", "quit", "exit"):
             print(t("cli_bye"))
             return
-        if raw in ("table", "t", "presets"):
+        if raw.lower() in ("table", "t", "presets"):
             table()
             continue
         if not raw:
@@ -189,8 +257,11 @@ def main() -> None:
         try:
             z = float(raw.replace(",", "."))
         except ValueError:
-            print(t("cli_bad_input"))
-            continue
+            # Pas un nombre : ce doit être le nom d'un objet.
+            found = lookup(raw, interactive=True)
+            if found is None:
+                continue
+            z = min(found, 1500.0)
 
         if z < 0:
             print(t("cli_negative"))

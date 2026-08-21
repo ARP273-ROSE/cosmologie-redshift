@@ -35,6 +35,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QDoubleSpinBox, QPushButton, QGroupBox, QFrame, QSizePolicy,
     QDialog, QTextBrowser, QDialogButtonBox, QCheckBox, QMessageBox,
+    QLineEdit, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView,
 )
 
 import pyqtgraph as pg
@@ -48,6 +49,7 @@ from cosmo_core import (
 from i18n import (t, set_language, current_language, detect_system_language,
                   LANGUAGE_NAMES)
 from help_texts import help_html
+import simbad
 from updates import (__version__, RELEASES_URL, DOWNLOAD_URL,
                      latest_version, is_newer, check_enabled)
 
@@ -147,7 +149,7 @@ def get_cosmic_stylesheet() -> str:
         font-weight: bold;
     }}
 
-    QDoubleSpinBox, QSpinBox {{
+    QDoubleSpinBox, QSpinBox, QLineEdit {{
         background-color: {c['bg_input']};
         color: {c['text_primary']};
         border: 1px solid {c['border']};
@@ -156,7 +158,7 @@ def get_cosmic_stylesheet() -> str:
         selection-background-color: {c['accent_cyan']};
         selection-color: {c['bg_dark']};
     }}
-    QDoubleSpinBox:focus, QSpinBox:focus {{ border-color: {c['border_focus']}; }}
+    QDoubleSpinBox:focus, QSpinBox:focus, QLineEdit:focus {{ border-color: {c['border_focus']}; }}
 
     QCheckBox {{ spacing: 6px; }}
 
@@ -253,6 +255,82 @@ class UpdateWorker(QObject):
 
     def run(self):
         self.done.emit(latest_version())
+
+
+
+
+class SimbadWorker(QObject):
+    """Interroge SIMBAD dans un fil séparé ; ne bloque jamais l'interface."""
+    done = pyqtSignal(object)          # (candidats, erreur ou None)
+
+    def __init__(self, query: str):
+        super().__init__()
+        self.query = query
+
+    def run(self):
+        try:
+            objects, _ = simbad.resolve(self.query)
+            self.done.emit((objects, None))
+        except simbad.SimbadError as exc:
+            self.done.emit(([], str(exc)))
+        except Exception as exc:                       # pare-fou : jamais de plantage
+            self.done.emit(([], str(exc)))
+
+
+class ObjectChoiceDialog(QDialog):
+    """Liste les objets renvoyés par SIMBAD quand le nom demandé est ambigu."""
+
+    def __init__(self, parent, query: str, objects: list):
+        super().__init__(parent)
+        self.objects = objects
+        self.setWindowTitle(t("object_choose_title"))
+        self.resize(620, 380)
+        self.setStyleSheet(f"QDialog {{ background-color: {COLORS['bg_dark']}; }}")
+
+        layout = QVBoxLayout(self)
+        intro = QLabel(t("object_choose_text", n=len(objects), query=query))
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+
+        self.table = QTableWidget(len(objects), 3)
+        self.table.setHorizontalHeaderLabels(
+            [t("object_col_name"), t("object_col_type"), t("object_col_z")])
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setStyleSheet(
+            f"QTableWidget {{ background-color: {COLORS['bg_medium']};"
+            f" color: {COLORS['text_primary']}; gridline-color: {COLORS['border']};"
+            f" border: 1px solid {COLORS['border']}; border-radius: 6px; }}"
+            f"QHeaderView::section {{ background-color: {COLORS['bg_dark']};"
+            f" color: {COLORS['text_secondary']}; border: 0px; padding: 6px; }}")
+        for row, obj in enumerate(objects):
+            z = t("object_unknown_z") if obj.redshift is None else fmt_num(obj.redshift, 6)
+            for col, text in enumerate((obj.name, obj.otype, z)):
+                item = QTableWidgetItem(text)
+                if col == 2:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight
+                                          | Qt.AlignmentFlag.AlignVCenter)
+                self.table.setItem(row, col, item)
+        self.table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.Stretch)
+        self.table.resizeColumnsToContents()
+        self.table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.Stretch)
+        self.table.selectRow(0)
+        self.table.doubleClicked.connect(self.accept)
+        layout.addWidget(self.table)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                   | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def chosen(self):
+        rows = self.table.selectionModel().selectedRows()
+        return self.objects[rows[0].row()] if rows else None
 
 
 class HelpDialog(QDialog):
@@ -379,7 +457,9 @@ class MainWindow(QMainWindow):
 
         # ---- Redshift ----
         self.input_box = QGroupBox()
-        in_lay = QHBoxLayout(self.input_box)
+        in_outer = QVBoxLayout(self.input_box)
+        in_lay = QHBoxLayout()
+        in_outer.addLayout(in_lay)
         self.z_label = QLabel()
         in_lay.addWidget(self.z_label)
         self.z_spin = NumberSpinBox(live=True)
@@ -402,6 +482,25 @@ class MainWindow(QMainWindow):
             in_lay.addWidget(btn)
             self.preset_buttons.append((btn, tip_key))
         in_lay.addStretch()
+
+        # ---- Recherche d'un objet par son nom (SIMBAD) ----
+        obj_lay = QHBoxLayout()
+        in_outer.addLayout(obj_lay)
+        self.obj_label = QLabel()
+        obj_lay.addWidget(self.obj_label)
+        self.obj_edit = QLineEdit()
+        self.obj_edit.setMinimumWidth(240)
+        self.obj_edit.returnPressed.connect(self.lookup_object)
+        obj_lay.addWidget(self.obj_edit)
+        self.obj_button = QPushButton()
+        self.obj_button.setProperty("accent", True)
+        self.obj_button.clicked.connect(self.lookup_object)
+        obj_lay.addWidget(self.obj_button)
+        self.obj_status = QLabel()
+        self.obj_status.setProperty("sub", True)
+        self.obj_status.setWordWrap(True)
+        obj_lay.addWidget(self.obj_status, 1)
+
         root.addWidget(self.input_box)
 
         # ---- Modèle : courbure et comparaison SH0ES ----
@@ -523,6 +622,7 @@ class MainWindow(QMainWindow):
                    ("F2", "act_planck",    "title_planck",    "planck"),
                    ("F3", "act_recession", "title_recession", "recession"),
                    ("F4", "act_presets",   "title_presets",   "presets"),
+                   ("F7", "act_simbad",    "title_simbad",    "simbad"),
                    ("F5", "act_verif",     "title_verif",     "verif"),
                    ("F6", "act_sigma",     "title_sigma",     "sigma")]
         for shortcut, act_key, title_key, help_key in entries:
@@ -559,6 +659,80 @@ class MainWindow(QMainWindow):
             self.lang_actions[code] = act
 
     # ------------------------------------------------------ mises à jour
+
+    # ------------------------------------------------------------------
+    # Recherche d'un objet dans SIMBAD
+    # ------------------------------------------------------------------
+    def _object_status(self) -> str:
+        """Dernier message de recherche, reformulé dans la langue courante."""
+        key, kwargs = getattr(self, "_obj_message", (None, {}))
+        if not key:
+            return ""
+        # Le redshift est gardé brut : sa mise en forme suit la langue, qui
+        # peut changer après coup (virgule en français, point en anglais).
+        shown = {k: (fmt_num(v, 6) if k == "z" and isinstance(v, float) else v)
+                 for k, v in kwargs.items()}
+        return t(key, **shown)
+
+    def _set_object_status(self, key: str | None, **kwargs):
+        self._obj_message = (key, kwargs) if key else (None, {})
+        self.obj_status.setText(self._object_status())
+
+    def lookup_object(self):
+        """Demande à SIMBAD le redshift de l'objet dont le nom a été saisi."""
+        query = self.obj_edit.text().strip()
+        if not query or getattr(self, "_simbad_thread", None) is not None:
+            return
+        self.obj_button.setEnabled(False)
+        self._set_object_status("object_working")
+        self._simbad_query = query
+        self._simbad_thread = QThread(self)
+        self._simbad_worker = SimbadWorker(query)
+        self._simbad_worker.moveToThread(self._simbad_thread)
+        self._simbad_thread.started.connect(self._simbad_worker.run)
+        self._simbad_worker.done.connect(self._on_simbad_done)
+        self._simbad_worker.done.connect(self._simbad_thread.quit)
+        self._simbad_thread.finished.connect(self._clear_simbad_thread)
+        self._simbad_thread.start()
+
+    def _clear_simbad_thread(self):
+        self._simbad_thread = None
+        self._simbad_worker = None
+        self.obj_button.setEnabled(True)
+
+    def _on_simbad_done(self, result):
+        objects, error = result
+        if error:
+            self._set_object_status("object_offline", error=error)
+            return
+        if not objects:
+            self._set_object_status("object_none")
+            return
+        if len(objects) == 1:
+            self._apply_object(objects[0])
+            return
+        dialog = ObjectChoiceDialog(self, self._simbad_query, objects)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            chosen = dialog.chosen()
+            if chosen is not None:
+                self._apply_object(chosen)
+
+    def _apply_object(self, obj):
+        """Reporte le redshift de l'objet choisi, ou explique pourquoi non."""
+        otype = obj.otype or "?"
+        if obj.redshift is None:
+            self._set_object_status("object_no_z", name=obj.name, otype=otype)
+            return
+        if obj.redshift <= 0.0:
+            self._set_object_status("object_neg_z", name=obj.name, z=obj.redshift)
+            return
+        z = min(obj.redshift, self.z_spin.maximum())
+        self.z_spin.setValue(z)
+        if obj.redshift < 0.03:
+            self._set_object_status("object_near", z=obj.redshift)
+        else:
+            self._set_object_status("object_found", name=obj.name, otype=otype,
+                                    z=obj.redshift)
 
     def check_updates(self, manual: bool = False):
         """Vérifie la dernière version publiée, sans bloquer l'interface."""
@@ -626,6 +800,14 @@ class MainWindow(QMainWindow):
         self.presets_label.setToolTip(t("presets_tip"))
         for btn, tip_key in self.preset_buttons:
             btn.setToolTip(t(tip_key))
+
+        self.obj_label.setText(t("object_label"))
+        self.obj_label.setToolTip(t("object_tip"))
+        self.obj_edit.setPlaceholderText(t("object_hint"))
+        self.obj_edit.setToolTip(t("object_tip"))
+        self.obj_button.setText(t("object_search"))
+        self.obj_button.setToolTip(t("object_search_tip"))
+        self.obj_status.setText(self._object_status())
 
         self.model_box.setTitle(t("box_model"))
         self.ok_label.setText(t("curvature"))

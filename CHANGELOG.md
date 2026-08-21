@@ -8,6 +8,43 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
+## 1.3.0 — 2026-08-21
+
+### Added
+
+- **Object lookup by name.** A new `Object` field turns a name into a redshift:
+  `m31`, `M 31`, `ngc224`, `Messier 31`, `3c273`, `Sombrero`, `GN-z11` all
+  work. The query goes to [SIMBAD](https://simbad.u-strasbg.fr/), the database
+  of the Strasbourg astronomical Data Center, and runs in a separate thread, so
+  the interface never freezes.
+- Case, spaces, hyphens, underscores and leading zeros are ignored, and the
+  usual catalogue abbreviations are expanded (`abell` → `ACO`, `messier` → `M`).
+  When SIMBAD does not recognise a name as typed, local variants are tried,
+  then the identifiers are searched by substring — which is how `gn-z11` finds
+  `[OBV2016] GN-z11`.
+- **A list to choose from whenever the answer is a guess.** Names that SIMBAD
+  itself resolves are applied directly; names found only by searching are
+  offered as a list of candidates, closest match first.
+- The console version gains `--object NAME`, and at the interactive prompt
+  anything that is not a number is taken to be an object name.
+- New help entry, *Looking up an object by name* (F7), in both languages.
+- Objects without a usable redshift are explained rather than silently applied:
+  no redshift in SIMBAD, blueshift (M 31 is approaching), or z < 0.03, where
+  peculiar motion inside a cluster still outweighs the expansion.
+- `verif_sage/test_simbad.py` checks name normalisation, generated variants,
+  match ranking and search patterns offline, then resolves a set of real names
+  whose expected answer is known. The network part is skipped, without failing,
+  when SIMBAD cannot be reached.
+
+### Note
+
+SIMBAD answers exactly what it is asked, and homonyms exist: `GN-z11` is the
+distant galaxy at z = 10.6, while `GNz11` without the hyphen is object no. 11
+of the GNZ catalogue, at z = 0.053. The identifier that answered is always
+displayed next to the field.
+
+---
+
 ## 1.2.0 — 2026-08-21
 
 ### Changed

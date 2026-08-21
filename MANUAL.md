@@ -133,12 +133,17 @@ Options:
 ./launch.sh console 2.34 --omega-k 0.01   # with curvature
 ./launch.sh console 2.34 --no-shoes       # without the SH0ES comparison
 ./launch.sh console 2.34 --lang en        # in English
+./launch.sh console --object m31          # redshift of an object, from SIMBAD
 ./launch.sh console --help                # option reminder
 ```
 
 Interactively: type a number, `table` for the preset list, `q` to quit. Both
 decimal separators are accepted (`2,34` as well as `2.34`). Beyond z = 1500 the
 program warns that the universe was opaque, then computes anyway.
+
+Anything that is not a number is taken to be an object name and looked up in
+SIMBAD, exactly as in section 3.3. If several objects answer, they are
+numbered and the choice is made by typing the number.
 
 ---
 
@@ -176,7 +181,48 @@ These ages are computed **in Planck 2018**. They sometimes differ from the
 values in the discovery papers, which used the cosmologies of their time
 (ULAS J1120: 770 Myr in the paper, 749 here).
 
-### 3.3 The « Model » panel: curvature and SH0ES comparison
+### 3.3 Looking up an object by name
+
+Instead of a redshift, the name of an object can be typed in the `Object`
+field: `m31`, `M 31`, `ngc224`, `Messier 31`, `3c273`, `Sombrero`, `GN-z11`.
+Pressing Enter or the button queries **SIMBAD**, the astronomical database of
+the Strasbourg astronomical Data Center (about eleven million objects), and the
+redshift it returns is copied into the `z` field. The lookup runs in a separate
+thread: the interface never freezes, even on a slow connection.
+
+Tolerance is deliberate. Case, spaces, hyphens, underscores and leading zeros
+are all ignored, and the common catalogue abbreviations are expanded (`abell` →
+`ACO`, `messier` → `M`). The search proceeds in four steps, stopping at the
+first that answers:
+
+| Step | What is tried | Example |
+|---|---|---|
+| 1 | the name as typed, handed to SIMBAD's own resolver | `abell2218` → `ACO 2218` |
+| 2 | local variants: separators added or removed, catalogue expanded | `ngc224` → `NGC 224` |
+| 3 | identifiers containing the string, case-insensitive | `gn-z11` → `[OBV2016] GN-z11` |
+| 4 | full search over every known identifier | `ulas j1120` → 7 candidates |
+
+Steps 1 and 2 are answers from SIMBAD's resolver and are treated as certain.
+Steps 3 and 4 are guesses, so every match is presented in a list, the closest
+to what was typed first, and the choice is left to the user.
+
+**The identifier on display should be read.** SIMBAD answers exactly what it is
+asked, and homonyms exist: `GN-z11` is the distant galaxy at z = 10.6, while
+`GNz11` without the hyphen is object no. 11 of the GNZ catalogue, at z = 0.053.
+
+Three cases produce a message instead of a value:
+
+| Case | Example | Message |
+|---|---|---|
+| no redshift in SIMBAD | a nebula in the Milky Way | *SIMBAD lists no redshift for this object* |
+| blueshift | M 31, approaching at 300 km/s | *the object is approaching… cosmological distances are meaningless here* |
+| z < 0.03 | M 87 | the value is applied, with a warning that peculiar motion still dominates |
+
+The lookup needs an internet connection; without one, only this field goes
+idle. The environment variable `COSMO_NO_UPDATE_CHECK` does not affect it — it
+only concerns the update check.
+
+### 3.4 The « Model » panel: curvature and SH0ES comparison
 
 | Control | Effect |
 |---|---|
@@ -190,7 +236,7 @@ Planck 2018 + BAO measures Ωk = 0.0007 ± 0.0019, hence the default of zero.
 Note: the present age t₀ also depends on curvature (13.744 Gyr for
 Ωk = +0.01); the « t_L + age = t₀ » check refers to the current model.
 
-### 3.4 Error bars
+### 3.5 Error bars
 
 Every value is given with its 1σ uncertainty, propagated from
 σ(H₀) = 0.42 km/s/Mpc and σ(Ωm) = 0.0056 by numerical derivatives:
@@ -218,7 +264,7 @@ through a **minimum near z ≈ 5** — a « pivot » redshift where the model
 predicts distances better than it knows its own parameters. And above all: the
 Hubble tension shifts everything by 7.4 %, i.e. 40 times the error bars.
 
-### 3.5 The four distances
+### 3.6 The four distances
 
 | Display | Formula | What it is for |
 |---|---|---|
@@ -231,7 +277,7 @@ Hubble tension shifts everything by 7.4 %, i.e. 40 times the error bars.
 looks larger at z = 5 than at z = 1. It is the most counter-intuitive feature
 of the set, and it is marked on the plot.
 
-### 3.6 Cosmological quantities
+### 3.7 Cosmological quantities
 
 - **Lookback time** `t_L(z) = ∫₀^z dz'/[(1+z')H(z')]` — light travel time.
 - **Age of the universe at z** `t_em(z) = ∫_z^∞ dz'/[(1+z')H(z')]` — switches
@@ -240,14 +286,14 @@ of the set, and it is marked on the plot.
 - **E(z) = H(z)/H₀** and `H(z)`: the function that is integrated in every
   distance, displayed so that the origin of the numbers is visible.
 
-### 3.7 The three recession velocities
+### 3.8 The three recession velocities
 
 See help **F3** for the full discussion. In short: only the third one
 (`v = H₀·D_C`) is correct in cosmology; it exceeds c beyond z ≈ 1.48 and that
 is perfectly legitimate — it is not a propagation speed through space but the
 stretching rate of space itself.
 
-### 3.8 Status bar — the permanent checks
+### 3.9 Status bar — the permanent checks
 
 ```
 z = 2.34 · t_L + age = 13.786885 Gyr (deviation 0.00 µGyr)
@@ -257,14 +303,14 @@ z = 2.34 · t_L + age = 13.786885 Gyr (deviation 0.00 µGyr)
 Both identities must hold whatever z. If one of them drifts, astropy has
 changed version or default cosmology: do not ignore it.
 
-### 3.9 The plot
+### 3.10 The plot
 
 Log-log scale, adaptive zoom over `[z/30, 8z]`. Vertical markers: `z=1`,
 maximum of `D_A` (which follows Ωk), GN-z11, CMB. Horizontal asymptotes:
 `c·t₀` (which the green curve never crosses) and the particle horizon (which
 the cyan one approaches).
 
-### 3.10 Help menu
+### 3.11 Help menu
 
 | Key | Contents |
 |---|---|
@@ -284,6 +330,7 @@ programme/
 ├── cosmo_core.py                     ALL the physics
 ├── i18n.py                           interface strings (FR / EN)
 ├── help_texts.py                     help dialog contents (FR / EN)
+├── simbad.py                         object lookup by name (SIMBAD)
 ├── redshift_distance_gui.py          Qt6 interface (display only)
 ├── redshift_distance_calculator.py   console version (display only)
 ├── make_logo.py                      logo generation
@@ -301,6 +348,10 @@ physics goes into `cosmo_core.py`, which exposes:
 | `format_distance()`, `format_time()`, `format_pm()`, `fmt_num()` | formatting, language-aware (`Gly` vs `G al`, decimal point vs comma) |
 | `PRESETS` | the eight targets, with the key of their translated tooltip |
 | `help_context()` | the numbers injected into the help texts |
+
+`simbad.py` stands apart: it is the only module that touches the network, it
+depends on nothing but the standard library, and it exposes `resolve(name)`,
+which returns the list of candidate objects.
 
 ### Adding a language
 
@@ -390,10 +441,24 @@ courses, so that no number is ever copied by hand.
 
 The script forces `QT_QPA_PLATFORM=offscreen` itself. It sweeps 8 values of `z`
 (including the limits 0 and 1500), prints the consistency checks, exercises
-**both languages** and all seven help dialogs, checks that the numeric fields
-accept typed input with either decimal separator, and rewrites the screenshots
-in `captures/`. **This is the test to re-run after any change to the
-GUI.**
+**both languages** and all eight help dialogs, checks that the numeric fields
+accept typed input with either decimal separator, exercises the object-lookup
+field against simulated SIMBAD answers — found, no redshift, blueshift, not
+found, offline — and rewrites the screenshots in `captures/`. **This is the
+test to re-run after any change to the GUI.**
+
+### 6.4 Testing the SIMBAD lookup
+
+```bash
+.venv/bin/python verif_sage/test_simbad.py            # Linux / macOS
+.venv\Scripts\python.exe verif_sage\test_simbad.py    # Windows
+```
+
+Offline it checks name normalisation, the variants generated, how matches are
+ranked and the search patterns. Then it resolves a set of real names whose
+expected answer is known (`m31`, `ngc224`, `3c273`, `abell2218`, `gn-z11`…),
+including the `GN-z11` / `GNz11` homonym trap. The network part is skipped,
+without failing the run, when SIMBAD cannot be reached.
 
 ---
 

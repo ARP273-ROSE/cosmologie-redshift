@@ -24,7 +24,7 @@ The program is **bilingual** (French / English): use the *Language* menu,
 | Folder / file | Contents |
 |---|---|
 | `launch.bat` / `launch.sh` | Windows and Linux/macOS launchers (venv + dependencies handled automatically) |
-| `programme/` | the Qt6 application, its console version and the computation core |
+| `programme/` | the Qt6 application, its console version, the computation core and the SIMBAD lookup |
 | `cours/` | the course, in French (`cours_distances_cosmologiques.pdf`) and English (`course_cosmological_distances.pdf`, 64 pp.) |
 | `verif_sage/` | verification scripts (SageMath without astropy + symbolic algebra) |
 | `requirements.txt` | numpy, scipy, astropy, PyQt6, pyqtgraph |
@@ -91,6 +91,12 @@ For a redshift `z` between 0 and 1500:
 
 **Four distances** — comoving `D_C`, luminosity `D_L = (1+z)D_M`,
 angular diameter `D_A = D_M/(1+z)`, light-travel `D_lt = c·t_L`.
+
+**Object lookup by name** — type `m31`, `NGC 224`, `3c273`, `Sombrero` or
+`GN-z11` and the redshift is fetched from [SIMBAD](https://simbad.u-strasbg.fr/),
+the CDS database in Strasbourg. Case, spaces and hyphens do not matter. When
+SIMBAD does not recognise a name, variants are tried and every matching
+identifier is offered as a list to choose from.
 
 **Error bars** — every value comes with its 1σ uncertainty, propagated from
 σ(H₀) = 0.42 and σ(Ωm) = 0.0056 **taking their correlation into account**
