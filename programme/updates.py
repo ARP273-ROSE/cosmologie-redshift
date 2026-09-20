@@ -30,9 +30,28 @@ import urllib.request
 __all__ = ["__version__", "VERSION", "GITHUB_REPO", "RELEASES_URL", "DOWNLOAD_URL",
            "latest_version", "is_newer", "check_enabled"]
 
-# La version est aussi lue par le workflow GitHub pour créer le tag.
-# The GitHub workflow reads this same string to create the tag.
-__version__ = "1.3.2"
+def _read_version() -> str:
+    """Lit le fichier VERSION, à la racine du dépôt : une seule source.
+
+    Écrire le numéro à deux endroits finit toujours par les faire diverger, et
+    une application qui se croit en retard sur elle-même propose une mise à
+    jour à chaque démarrage, sans fin.
+
+    Reads the VERSION file at the repository root: a single source of truth.
+    """
+    from pathlib import Path as _Path
+    here = _Path(__file__).resolve().parent
+    for base in (here.parent, here):
+        try:
+            text = (base / "VERSION").read_text(encoding="utf-8").strip()
+            if text:
+                return text
+        except OSError:
+            continue
+    return ""
+
+
+__version__ = _read_version()
 VERSION = __version__
 
 GITHUB_REPO = "ARP273-ROSE/cosmologie-redshift"
