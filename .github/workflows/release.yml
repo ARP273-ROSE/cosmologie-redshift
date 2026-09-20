@@ -10,6 +10,9 @@ on:
     paths:
       - 'programme/**'
       - 'requirements.txt'
+      # Le numero de version vit maintenant dans ce fichier : sans lui, un
+      # changement de version ne declenchait plus aucune construction.
+      - 'VERSION'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
