@@ -27,11 +27,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read version from programme/updates.py
+      - name: Read version from VERSION
         id: get
         shell: bash
         run: |
-          V=$(grep -oP '__version__\s*=\s*"\K[^"]+' programme/updates.py)
+          # La version vit desormais dans le fichier VERSION : programme/updates.py
+          # la lit au lieu de la redire, et ce workflow fait de meme.
+          V=$(tr -d ' \r\n' < VERSION)
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "Version: $V"
 
@@ -53,9 +55,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            asset: CosmologicalDistanceCalculator-windows.exe
-            label: Windows (x64)
+          # Windows ne passe plus par PyInstaller : le paquet embarquant la
+          # distribution officielle de Python (release-windows.yml) evite les
+          # mises en quarantaine par Defender et permet une mise a jour sans
+          # avertissement SmartScreen. Linux et macOS restent ici.
           - os: ubuntu-22.04
             asset: CosmologicalDistanceCalculator-linux-x86_64
             label: Linux (x86_64, glibc 2.35+)

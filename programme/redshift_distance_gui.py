@@ -1174,7 +1174,63 @@ def _save_language(code: str) -> None:
     QSettings(SETTINGS_ORG, SETTINGS_APP).setValue("language", code)
 
 
+_fichier_faulthandler = None
+
+
+def _demarrer_rapports():
+    """Remontée d'incidents : plantage, mort brutale côté Qt, gel, signalement.
+
+    Une application distribuée à d'autres ne laisse aucune trace exploitable
+    quand elle casse : ni celui qui l'utilise ni celui qui l'écrit ne savent
+    ce qui s'est passé. Rien ne part sans accord, et un envoi raté repart au
+    démarrage suivant.
+    """
+    from pathlib import Path
+    ici = Path(__file__).resolve().parent
+    if (ici.parent.parent / "python" / "python.exe").exists():
+        dossier = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "CosmologicalDistanceCalculator"
+    else:
+        dossier = ici
+    try:
+        dossier.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return None
+
+    trace_native = dossier / "_crash_natif.log"
+    try:
+        import faulthandler
+        global _fichier_faulthandler
+        _fichier_faulthandler = open(trace_native, "w", encoding="utf-8")
+        faulthandler.enable(file=_fichier_faulthandler, all_threads=True)
+    except Exception:
+        pass
+    try:
+        import reporting
+        from updates import __version__
+        reporting.init(dossier, application="cosmologie-redshift",
+                       version=__version__)
+        reporting.relever_crash_natif(trace_native)
+        reporting.reprendre_file_en_fond()
+
+        precedent = sys.excepthook
+
+        def filet(type_exc, valeur, trace):
+            import traceback as _tb
+            try:
+                reporting.signaler_plantage(
+                    "".join(_tb.format_exception(type_exc, valeur, trace)))
+            except Exception:
+                pass
+            precedent(type_exc, valeur, trace)
+
+        sys.excepthook = filet
+        return reporting
+    except Exception:
+        return None
+
+
 def main():
+    rapports = _demarrer_rapports()
     argv = list(sys.argv)
     lang = None
     if "--lang" in argv:
@@ -1194,6 +1250,22 @@ def main():
     apply_cosmic_theme(app)
     w = MainWindow()
     w.show()
+
+    # Vigie anti-gel : le minuteur bat depuis le fil graphique, un fil de fond
+    # regarde l'heure. Si le battement s'arrête, la fenêtre est figée et la
+    # pile capturée dit quel calcul la retenait.
+    if rapports is not None:
+        try:
+            from PyQt6.QtCore import QTimer
+            vigie = rapports.Vigie(seuil=10.0, periode=2.0)
+            vigie.demarrer()
+            minuteur = QTimer(w)
+            minuteur.timeout.connect(vigie.battre)
+            minuteur.start(2000)
+            w._vigie, w._vigie_timer = vigie, minuteur
+        except Exception:
+            pass
+
     sys.exit(app.exec())
 
 

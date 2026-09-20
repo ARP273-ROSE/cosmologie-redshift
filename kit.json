@@ -1,0 +1,29 @@
+{
+  "nom_technique": "cosmologie-redshift",
+  "nom_fichier": "CosmologicalDistanceCalculator",
+  "nom_affiche": "Calculateur de distances cosmologiques",
+  "depot_distribution": "ARP273-ROSE/cosmologie-redshift",
+  "point_entree": "programme/redshift_distance_gui.py",
+  "fichier_version": "VERSION",
+  "icone": "programme\\logo.ico",
+  "appid": "{{38F38BEE-21E5-52F2-9FAF-CDAB95C5C540}",
+  "modules": [
+    "reporting.py",
+    "updater.py"
+  ],
+  "paquets": [
+    "programme"
+  ],
+  "assets": [
+    "VERSION",
+    "README.md",
+    "README.fr.md",
+    "MANUEL.md",
+    "MANUAL.md"
+  ],
+  "requirements": "requirements.txt",
+  "pip": [],
+  "binaires": [],
+  "fichiers_proteges": [],
+  "verification_import": []
+}
