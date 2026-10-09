@@ -8,6 +8,18 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
+## Unreleased — 2026-10-09
+
+### Changed
+
+- Removal of personal mentions; installer publisher and the header of
+  `reporting.py` now read ARP273-ROSE. The settings location (`QSettings`
+  organisation `cosmologie-redshift`) is unchanged.
+- Privacy guard `tests/test_confidentialite.py` (files, PDF text, PNG,
+  binaries), run by CI.
+
+---
+
 ## 1.3.2 — 2026-08-21
 
 ### Changed
