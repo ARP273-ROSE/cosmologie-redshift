@@ -8,6 +8,18 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## Non publié — 9 octobre 2026
+
+### Modifié
+
+- Retrait des mentions personnelles ; éditeur de l'installeur et en-tête de
+  `reporting.py` : ARP273-ROSE. L'emplacement des réglages (organisation
+  `QSettings` `cosmologie-redshift`) ne change pas.
+- Garde-fou `tests/test_confidentialite.py` (fichiers, texte des PDF, PNG,
+  binaires), lancé par la CI.
+
+---
+
 ## 1.3.2 — 21 août 2026
 
 ### Modifié
