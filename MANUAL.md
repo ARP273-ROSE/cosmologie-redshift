@@ -10,8 +10,33 @@ For an overview see [`README.md`](README.md); for the version history,
 
 ## 1. Installation and start-up
 
-**No prerequisite.** Either download the standalone executable (Windows, macOS,
-Linux: see the README), or start from the sources and **the launcher installs
+### 1.0 Installing the program (recommended)
+
+Ready-to-use packages, Python included, are on the
+[releases page](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest):
+
+| System | File | Installation |
+|---|---|---|
+| Windows | `…-Setup.exe` | double-click; *More info* → *Run anyway* if SmartScreen warns (unsigned installer) |
+| macOS (Apple Silicon / Intel) | `…-macos-arm64.dmg` / `…-macos-x86_64.dmg` | drag the application into Applications, then the first time *right-click → Open* |
+| Linux (x86_64 / ARM64) | `…-linux-x86_64.tar.gz` / `…-linux-arm64.tar.gz` | unpack, then `./installer.sh` (into `~/.local/share`, menu entry, no sudo) |
+
+The link `…/releases/latest/download/CosmologicalDistanceCalculator-Setup.exe`
+always points at the latest Windows installer.
+
+**Updates.** Once installed, the program looks for a new version at start-up
+and on demand (*Help → Check for updates*); it downloads the small application
+archive from GitHub, applies it and restarts, on all three systems.
+
+**Problem reports.** At first launch the program asks for consent to send a
+short technical report automatically when it crashes or freezes (version,
+system, error trace; nothing else). The choice can be changed in the *Help*
+menu, where *Report a problem…* also lets you write a report. Reports and
+settings live outside the installation folder.
+
+### From the sources
+
+**No prerequisite.** Either install the package above, or start from the sources and **the launcher installs
 Python itself if it is missing** — winget or the python.org installer on
 Windows, Homebrew on macOS, the package manager on Linux. It asks for
 confirmation; `COSMO_AUTO_INSTALL=1` grants it in advance.
@@ -148,6 +173,8 @@ numbered and the choice is made by typing the number.
 ---
 
 ## 3. Reading the interface
+
+![The main window, z = 2.34 (cosmic noon)](docs/captures/en-principal.png)
 
 ### 3.1 Subtitle line
 
@@ -330,6 +357,11 @@ the cyan one approaches).
 | **F5** | How the calculations were verified (SageMath) |
 | **F6** | Uncertainties, curvature and the Hubble tension |
 
+The menu also opens the **PDF manual** (this document, *Shift+F1*), the update
+check, *Report a problem…* and the *Send problem reports automatically* option.
+
+![SH0ES comparison and non-zero curvature](docs/captures/en-shoes.png)
+
 ---
 
 ## 4. Code layout
@@ -403,7 +435,10 @@ To disable: `COSMO_NO_CACHE=1`, or `curves(..., use_cache=False)`.
 python programme/make_logo.py
 ```
 
-Produces `logo.svg` and `logo_{16,32,64,128,256}.png`.
+Produces `logo.svg` (the single source) and, rendered from it,
+`logo_{16,…,512}.png`, `logo.ico` (Windows installer) and `logo.icns` (macOS).
+The PNGs are the window icon and the Linux menu icon; the logo also appears in
+*About* and on the cover of this manual.
 
 ---
 
@@ -472,6 +507,16 @@ without failing the run, when SIMBAD cannot be reached.
 ---
 
 ## 7. Rebuilding the LaTeX documents
+
+**This manual** (`docs/manuel-fr.pdf`, `docs/manuel-en.pdf`, shipped with the
+program) is rebuilt from `MANUEL.md` and `MANUAL.md`, after the screenshots:
+
+```bash
+QT_QPA_PLATFORM=offscreen python docs/captures.py   # real screenshots, FR + EN
+python3 docs/src/compiler.py                         # pandoc + lualatex
+```
+
+**The course**:
 
 TeX Live must be available on the `PATH` (`texlive-full` on Linux, MacTeX on
 macOS, MiKTeX on Windows):

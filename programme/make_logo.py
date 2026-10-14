@@ -9,6 +9,10 @@ Sortie :
 - logo_64.png         : icône taskbar
 - logo_32.png         : icône système
 - logo_16.png         : favicon
+- logo_512.png        : grande icône (macOS, Linux)
+- logo.ico / logo.icns : icônes des installeurs Windows / macOS
+
+Une seule source : le SVG ci-dessous ; tout le reste en est rendu.
 
 Design : carré arrondi sur fond cosmique, onde de chirp (longueur d'onde
 croissant de gauche à droite) avec gradient bleu → rouge symbolisant le
@@ -129,10 +133,22 @@ def main():
     svg_path.write_text(build_svg(), encoding="utf-8")
     print(f"Written {svg_path}")
 
-    for size in (16, 32, 64, 128, 256):
+    for size in (16, 32, 64, 128, 256, 512):
         out = HERE / f"logo_{size}.png"
         render_png(svg_path, out, size)
         print(f"Written {out} ({size}x{size})")
+
+    # Icônes des installeurs, depuis la MÊME source SVG : .ico multi-tailles
+    # (Windows) et .icns (macOS). Le .desktop Linux prend logo_256.png.
+    from PIL import Image
+    grand = HERE / "_logo_1024.png"
+    render_png(svg_path, grand, 1024)
+    img = Image.open(grand).convert("RGBA")
+    img.save(HERE / "logo.ico", sizes=[(16, 16), (24, 24), (32, 32), (48, 48),
+                                       (64, 64), (128, 128), (256, 256)])
+    img.save(HERE / "logo.icns")
+    grand.unlink()
+    print(f"Written {HERE / 'logo.ico'} and {HERE / 'logo.icns'}")
 
 
 if __name__ == "__main__":

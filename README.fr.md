@@ -37,18 +37,22 @@ ou variable `COSMO_LANG=en`. Le cours existe dans les deux langues.
 
 ## Installation
 
-### 1. Le plus simple : l'exécutable autonome (aucun prérequis)
+### 1. Le plus simple : l'installeur (aucun prérequis)
 
-Rien à installer, pas besoin de Python : un seul fichier à télécharger.
+Python compris, aucun droit d'administrateur. Paquets sur la
+[page des versions](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest) :
 
 | Système | Téléchargement | Premier lancement |
 |---|---|---|
-| **Windows** | [⬇ .exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-windows.exe) | double-clic. SmartScreen prévient que le programme n'est pas signé : *Informations complémentaires* → *Exécuter quand même* |
-| **macOS (Apple Silicon)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip) | décompresser, puis **clic droit → Ouvrir** la première fois |
-| **macOS (Intel)** | *en construction* | en attendant, passer par les sources (§2) : le lanceur installe tout |
-| **Linux (x86_64)** | [⬇ binaire](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64) | `chmod +x` puis exécuter |
+| **Windows** | [⬇ Setup.exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-Setup.exe) | double-clic. SmartScreen prévient que l'installeur n'est pas signé : *Informations complémentaires* → *Exécuter quand même* |
+| **macOS (Apple Silicon / Intel)** | `CosmologicalDistanceCalculator-X.Y.Z-macos-arm64.dmg` / `-macos-x86_64.dmg` | glisser dans Applications, puis **clic droit → Ouvrir** la première fois |
+| **Linux (x86_64 / ARM64)** | `CosmologicalDistanceCalculator-X.Y.Z-linux-x86_64.tar.gz` / `-linux-arm64.tar.gz` | décompresser, puis `./installer.sh` (installation dans le profil, entrée de menu, sans sudo) |
 
-Ces liens pointent toujours vers la version la plus récente.
+Le lien Windows pointe toujours vers la version la plus récente. Une fois
+installé, le programme **se met à jour tout seul** sur les trois systèmes
+(*Aide → Vérifier les mises à jour*, et en silence au démarrage), demande au
+premier lancement s'il peut envoyer automatiquement les rapports de problème,
+et ouvre son **manuel PDF** depuis le menu *Aide*.
 
 ### 2. Depuis les sources
 

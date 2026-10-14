@@ -9,7 +9,8 @@
   "appid": "{{38F38BEE-21E5-52F2-9FAF-CDAB95C5C540}",
   "modules": [
     "reporting.py",
-    "updater.py"
+    "updater.py",
+    "interface_kit.py"
   ],
   "paquets": [
     "programme"
@@ -19,11 +20,27 @@
     "README.md",
     "README.fr.md",
     "MANUEL.md",
-    "MANUAL.md"
+    "MANUAL.md",
+    "docs"
   ],
   "requirements": "requirements.txt",
   "pip": [],
   "binaires": [],
   "fichiers_proteges": [],
-  "verification_import": []
+  "verification_import": [
+    "programme.redshift_distance_gui",
+    "reporting",
+    "updater",
+    "interface_kit",
+    "astropy.cosmology",
+    "scipy.integrate"
+  ],
+  "icone_png": "programme/logo_256.png",
+  "icone_grande": "programme/logo_512.png",
+  "nom_affiche_fr": "Calculateur de distances cosmologiques",
+  "nom_affiche_en": "Cosmological Distance Calculator",
+  "description_fr": "Redshift et distances cosmologiques (ΛCDM, Planck 2018)",
+  "description_en": "Redshift to cosmological distances (ΛCDM, Planck 2018)",
+  "categories_linux": "Education;Science;Astronomy;Physics;",
+  "icone_icns": "programme/logo.icns"
 }

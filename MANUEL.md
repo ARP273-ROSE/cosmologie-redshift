@@ -10,8 +10,34 @@ des versions, [`CHANGELOG.fr.md`](CHANGELOG.fr.md).
 
 ## 1. Installation et lancement
 
-**Aucun prérequis.** Soit on télécharge l'exécutable autonome (Windows, macOS,
-Linux : voir le README), soit on part des sources et **le lanceur installe
+### 1.0 Installer le programme (recommandé)
+
+Les paquets prêts à l'emploi, Python compris, sont sur la
+[page des versions](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest) :
+
+| Système | Fichier | Installation |
+|---|---|---|
+| Windows | `…-Setup.exe` | double-clic ; *Informations complémentaires* → *Exécuter quand même* si SmartScreen avertit (installeur non signé) |
+| macOS (Apple Silicon / Intel) | `…-macos-arm64.dmg` / `…-macos-x86_64.dmg` | glisser l'application dans Applications, puis la première fois *clic droit → Ouvrir* |
+| Linux (x86_64 / ARM64) | `…-linux-x86_64.tar.gz` / `…-linux-arm64.tar.gz` | décompresser, puis `./installer.sh` (dans `~/.local/share`, entrée de menu, sans sudo) |
+
+Le lien `…/releases/latest/download/CosmologicalDistanceCalculator-Setup.exe`
+pointe toujours vers le dernier installeur Windows.
+
+**Mises à jour.** Installé, le programme cherche une nouvelle version au
+démarrage et sur demande (*Aide → Vérifier les mises à jour*) ; il télécharge la
+petite archive applicative depuis GitHub, la pose et redémarre, sur les trois
+systèmes.
+
+**Rapports de problème.** Au premier lancement, le programme demande l'accord
+pour envoyer automatiquement un court rapport technique en cas de plantage ou
+de gel (version, système, trace de l'erreur ; rien d'autre). Le choix se
+modifie dans le menu *Aide*, où *Signaler un problème…* permet aussi d'écrire
+un signalement. Rapports et réglages vivent hors du dossier d'installation.
+
+### Depuis les sources
+
+**Aucun prérequis.** Soit on installe le paquet ci-dessus, soit on part des sources et **le lanceur installe
 Python lui-même s'il est absent** — winget ou l'installeur python.org sous
 Windows, Homebrew sous macOS, le gestionnaire de paquets sous Linux. Une
 confirmation est demandée ; `COSMO_AUTO_INSTALL=1` l'accorde d'avance.
@@ -147,6 +173,8 @@ sont numérotés et le choix se fait en tapant le numéro.
 ---
 
 ## 3. Lire l'interface
+
+![La fenêtre principale, z = 2,34 (midi cosmique)](docs/captures/fr-principal.png)
 
 ### 3.1 Ligne de sous-titre
 
@@ -328,6 +356,13 @@ verte ne franchit jamais) et l'horizon des particules (que la cyan approche).
 | **F3** | Vitesses de récession et univers superluminique |
 | **F4** | Les huit objets-cibles |
 | **F5** | Comment les calculs ont été vérifiés (SageMath) |
+| **F6** | Incertitudes, courbure et tension de Hubble |
+
+Le menu donne aussi le **manuel PDF** (ce document, *Maj+F1*), la recherche de
+mises à jour, *Signaler un problème…* et la case *Envoyer automatiquement les
+rapports de problème*.
+
+![Comparaison SH0ES et courbure non nulle](docs/captures/fr-shoes.png)
 
 ---
 
@@ -397,8 +432,10 @@ Attention : les valeurs codées en dur `PARTICLE_HORIZON_GLYR`, `EVENT_HORIZON_G
 python programme/make_logo.py
 ```
 
-Produit `logo.svg` et `logo_{16,32,64,128,256}.png`. Les PNG servent d'icône de
-fenêtre (Windows choisit la taille) et `cours/logo.png` de couverture au cours.
+Produit `logo.svg` (la source unique) puis, depuis lui, `logo_{16,…,512}.png`,
+`logo.ico` (installeur Windows) et `logo.icns` (macOS). Les PNG servent d'icône
+de fenêtre et d'entrée de menu Linux, et le logo figure dans *À propos* et en
+couverture du manuel ; `cours/logo.png` sert de couverture au cours.
 
 ---
 
@@ -471,6 +508,16 @@ injoignable.
 ---
 
 ## 7. Recompiler les documents LaTeX
+
+**Ce manuel** (`docs/manuel-fr.pdf`, `docs/manuel-en.pdf`, livrés avec le
+programme) se refait depuis `MANUEL.md` et `MANUAL.md`, après les captures :
+
+```bash
+QT_QPA_PLATFORM=offscreen python docs/captures.py   # captures réelles FR + EN
+python3 docs/src/compiler.py                         # pandoc + lualatex
+```
+
+**Le cours** :
 
 TeX Live doit être disponible dans le `PATH` (paquet `texlive-full` sous Linux,
 MacTeX sous macOS, MiKTeX sous Windows) :

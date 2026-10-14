@@ -38,6 +38,7 @@ HELP: dict[str, dict[str, str]] = {
 "fr": {
 
 "about": """
+<p><img src="{logo}" width="96" height="96"></p>
 <h2 style="color:#94b8c8;">À propos</h2>
 <p><b>Calculateur de distances cosmologiques</b> &mdash;
 calcule, pour un redshift <i>z</i> donné, les quatre distances cosmologiques et
@@ -406,6 +407,7 @@ partiellement. C'est pourquoi la courbure est difficile à mesurer.</p>
 "en": {
 
 "about": """
+<p><img src="{logo}" width="96" height="96"></p>
 <h2 style="color:#94b8c8;">About</h2>
 <p><b>Cosmological Distance Calculator</b> &mdash; for a given redshift
 <i>z</i>, computes the four cosmological distances and the associated

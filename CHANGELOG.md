@@ -8,10 +8,35 @@ project uses [semantic versioning](https://semver.org/).
 
 ---
 
-## Unreleased — 2026-10-09
+## [1.4.0] — 2026-10-14
+
+### Added
+- **Installers for the three systems**, built by a single workflow (`release.yml`,
+  triggered by a `vX.Y.Z` tag): Windows installer (embedded Python, no PyInstaller),
+  `.dmg` for Apple Silicon and Intel, `.tar.gz` for Linux x86_64 and ARM64 with
+  `installer.sh`; permanent link `releases/latest/download/CosmologicalDistanceCalculator-Setup.exe`.
+- **Automatic update** on all three systems (shared kit `updater.py`): GitHub-only
+  addresses, release notes in the interface language; from the sources, the
+  download page opens.
+- **Problem reports**: consent asked at first launch, *Help → Report a problem…*,
+  *Send problem reports automatically*; data outside the installation folder.
+- **PDF manual** (French and English, house format, real screenshots), opened by
+  *Help → User manual (PDF)* (Shift+F1); rebuilt by `docs/captures.py` and
+  `docs/src/compiler.py`.
+- **Fixed look**: Fusion style, complete palette, embedded Source Sans 3 font —
+  independent of the system's light/dark theme and fonts.
+- Logo: one SVG source rendered to PNG 16–512, `.ico` and `.icns`; shown in *About*.
+- `--check` (used by the package build); tests: hard-coded texts, kit consistency,
+  kit wiring under Xvfb, all run by `tests.yml` with the existing checks.
 
 ### Changed
-
+- `reporting.py` and `updater.py` were not importable from the Windows package
+  (they live one level above `programme/`): problem reports never left an installed
+  copy. Fixed.
+- The curve cache no longer goes into the installation folder.
+- `macos-intel.yml`, the PyInstaller `release.yml` and `release-windows.yml` are
+  replaced by the single `release.yml`; the old single-file executables are no
+  longer published (the 1.3.3 links already returned 404).
 - Removal of personal mentions; installer publisher and the header of
   `reporting.py` now read ARP273-ROSE. The settings location (`QSettings`
   organisation `cosmologie-redshift`) is unchanged.

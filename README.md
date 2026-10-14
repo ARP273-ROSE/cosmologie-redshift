@@ -37,18 +37,22 @@ The program is **bilingual** (French / English): use the *Language* menu,
 
 ## Installation
 
-### 1. Simplest: the standalone executable (no prerequisite)
+### 1. Simplest: the installer (no prerequisite)
 
-Nothing to install, no Python needed: a single file to download.
+Python included, no administrator rights needed. Packages on the
+[releases page](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest):
 
 | System | Download | First run |
 |---|---|---|
-| **Windows** | [⬇ .exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-windows.exe) | double-click. SmartScreen warns that the program is unsigned: *More info* → *Run anyway* |
-| **macOS (Apple Silicon)** | [⬇ .zip](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip) | unzip, then **right-click → Open** the first time |
-| **macOS (Intel)** | *being built* | until then, run from source (§2): the launcher installs everything |
-| **Linux (x86_64)** | [⬇ binary](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64) | `chmod +x` then run |
+| **Windows** | [⬇ Setup.exe](https://github.com/ARP273-ROSE/cosmologie-redshift/releases/latest/download/CosmologicalDistanceCalculator-Setup.exe) | double-click. SmartScreen warns that the installer is unsigned: *More info* → *Run anyway* |
+| **macOS (Apple Silicon / Intel)** | `CosmologicalDistanceCalculator-X.Y.Z-macos-arm64.dmg` / `-macos-x86_64.dmg` | drag into Applications, then **right-click → Open** the first time |
+| **Linux (x86_64 / ARM64)** | `CosmologicalDistanceCalculator-X.Y.Z-linux-x86_64.tar.gz` / `-linux-arm64.tar.gz` | unpack, then `./installer.sh` (user install, menu entry, no sudo) |
 
-These links always point at the most recent version.
+The Windows link always points at the most recent version. Once installed,
+the program **updates itself** on all three systems (*Help → Check for
+updates*, and silently at start-up), asks at first launch whether problem
+reports may be sent automatically, and opens its **PDF manual** from the
+*Help* menu.
 
 ### 2. From source
 

@@ -412,6 +412,38 @@ STRINGS: dict[str, dict[str, str]] = {
                        "Vérifiez la connexion, ou consultez {url}"),
     "update_banner":  "Version {remote} disponible — voir Aide → Vérifier les mises à jour",
     "about_version":  "Version {local}",
+    "act_report":     "&Signaler un problème…",
+    "act_manual":     "&Manuel (PDF)",
+    "manual_missing": "Le manuel PDF est introuvable dans le dossier du programme.",
+    "act_autoreport": "Envoyer automatiquement les rapports de problème",
+    "update_install": "Installer et redémarrer",
+    "update_sources": ("Cette copie tourne depuis les sources : téléchargez la "
+                       "nouvelle version sur la page de publication."),
+    "update_open_page": "Ouvrir la page de téléchargement",
+    "update_later":   "Plus tard",
+    "update_found":   "La version {remote} est disponible (installée : {local}).",
+    "update_downloading": "Téléchargement de la mise à jour…",
+    "update_locked":  ("Un fichier de l'application est en cours d'utilisation. "
+                       "Fermez toutes ses fenêtres et réessayez."),
+    "update_failed":  "La mise à jour a échoué :\n{error}",
+    "update_restart": "La mise à jour est installée. Le programme va redémarrer.",
+    "consent_title":  "Envoyer automatiquement les rapports de problème ?",
+    "consent_text":   ("Quand le programme plante ou se fige, un court rapport "
+                       "technique (version, système, trace de l'erreur) peut être "
+                       "transmis pour que le problème soit corrigé. Rien d'autre "
+                       "n'est envoyé. Ce choix se modifie à tout moment dans le "
+                       "menu Aide."),
+    "consent_yes":    "Oui, les envoyer",
+    "consent_no":     "Non",
+    "report_title":   "Signaler un problème",
+    "report_prompt":  "Décrivez ce qui s'est passé et ce que vous faisiez :",
+    "report_placeholder": "Par exemple : le tracé ne s'affiche plus quand z dépasse…",
+    "report_note":    "Le rapport contient la version, le système et le journal récent.",
+    "report_send":    "Envoyer",
+    "report_cancel":  "Annuler",
+    "report_empty":   "Rien n'a été envoyé : la description est vide.",
+    "report_sent":    "Votre signalement a été transmis. Merci.",
+    "report_local":   "Pas de connexion : le signalement est enregistré ici :\n{path}",
 
     # --- infobulles des presets
     "preset_m87":     ("Galaxie elliptique géante de l'amas de la Vierge.\n"
@@ -670,6 +702,37 @@ STRINGS: dict[str, dict[str, str]] = {
                        "Check the connection, or see {url}"),
     "update_banner":  "Version {remote} available — see Help → Check for updates",
     "about_version":  "Version {local}",
+    "act_report":     "&Report a problem…",
+    "act_manual":     "User &manual (PDF)",
+    "manual_missing": "The PDF manual cannot be found in the program folder.",
+    "act_autoreport": "Send problem reports automatically",
+    "update_install": "Install and restart",
+    "update_sources": ("This copy runs from the sources: download the new "
+                       "version from the release page."),
+    "update_open_page": "Open the download page",
+    "update_later":   "Later",
+    "update_found":   "Version {remote} is available (installed: {local}).",
+    "update_downloading": "Downloading the update…",
+    "update_locked":  ("A file of the application is in use. Close all its "
+                       "windows and try again."),
+    "update_failed":  "The update failed:\n{error}",
+    "update_restart": "The update is installed. The program will now restart.",
+    "consent_title":  "Send problem reports automatically?",
+    "consent_text":   ("When the program crashes or freezes, a short technical "
+                       "report (version, system, error trace) can be sent so the "
+                       "problem gets fixed. Nothing else is sent. You can change "
+                       "this at any time in the Help menu."),
+    "consent_yes":    "Yes, send them",
+    "consent_no":     "No",
+    "report_title":   "Report a problem",
+    "report_prompt":  "Describe what happened and what you were doing:",
+    "report_placeholder": "For example: the plot no longer shows when z exceeds…",
+    "report_note":    "The report contains the version, the system and the recent log.",
+    "report_send":    "Send",
+    "report_cancel":  "Cancel",
+    "report_empty":   "Nothing was sent: the description is empty.",
+    "report_sent":    "Your report has been sent. Thank you.",
+    "report_local":   "No connection: the report was saved here:\n{path}",
 
     # --- preset tooltips
     "preset_m87":     ("Giant elliptical galaxy in the Virgo cluster.\n"

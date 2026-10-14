@@ -146,6 +146,8 @@ def help_context() -> dict:
     import astropy
     return {
         "astropy_version": astropy.__version__,
+        # logo de la fenêtre « À propos » : le même fichier que l'icône
+        "logo": (Path(__file__).resolve().parent / "logo_128.png").as_uri(),
         "h0": H0_PLANCK, "h0_shoes": H0_SHOES,
         "sigma_h0": SIGMA_H0, "sigma_om": SIGMA_OM, "rho": RHO_H0_OM,
         "om0": cosmo.Om0, "onu0": cosmo.Onu0, "om_total": OM_PLANCK,
@@ -380,9 +382,17 @@ def format_pm(value: float, sigma: float, kind: str = "distance") -> str:
 # ============================================================================
 
 def _cache_dir() -> Path | None:
-    """Dossier de cache : à côté du programme, sinon dans le dossier temporaire."""
-    for candidate in (Path(__file__).resolve().parent / "cache",
-                      Path(tempfile.gettempdir()) / "cosmologie-redshift-cache"):
+    """Dossier de cache : à côté du programme, sinon dans le dossier temporaire.
+
+    Installé (python/ à côté de app/), jamais dans le dossier du programme :
+    la mise à jour le remplace, et sous macOS il peut être en lecture seule.
+    """
+    ici = Path(__file__).resolve().parent
+    py = ici.parent.parent / "python"
+    installe = (py / "python.exe").exists() or (py / "bin" / "python3").exists()
+    candidats = ([] if installe else [ici / "cache"]) + [
+        Path(tempfile.gettempdir()) / "cosmologie-redshift-cache"]
+    for candidate in candidats:
         try:
             candidate.mkdir(parents=True, exist_ok=True)
             probe = candidate / ".w"

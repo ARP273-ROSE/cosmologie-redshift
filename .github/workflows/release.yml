@@ -1,264 +1,505 @@
-name: Build standalone executables and publish release
+name: Publier une version (Windows, macOS, Linux)
 
-# Déclenchement / triggers
-#   - push sur main touchant le programme : si la version de
-#     programme/updates.py a changé, le tag est créé et une release publiée ;
-#   - déclenchement manuel (bouton « Run workflow »).
+# Gabarit commun du kit, etendu a macOS et Linux sur le modele de MountMonitor
+# et d'Anticythere3D 1.3.0. Pose par `poser_le_kit.py --multiplateforme` sous
+# le nom .github/workflows/release.yml ; il exige build_unix.py a la racine.
+# Rien ici n'est propre a une application : tout ce qui varie est lu dans
+# kit.json. Pousser un tag « v1.2.3 » suffit : l'installeur Windows, l'image
+# disque macOS (Apple Silicon et Intel), l'archive Linux (x86_64 et ARM64) et
+# l'archive de mise a jour sont construits, puis publies dans UNE Release.
+#
+# Les trois systemes partagent la meme structure de paquet — python/ a cote de
+# app/ — si bien que la mise a jour automatique (updater.py) y est identique :
+# elle ne remplace que app/, du Python pur. L'archive *-app-*.zip est donc
+# COMMUNE aux trois systemes.
 on:
   push:
-    branches: [main]
-    paths:
-      - 'programme/**'
-      - 'requirements.txt'
-      # Le numero de version vit maintenant dans ce fichier : sans lui, un
-      # changement de version ne declenchait plus aucune construction.
-      - 'VERSION'
-      - '.github/workflows/release.yml'
+    tags:
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version a construire (sans le v), ex. 1.2.3"
+        required: true
+  # Appelable depuis un autre workflow du depot. C'est indispensable quand une
+  # CI cree elle-meme le tag : GitHub ne declenche aucun workflow sur un
+  # evenement produit par le jeton d'un workflow (protection anti-boucle), si
+  # bien que le tag arrivait sans que rien ne construise le paquet.
+  workflow_call:
+    inputs:
+      version:
+        description: "Version a construire (sans le v)"
+        required: true
+        type: string
+      ref:
+        description: "Commit ou tag a construire. Indispensable quand la CI
+          appelante vient de pousser un commit de version : sans lui, le job
+          reprend le commit declencheur, plus ancien d'une version."
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  version:
+  # Un projet dont le paquet depend d'un artefact produit en amont (un moteur
+  # 3D exporte, par exemple) ne peut pas etre construit par le simple push du
+  # tag : l'artefact n'existe pas encore. Dans ce cas seul l'appel depuis le
+  # workflow amont construit, et le declenchement par tag s'efface sans
+  # echouer — un echec rouge sur chaque version serait du bruit.
+  decider:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get.outputs.version }}
-      exists: ${{ steps.check.outputs.exists }}
+      construire: ${{ steps.choix.outputs.construire }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Read version from VERSION
-        id: get
+      - id: choix
         shell: bash
         run: |
-          # La version vit desormais dans le fichier VERSION : programme/updates.py
-          # la lit au lieu de la redire, et ce workflow fait de meme.
-          V=$(tr -d ' \r\n' < VERSION)
-          echo "version=$V" >> "$GITHUB_OUTPUT"
-          echo "Version: $V"
-
-      - name: Does the tag already exist?
-        id: check
-        shell: bash
-        run: |
-          if git ls-remote --tags origin "refs/tags/v${{ steps.get.outputs.version }}" | grep -q .; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag v${{ steps.get.outputs.version }} already exists — no new release."
+          ARTEFACT=$(python -c "import json;print(json.load(open('kit.json')).get('artefact_prealable',''))")
+          # On ne peut pas se fier a github.event_name : dans un workflow
+          # appele, il vaut toujours l'evenement d'origine (« push »), et la
+          # condition ecartait justement le cas legitime. C'est la presence
+          # d'une version en entree qui distingue un appel d'un declenchement
+          # par tag.
+          if [ -n "$ARTEFACT" ] && [ -z "${{ inputs.version }}" ]; then
+            echo "construire=false" >> "$GITHUB_OUTPUT"
+            echo "Paquet construit par le workflow amont (artefact $ARTEFACT) : rien a faire ici."
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "construire=true" >> "$GITHUB_OUTPUT"
           fi
 
+  # Windows. Python « embeddable » + Inno Setup.
   build:
-    needs: version
-    if: needs.version.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
+    needs: decider
+    if: needs.decider.outputs.construire == 'true'
+    runs-on: windows-latest
+
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Lire kit.json
+        id: kit
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, pathlib
+          k = json.loads(pathlib.Path('kit.json').read_text(encoding='utf-8'))
+          exclus = k.get('exclus_de_la_maj') or []
+          print('exclus_de_la_maj=' + ' '.join(exclus))
+          for cle in ('nom_technique', 'nom_fichier', 'nom_affiche',
+                      'depot_distribution', 'point_entree', 'icone', 'appid',
+                      'fichier_version', 'artefact_prealable', 'artefact_dossier'):
+              print(f"{cle}={k.get(cle, '')}")
+          PY
+
+      - name: Determiner la version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            V="${{ inputs.version }}"
+          else
+            V="${GITHUB_REF_NAME#v}"
+          fi
+          # Un appelant peut transmettre « v1.2.3 » (github.ref_name) aussi
+          # bien que « 1.2.3 » : on normalise plutot que de compter sur lui.
+          V="${V#v}"
+          echo "value=$V" >> "$GITHUB_OUTPUT"
+          echo "Version : $V"
+
+      - name: Verifier que la version declaree concorde avec le tag
+        shell: bash
+        run: |
+          FICHIER=$(tr -d ' \r\n' < "${{ steps.kit.outputs.fichier_version }}")
+          TAG="${{ steps.version.outputs.value }}"
+          if [ "$FICHIER" != "$TAG" ]; then
+            echo "::error::Le depot annonce la version '$FICHIER' mais le tag dit '$TAG'."
+            echo "Mettez la version a jour avant de poser le tag, sinon"
+            echo "l'application proposera sans fin une mise a jour deja installee."
+            exit 1
+          fi
+
+      # Certains projets ont besoin d'un binaire produit par un job precedent
+      # (un moteur 3D exporte, par exemple). kit.json le nomme ; les autres
+      # projets sautent cette etape.
+      - name: Recuperer l'artefact prealable
+        if: ${{ steps.kit.outputs.artefact_prealable != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.kit.outputs.artefact_prealable }}
+          path: ${{ steps.kit.outputs.artefact_dossier }}
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Controles statiques, quand le depot les embarque. Ils sont facultatifs
+      # par construction : un projet qui ne les a pas passe outre sans echouer.
+      # Chacun attrape un defaut qui, autrement, ne se voit que chez
+      # l'utilisateur — un nom jamais importe, un signal Qt qui recopie sa
+      # charge, un installeur qui ne sait pas que l'application tourne.
+      - name: Controles statiques
+        shell: bash
+        run: |
+          for controle in verifier_symboles.py verifier_signaux.py verifier_installeur.py; do
+            if [ -f "$controle" ]; then
+              echo "--- $controle"
+              python "$controle"
+            fi
+          done
+
+      - name: Construire le paquet autonome
+        shell: bash
+        run: python build_package.py --out "$RUNNER_TEMP/build"
+
+      - name: Verifier que le paquet demarre
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          PKG="$RUNNER_TEMP/build/${{ steps.kit.outputs.nom_fichier }}"
+          "$PKG/python/python.exe" -c "
+          import sys, json, pathlib
+          sys.path.insert(0, r'$PKG/app')
+          from PyQt6.QtWidgets import QApplication
+          app = QApplication(sys.argv)
+          import reporting, updater
+          kit = json.loads(pathlib.Path(r'$PKG/app/kit.json').read_text(encoding='utf-8'))
+          # Modules que l'application doit pouvoir importer : c'est le seul
+          # moyen de repérer ici une dependance oubliee dans le paquet, qui
+          # ne se verrait sinon qu'au premier lancement chez l'utilisateur.
+          for module in kit.get('verification_import', []):
+              __import__(module)
+              print('  import OK :', module)
+          attendue = '${{ steps.version.outputs.value }}'
+          vue = pathlib.Path(r'$PKG/app/' + kit['fichier_version']).read_text(encoding='utf-8').strip()
+          if vue != attendue:
+              raise SystemExit(
+                  'Le paquet s annonce en version ' + repr(vue)
+                  + ' alors que le tag dit ' + attendue
+                  + ' : il proposerait sans fin une mise a jour deja installee.')
+          print('paquet fonctionnel, version', vue)
+          "
+
+      - name: Preparer l'archive de mise a jour
+        shell: bash
+        run: |
+          # Seuls les fichiers applicatifs : quelques centaines de kilo-octets,
+          # contre plusieurs centaines de megaoctets pour le paquet complet.
+          # C'est ce que telecharge l'application quand elle se met a jour.
+          # On travaille sur une COPIE : l'installeur est compile depuis le
+          # paquet, et retirer des fichiers dans le paquet lui-meme livrerait
+          # une application amputee de ses donnees.
+          rm -rf "$RUNNER_TEMP/maj"
+          cp -r "$RUNNER_TEMP/build/${{ steps.kit.outputs.nom_fichier }}/app" "$RUNNER_TEMP/maj"
+          cd "$RUNNER_TEMP/maj"
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} +
+          # Donnees volumineuses qui ne bougent pas d'une version a l'autre
+          # (sons, moteur 3D...). Les laisser ferait retelecharger des
+          # centaines de megaoctets a chaque correction d'une ligne de code.
+          # Quand elles changent, c'est l'installeur complet qu'il faut.
+          for DOSSIER in ${{ steps.kit.outputs.exclus_de_la_maj }}; do
+            echo "  exclu de l'archive : $DOSSIER"
+            rm -rf "$DOSSIER"
+          done
+          NOM="${{ steps.kit.outputs.nom_technique }}-app-${{ steps.version.outputs.value }}.zip"
+          7z a -tzip "$GITHUB_WORKSPACE/$NOM" ./* > /dev/null
+          ls -lh "$GITHUB_WORKSPACE/$NOM"
+
+      - name: Installer Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Compiler l'installeur
+        # PowerShell et non bash : Git Bash (MSYS) reecrit tout argument
+        # commencant par « / » en chemin Windows, si bien qu'ISCC recevait
+        # « C:/Program Files/Git/DAppVersion=... » et repondait
+        # « You may not specify more than one script filename ».
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=${{ steps.version.outputs.value }}" `
+            "/DSourceDir=$env:RUNNER_TEMP\build\${{ steps.kit.outputs.nom_fichier }}" `
+            "/DAppName=${{ steps.kit.outputs.nom_fichier }}" `
+            "/DAppDisplayName=${{ steps.kit.outputs.nom_affiche }}" `
+            "/DAppId=${{ steps.kit.outputs.appid }}" `
+            "/DIconFile=${{ steps.kit.outputs.icone }}" `
+            "/DEntry=${{ steps.kit.outputs.point_entree }}" `
+            installer.iss
+          # Copie sous un nom STABLE : l'adresse
+          # .../releases/latest/download/<Nom>-Setup.exe pointe alors toujours
+          # vers la derniere version — un lien permanent a partager, sans
+          # numero a mettre a jour (demande du 2026-09-27).
+          Copy-Item "installer_out/${{ steps.kit.outputs.nom_fichier }}-Setup-${{ steps.version.outputs.value }}.exe" `
+            "installer_out/${{ steps.kit.outputs.nom_fichier }}-Setup.exe"
+          Get-ChildItem installer_out
+
+      - name: Deposer les artefacts Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: paquet-windows
+          path: |
+            installer_out/${{ steps.kit.outputs.nom_fichier }}-Setup-${{ steps.version.outputs.value }}.exe
+            installer_out/${{ steps.kit.outputs.nom_fichier }}-Setup.exe
+            ${{ steps.kit.outputs.nom_technique }}-app-${{ steps.version.outputs.value }}.zip
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────────────────────────────
+  # macOS et Linux. Meme structure de paquet que Windows — python/ et app/ —
+  # pour que la mise a jour automatique fonctionne a l'identique partout.
+  # ──────────────────────────────────────────────────────────────────────
+  build-unix:
+    needs: decider
+    if: needs.decider.outputs.construire == 'true'
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Windows ne passe plus par PyInstaller : le paquet embarquant la
-          # distribution officielle de Python (release-windows.yml) evite les
-          # mises en quarantaine par Defender et permet une mise a jour sans
-          # avertissement SmartScreen. Linux et macOS restent ici.
-          - os: ubuntu-22.04
-            asset: CosmologicalDistanceCalculator-linux-x86_64
-            label: Linux (x86_64, glibc 2.35+)
-          - os: macos-14
-            asset: CosmologicalDistanceCalculator-macos-apple-silicon.zip
-            label: macOS (Apple Silicon, native)
+          # macos-latest est un Mac Apple Silicon : n'y construire qu'un seul
+          # paquet livrerait un .dmg arm64 qu'un Mac Intel ne peut pas ouvrir.
+          - os: macos-latest
+            plateforme: macos
+            arch: arm64
+          - os: macos-15-intel
+            plateforme: macos
+            arch: x86_64
+          - os: ubuntu-latest
+            plateforme: linux
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            plateforme: linux
+            arch: arm64
     runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Lire kit.json
+        id: kit
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          k = json.load(open('kit.json'))
+          for cle in ('nom_technique', 'nom_fichier', 'nom_affiche',
+                      'depot_distribution', 'fichier_version'):
+              print(f"{cle}={k.get(cle, '')}")
+          PY
+
+      - name: Determiner la version
+        id: version
+        shell: bash
+        run: |
+          V="${{ inputs.version }}"
+          [ -n "$V" ] || V="${GITHUB_REF_NAME#v}"
+          echo "value=${V#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verifier que la version declaree concorde avec le tag
+        shell: bash
+        run: |
+          FICHIER=$(tr -d ' \r\n' < "${{ steps.kit.outputs.fichier_version }}")
+          TAG="${{ steps.version.outputs.value }}"
+          if [ "$FICHIER" != "$TAG" ]; then
+            echo "::error::Le depot annonce '$FICHIER' mais le tag dit '$TAG'."
+            exit 1
+          fi
+
+      - name: Python de construction
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: System libraries for Qt (Linux only)
-        if: runner.os == 'Linux'
+      # PyQt6 a besoin de ces bibliotheques pour seulement s'importer sur un
+      # runner Linux sans serveur graphique ; sans elles, la verification
+      # d'import du paquet echoue alors que le paquet est bon. binutils
+      # fournit strip, qui retire les symboles de debogage de libpython.
+      - name: Dependances systeme (Linux)
+        if: matrix.plateforme == 'linux'
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libegl1 libgl1 libxkbcommon-x11-0 libdbus-1-3 \
-            libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 \
-            libxcb-xinerama0 libxcb-randr0 libxcb-render-util0 libxcb-xkb1
+          sudo apt-get install -y -qq \
+            libegl1 libgl1 libxkbcommon-x11-0 libdbus-1-3 libfontconfig1 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-cursor0 \
+            libxcb-xkb1 binutils
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller pillow
-
-      - name: Build the .ico icon (Windows only)
-        if: runner.os == 'Windows'
-        run: python -c "from PIL import Image; Image.open('programme/logo_256.png').save('app.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])"
-
-      - name: Build the .icns icon (macOS only)
-        if: runner.os == 'macOS'
-        run: |
-          mkdir -p icon.iconset
-          for s in 16 32 64 128 256 512; do
-            sips -z $s $s programme/logo_256.png --out icon.iconset/icon_${s}x${s}.png >/dev/null
-          done
-          iconutil -c icns icon.iconset -o app.icns
-
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        run: >
-          pyinstaller --noconfirm --clean --onefile --windowed
-          --name CosmologicalDistanceCalculator
-          --icon app.ico --paths programme
-          --collect-all astropy --collect-data astropy_iers_data
-          --collect-submodules scipy
-          --hidden-import pyqtgraph --hidden-import i18n --hidden-import help_texts
-          --hidden-import cosmo_core --hidden-import updates --hidden-import simbad
-          --add-data "programme/logo_16.png;." --add-data "programme/logo_32.png;."
-          --add-data "programme/logo_64.png;." --add-data "programme/logo_128.png;."
-          --add-data "programme/logo_256.png;."
-          programme/redshift_distance_gui.py
-
-      - name: Build (Linux)
-        if: runner.os == 'Linux'
-        run: >
-          pyinstaller --noconfirm --clean --onefile
-          --name CosmologicalDistanceCalculator
-          --paths programme
-          --collect-all astropy --collect-data astropy_iers_data
-          --collect-submodules scipy
-          --hidden-import pyqtgraph --hidden-import i18n --hidden-import help_texts
-          --hidden-import cosmo_core --hidden-import updates --hidden-import simbad
-          --add-data "programme/logo_16.png:." --add-data "programme/logo_32.png:."
-          --add-data "programme/logo_64.png:." --add-data "programme/logo_128.png:."
-          --add-data "programme/logo_256.png:."
-          programme/redshift_distance_gui.py
-
-      - name: Build (macOS)
-        if: runner.os == 'macOS'
-        run: >
-          pyinstaller --noconfirm --clean --windowed
-          --name CosmologicalDistanceCalculator
-          --icon app.icns --paths programme
-          --osx-bundle-identifier org.arp273.cosmologicaldistances
-          --collect-all astropy --collect-data astropy_iers_data
-          --collect-submodules scipy
-          --hidden-import pyqtgraph --hidden-import i18n --hidden-import help_texts
-          --hidden-import cosmo_core --hidden-import updates --hidden-import simbad
-          --add-data "programme/logo_16.png:." --add-data "programme/logo_32.png:."
-          --add-data "programme/logo_64.png:." --add-data "programme/logo_128.png:."
-          --add-data "programme/logo_256.png:."
-          programme/redshift_distance_gui.py
-
-      - name: Smoke test (Windows)
-        if: runner.os == 'Windows'
+      - name: Construire le paquet
         env:
           QT_QPA_PLATFORM: offscreen
-          COSMO_NO_UPDATE_CHECK: '1'
-        run: |
-          Start-Process -FilePath dist\CosmologicalDistanceCalculator.exe -PassThru | Out-Null
-          Start-Sleep -Seconds 45
-          if (-not (Get-Process CosmologicalDistanceCalculator -ErrorAction SilentlyContinue)) {
-            Write-Error "the executable stopped on its own"; exit 1
-          }
-          Stop-Process -Name CosmologicalDistanceCalculator -Force
-          Write-Host "The executable starts and stays alive."
+        run: python3 build_unix.py --version ${{ steps.version.outputs.value }}
 
-      - name: Smoke test (Linux)
-        if: runner.os == 'Linux'
+      # Le paquet construit doit DEMARRER avec son propre interpreteur :
+      # dependances presentes, Qt capable de s'initialiser.
+      - name: Verifier que le paquet demarre (Linux)
+        if: matrix.plateforme == 'linux'
         env:
           QT_QPA_PLATFORM: offscreen
-          COSMO_NO_UPDATE_CHECK: '1'
-        run: |
-          ./dist/CosmologicalDistanceCalculator &
-          PID=$!
-          sleep 45
-          kill -0 $PID || { echo "the executable stopped on its own"; exit 1; }
-          kill $PID
-          echo "The executable starts and stays alive."
+        run: dist/${{ steps.kit.outputs.nom_fichier }}/${{ steps.kit.outputs.nom_fichier }}.sh --check
 
-      - name: Smoke test (macOS)
-        if: runner.os == 'macOS'
-        env:
-          QT_QPA_PLATFORM: offscreen
-          COSMO_NO_UPDATE_CHECK: '1'
+      - name: Verifier que le paquet demarre (macOS)
+        if: matrix.plateforme == 'macos'
         run: |
-          ./dist/CosmologicalDistanceCalculator.app/Contents/MacOS/CosmologicalDistanceCalculator &
-          PID=$!
-          sleep 45
-          kill -0 $PID || { echo "the app stopped on its own"; exit 1; }
-          kill $PID
-          echo "The app starts and stays alive."
+          NOM="${{ steps.kit.outputs.nom_fichier }}"
+          "dist/$NOM.app/Contents/MacOS/$NOM" --check
 
-      - name: Package with a stable name
-        shell: bash
+      - name: Image disque (macOS)
+        if: matrix.plateforme == 'macos'
         run: |
-          mkdir -p out
-          case "${{ runner.os }}" in
-            Windows) cp dist/CosmologicalDistanceCalculator.exe "out/${{ matrix.asset }}" ;;
-            Linux)   cp dist/CosmologicalDistanceCalculator "out/${{ matrix.asset }}"
-                     chmod +x "out/${{ matrix.asset }}" ;;
-            macOS)   ( cd dist && zip -qry "../out/${{ matrix.asset }}" CosmologicalDistanceCalculator.app ) ;;
-          esac
-          ls -lh out/
+          NOM="${{ steps.kit.outputs.nom_fichier }}"
+          VER="${{ steps.version.outputs.value }}"
+          mkdir -p dmg_src
+          cp -R "dist/$NOM.app" dmg_src/
+          ln -s /Applications dmg_src/Applications
+          hdiutil create -volname "$NOM $VER" -srcfolder dmg_src \
+            -ov -format UDZO "$NOM-$VER-macos-${{ matrix.arch }}.dmg"
+          ls -lh "$NOM-$VER-macos-${{ matrix.arch }}.dmg"
 
-      - uses: actions/upload-artifact@v4
+      - name: Deposer les artefacts
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset }}
-          path: out/${{ matrix.asset }}
-          retention-days: 30
+          name: paquet-${{ matrix.plateforme }}-${{ matrix.arch }}
+          path: |
+            *.dmg
+            *-linux-*.tar.gz
+          if-no-files-found: error
 
-  release:
-    needs: [version, build]
-    if: needs.version.outputs.exists == 'false'
+  # ──────────────────────────────────────────────────────────────────────
+  # Une seule Release, une fois tous les paquets construits.
+  # ──────────────────────────────────────────────────────────────────────
+  publier:
+    needs: [build, build-unix]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
         with:
-          path: out
-          merge-multiple: true
+          ref: ${{ inputs.ref || github.ref }}
 
-      - name: Create the tag and the release
+      - name: Lire kit.json
+        id: kit
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          k = json.load(open('kit.json'))
+          for cle in ('nom_technique', 'nom_fichier', 'nom_affiche', 'depot_distribution'):
+              print(f"{cle}={k.get(cle, '')}")
+          PY
+
+      - name: Determiner la version
+        id: version
+        shell: bash
+        run: |
+          V="${{ inputs.version }}"
+          [ -n "$V" ] || V="${GITHUB_REF_NAME#v}"
+          echo "value=${V#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Rassembler les artefacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artefacts
+
+      - name: Mettre a plat
+        shell: bash
+        run: |
+          mkdir -p publication
+          find artefacts -type f -exec cp {} publication/ \;
+          ls -lh publication
+
+      - name: Publier la Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.version.outputs.version }}
-          name: v${{ needs.version.outputs.version }}
-          files: |
-            out/CosmologicalDistanceCalculator-windows.exe
-            out/CosmologicalDistanceCalculator-linux-x86_64
-            out/CosmologicalDistanceCalculator-macos-apple-silicon.zip
-            cours/cours_distances_cosmologiques.pdf
-            cours/course_cosmological_distances.pdf
+          repository: ${{ steps.kit.outputs.depot_distribution }}
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+          name: ${{ steps.kit.outputs.nom_affiche }} ${{ steps.version.outputs.value }}
+          tag_name: v${{ steps.version.outputs.value }}
+          draft: false
+          files: publication/*
+          # Deux sections, une par langue : l'application n'affiche que celle
+          # de son interface (updater.notes_dans_la_langue).
           body: |
-            **Cosmological Distance Calculator — v${{ needs.version.outputs.version }}**
+            ## English
 
-            Redshift → four cosmological distances, in ΛCDM constrained by
-            Planck 2018, with 1σ error bars, adjustable curvature and the SH0ES
-            comparison. Bilingual interface (English / French).
+            ### Download
 
-            ### Download — nothing to install, no Python needed
+            | System | File |
+            |---|---|
+            | **Windows** | `${{ steps.kit.outputs.nom_fichier }}-Setup-${{ steps.version.outputs.value }}.exe` |
+            | **macOS Apple Silicon** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-macos-arm64.dmg` |
+            | **macOS Intel** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-macos-x86_64.dmg` |
+            | **Linux x86_64** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-linux-x86_64.tar.gz` |
+            | **Linux ARM64** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-linux-arm64.tar.gz` |
 
-            | Platform | File | Notes |
-            |---|---|---|
-            | **Windows** | `CosmologicalDistanceCalculator-windows.exe` | double-click. SmartScreen warns about unsigned programs: *More info* → *Run anyway* |
-            | **macOS (Apple Silicon)** | `CosmologicalDistanceCalculator-macos-apple-silicon.zip` | unzip, then **right-click → Open** the first time (unsigned app) |
-            | **macOS (Intel)** | `CosmologicalDistanceCalculator-macos-intel.zip` | added to this release by the *Intel* workflow, which runs on a scarcer runner |
-            | **Linux (x86_64)** | `CosmologicalDistanceCalculator-linux-x86_64` | `chmod +x` then run. Needs the usual Qt system libraries (see MANUAL §1.5) |
+            Permanent link to the latest Windows installer:
+            https://github.com/${{ steps.kit.outputs.depot_distribution }}/releases/latest/download/${{ steps.kit.outputs.nom_fichier }}-Setup.exe
 
-            Permanent links, always pointing at the latest build:
+            No administrator password is asked for: everything installs into
+            your own user profile.
 
-            ```
-            https://github.com/${{ github.repository }}/releases/latest/download/CosmologicalDistanceCalculator-windows.exe
-            https://github.com/${{ github.repository }}/releases/latest/download/CosmologicalDistanceCalculator-macos-apple-silicon.zip
-            https://github.com/${{ github.repository }}/releases/latest/download/CosmologicalDistanceCalculator-macos-intel.zip
-            https://github.com/${{ github.repository }}/releases/latest/download/CosmologicalDistanceCalculator-linux-x86_64
-            ```
+            **Windows** may show "Windows protected your PC" on first launch
+            because the installer is unsigned. Click **More info**, then **Run
+            anyway**. It appears only once.
 
-            ### From source
-            `git clone` then `./launch.sh` (Linux, macOS) or `launch.bat`
-            (Windows). If Python is missing, the launcher offers to install it.
+            **macOS**: open the `.dmg` matching your Mac and drag the application
+            into Applications. The application is unsigned: the first time,
+            **right-click** it, choose **Open**, and confirm (if macOS still
+            refuses: System Settings > Privacy & Security > **Open Anyway**).
 
-            ### Also attached
-            * `cours_distances_cosmologiques.pdf` — the 68-page course (French)
-            * `course_cosmological_distances.pdf` — the 64-page course (English)
+            **Linux**: unpack the archive and run `./installer.sh`. It installs
+            into `~/.local/share` and adds the menu entry, without sudo.
+
+            ### Updating
+
+            If the application is already installed, download nothing: it finds
+            this version at startup and offers to install it, on all three
+            systems. The `*-app-*.zip` archive exists for that automatic update
+            and is not meant to be installed by hand.
+
+            Change history: see the repository.
+
+            ## Francais
+
+            ### Telechargement
+
+            | Systeme | Fichier |
+            |---|---|
+            | **Windows** | `${{ steps.kit.outputs.nom_fichier }}-Setup-${{ steps.version.outputs.value }}.exe` |
+            | **macOS Apple Silicon** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-macos-arm64.dmg` |
+            | **macOS Intel** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-macos-x86_64.dmg` |
+            | **Linux x86_64** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-linux-x86_64.tar.gz` |
+            | **Linux ARM64** | `${{ steps.kit.outputs.nom_fichier }}-${{ steps.version.outputs.value }}-linux-arm64.tar.gz` |
+
+            Lien permanent vers le dernier installeur Windows :
+            https://github.com/${{ steps.kit.outputs.depot_distribution }}/releases/latest/download/${{ steps.kit.outputs.nom_fichier }}-Setup.exe
+
+            Aucun mot de passe administrateur n'est demande : l'installation se
+            fait dans votre profil utilisateur.
+
+            **Windows** peut afficher « Windows a protege votre ordinateur » au
+            premier lancement, parce que l'installeur n'est pas signe. Cliquez
+            sur **Informations complementaires** puis **Executer quand meme**.
+            Cet avertissement n'apparait qu'une fois.
+
+            **macOS** : ouvrez le `.dmg` qui correspond a votre Mac et glissez
+            l'application dans Applications. Elle n'est pas signee : la premiere
+            fois, faites un **clic droit** dessus, puis **Ouvrir**, et confirmez
+            (si macOS refuse encore : Reglages Systeme > Confidentialite et
+            securite > **Ouvrir quand meme**).
+
+            **Linux** : decompressez l'archive et lancez `./installer.sh`. Il
+            installe dans `~/.local/share` et ajoute l'entree de menu, sans sudo.
+
+            ### Mise a jour
+
+            Si l'application est deja installee, ne telechargez rien : elle
+            detecte cette version au demarrage et propose de l'installer, sur
+            les trois systemes. L'archive `*-app-*.zip` est destinee a cette
+            mise a jour automatique et ne s'installe pas a la main.
+
+            Historique des changements : voir le depot.

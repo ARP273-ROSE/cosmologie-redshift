@@ -27,13 +27,20 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:      # importable quel que soit le dossier courant
     sys.path.insert(0, str(HERE))
+# reporting.py et updater.py (kit commun) vivent un niveau au-dessus : à la
+# racine du dépôt, ou dans app/ du paquet installé. Sans cette ligne, leur
+# import échouait en silence dans le paquet, et ni rapport ni mise à jour ne
+# fonctionnaient.
+if str(HERE.parent) not in sys.path:
+    sys.path.append(str(HERE.parent))
 
 import numpy as np
 
 from PyQt6.QtCore import (Qt, QLocale, QThread, pyqtSignal, QObject, QSettings,
                           QTimer)
+from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import (QFont, QPalette, QColor, QAction, QIcon, QPixmap,
-                         QActionGroup, QValidator)
+                         QActionGroup, QValidator, QDesktopServices)
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QLabel, QDoubleSpinBox, QPushButton, QGroupBox, QFrame, QSizePolicy,
@@ -53,12 +60,13 @@ from i18n import (t, set_language, current_language, detect_system_language,
                   LANGUAGE_NAMES)
 from help_texts import help_html
 import simbad
-from updates import (__version__, RELEASES_URL, DOWNLOAD_URL,
-                     latest_version, is_newer, check_enabled)
+from updates import __version__, RELEASES_URL, check_enabled
 
 # --- polices : listes de repli couvrant Windows, Linux et macOS -------------
-FONT_UI = ('"Segoe UI", "Inter", "Helvetica Neue", "Ubuntu", "Cantarell", '
-           '"Noto Sans", "DejaVu Sans", sans-serif')
+# « Source Sans 3 » est embarquée (programme/polices) : l'interface ne dépend
+# pas des polices du système ; les suivantes ne servent qu'en dernier recours.
+FONT_UI = ('"Source Sans 3", "Segoe UI", "Inter", "Helvetica Neue", "Ubuntu", '
+           '"Cantarell", "Noto Sans", "DejaVu Sans", sans-serif')
 FONT_MONO = ["Cascadia Mono", "Cascadia Code", "Consolas",          # Windows
              "SF Mono", "Menlo", "Monaco",                          # macOS
              "DejaVu Sans Mono", "Liberation Mono", "Noto Sans Mono",  # Linux
@@ -201,6 +209,35 @@ def get_cosmic_stylesheet() -> str:
     """
 
 
+#: palette complète passée au style figé du kit (interface_kit.py)
+COULEURS_KIT = {
+    'fenetre': COLORS['bg_dark'], 'texte': COLORS['text_primary'],
+    'base': COLORS['bg_input'], 'base_alt': COLORS['bg_medium'],
+    'bouton': COLORS['bg_lighter'], 'texte_bouton': COLORS['text_primary'],
+    'selection': COLORS['accent_cyan'], 'texte_selection': COLORS['bg_dark'],
+    'lien': COLORS['accent_cyan'], 'infobulle': COLORS['bg_medium'],
+    'texte_infobulle': COLORS['text_primary'], 'desactive': COLORS['text_disabled'],
+    'clair': COLORS['bg_lighter'], 'moyen': COLORS['border'], 'sombre': COLORS['bg_darkest'],
+}
+
+
+def apply_fixed_style(app: QApplication):
+    """Style FIGÉ, identique sur les trois systèmes et indépendant de leur
+    thème clair/sombre et de leurs polices : Fusion, palette complète (tous
+    les rôles, états désactivés compris), police embarquée, feuille de style
+    cosmique. Sous Linux, les boîtes de fichiers sont les boîtes complètes de
+    Qt (interface_kit)."""
+    try:
+        import interface_kit
+        interface_kit.appliquer_style(app, COULEURS_KIT, polices=HERE / "polices",
+                                      famille="Source Sans 3", taille=10,
+                                      feuille=get_cosmic_stylesheet())
+        interface_kit.installer_dialogues_fichiers()
+    except Exception:
+        app.setStyle("Fusion")
+        apply_cosmic_theme(app)
+
+
 def apply_cosmic_theme(app: QApplication):
     app.setStyleSheet(get_cosmic_stylesheet())
     palette = QPalette()
@@ -305,13 +342,6 @@ class NumberSpinBox(QDoubleSpinBox):
     def textFromValue(self, value: float) -> str:      # noqa: N802 (API Qt)
         return f"{value:.{self.decimals()}f}"
 
-
-class UpdateWorker(QObject):
-    """Interroge GitHub dans un fil séparé ; ne bloque jamais l'interface."""
-    done = pyqtSignal(object)          # str (version) ou None
-
-    def run(self):
-        self.done.emit(latest_version())
 
 
 
@@ -474,6 +504,8 @@ class ResultRow(QFrame):
 # ============================================================================
 
 class MainWindow(QMainWindow):
+    # résultat de la recherche de mise à jour, émis depuis un fil de fond
+    _update_result = pyqtSignal(object, bool)
 
     DISTANCE_COLORS = {
         'comoving':         COLORS['accent_cyan'],
@@ -663,6 +695,7 @@ class MainWindow(QMainWindow):
         self.retranslate()
         self.recompute()
         self._update_thread = None
+        self._update_result.connect(self._on_update_checked)
         self.check_updates()          # silencieuse, en tâche de fond
 
     # ------------------------------------------------------------------ menus
@@ -680,6 +713,11 @@ class MainWindow(QMainWindow):
         )
 
         self.help_menu = self.menuBar().addMenu("")
+        self.act_manual = QAction("", self)
+        self.act_manual.setShortcut("Shift+F1")
+        self.act_manual.triggered.connect(self.open_manual)
+        self.help_menu.addAction(self.act_manual)
+        self.help_menu.addSeparator()
         self.help_actions = []
         entries = [("F1", "act_distances", "title_distances", "distances"),
                    ("F2", "act_planck",    "title_planck",    "planck"),
@@ -701,6 +739,18 @@ class MainWindow(QMainWindow):
         self.act_update = QAction("", self)
         self.act_update.triggered.connect(lambda: self.check_updates(manual=True))
         self.help_menu.addAction(self.act_update)
+        self.act_report = QAction("", self)
+        self.act_report.triggered.connect(self.report_problem)
+        self.help_menu.addAction(self.act_report)
+        self.act_autoreport = QAction("", self)
+        self.act_autoreport.setCheckable(True)
+        try:
+            import reporting
+            self.act_autoreport.setChecked(reporting.consentement() is True)
+        except Exception:
+            pass
+        self.act_autoreport.toggled.connect(self._set_auto_report)
+        self.help_menu.addAction(self.act_autoreport)
 
         self.act_about = QAction("", self)
         self.act_about.triggered.connect(
@@ -826,43 +876,228 @@ class MainWindow(QMainWindow):
                                     z=obj.redshift)
 
     def check_updates(self, manual: bool = False):
-        """Vérifie la dernière version publiée, sans bloquer l'interface."""
+        """Cherche une version plus récente (updater.py du kit commun), dans
+        un fil séparé : l'interface n'est jamais bloquée.
+
+        Paquet installé (Windows, macOS, Linux) : l'archive de la Release est
+        déballée dans app/, puis le programme redémarre. Depuis les sources :
+        la page de téléchargement s'ouvre."""
         if not manual and not check_enabled():
             return
         if getattr(self, "_update_thread", None) is not None:
             return
         if manual:
             self.statusBar().showMessage(t("update_checking"), 4000)
-        self._update_thread = QThread(self)
-        self._update_worker = UpdateWorker()
-        self._update_worker.moveToThread(self._update_thread)
-        self._update_thread.started.connect(self._update_worker.run)
-        self._update_worker.done.connect(
-            lambda remote, m=manual: self._on_update_checked(remote, m))
-        self._update_worker.done.connect(self._update_thread.quit)
-        self._update_thread.finished.connect(self._clear_update_thread)
+
+        def _worker():
+            try:
+                import updater
+                info = updater.check(__version__)
+            except Exception:                 # ne jamais faire tomber l'app
+                info = None
+            self._update_result.emit(info, manual)
+
+        import threading
+        self._update_thread = threading.Thread(target=_worker, daemon=True,
+                                               name="cosmo-maj")
         self._update_thread.start()
 
-    def _clear_update_thread(self):
+    def _on_update_checked(self, info, manual: bool):
         self._update_thread = None
-        self._update_worker = None
-
-    def _on_update_checked(self, remote, manual: bool):
-        if remote and is_newer(remote):
+        if not info:
             if manual:
-                QMessageBox.information(
-                    self, t("update_title"),
-                    t("update_available", remote=remote, local=__version__,
-                      url=DOWNLOAD_URL))
-            else:
-                self.statusBar().showMessage(t("update_banner", remote=remote), 15000)
-        elif manual:
-            if remote:
                 QMessageBox.information(self, t("update_title"),
                                         t("update_current", local=__version__))
-            else:
+            return
+        try:
+            import updater
+            installe = bool(updater.is_packaged())
+        except Exception:
+            installe = False
+        if not manual and not installe:
+            # depuis les sources, au démarrage : un simple bandeau suffit
+            self.statusBar().showMessage(t("update_banner", remote=info["version"]), 15000)
+            return
+        box = QMessageBox(self)
+        box.setWindowTitle(t("update_title"))
+        box.setText(t("update_found", remote=info["version"], local=__version__))
+        notes = (info.get("notes") or "").strip()
+        try:
+            import updater as _upd
+            # les notes publiées portent les deux langues : on ne montre que
+            # celle de l'interface
+            notes = _upd.notes_dans_la_langue(notes, current_language()).strip()
+        except Exception:
+            pass
+        if notes:
+            box.setDetailedText(notes[:4000])
+        if installe:
+            oui = box.addButton(t("update_install"), QMessageBox.ButtonRole.AcceptRole)
+        else:
+            box.setInformativeText(t("update_sources"))
+            oui = box.addButton(t("update_open_page"), QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(t("update_later"), QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        if box.clickedButton() is not oui:
+            return
+        if not installe:
+            QDesktopServices.openUrl(QUrl(RELEASES_URL + "/latest"))
+            return
+        self._download_update(info)
+
+    def _download_update(self, info: dict):
+        """Télécharge et pose l'archive dans un fil de fond. Le fil ne touche
+        jamais Qt : il écrit dans un dict qu'un QTimer relit à 10 Hz."""
+        import threading
+        import updater
+        from PyQt6.QtCore import QTimer
+        from PyQt6.QtWidgets import QProgressDialog
+        dlg = QProgressDialog(t("update_downloading"), None, 0, 100, self)
+        dlg.setWindowTitle(t("update_title"))
+        dlg.setWindowModality(Qt.WindowModality.WindowModal)
+        dlg.setCancelButton(None)
+        dlg.setMinimumDuration(0)
+        etat = {"fait": 0, "total": 0, "fini": False, "erreur": None, "pose": False}
+
+        def _progress(done, total):
+            etat["fait"], etat["total"] = done, total
+
+        def _worker():
+            try:
+                etat["pose"] = bool(updater.download_and_apply(info, progress=_progress))
+            except Exception as exc:
+                etat["erreur"] = exc
+            finally:
+                etat["fini"] = True
+
+        threading.Thread(target=_worker, daemon=True, name="cosmo-maj-pose").start()
+        poll = QTimer(self)
+        poll.setInterval(100)
+
+        def _tick():
+            if not etat["fini"]:
+                if etat["total"] > 0:
+                    dlg.setValue(min(99, etat["fait"] * 100 // etat["total"]))
+                return
+            poll.stop()
+            dlg.close()
+            err = etat["erreur"]
+            if err is not None or not etat["pose"]:
+                texte = str(err) if err is not None else "archive"
+                verrouille = (isinstance(err, PermissionError)
+                              or "WinError 32" in texte
+                              or "used by another process" in texte
+                              or "utilisé par un autre processus" in texte)
                 QMessageBox.warning(self, t("update_title"),
-                                    t("update_offline", url=RELEASES_URL))
+                                    t("update_locked") if verrouille
+                                    else t("update_failed", error=texte))
+                return
+            QMessageBox.information(self, t("update_title"), t("update_restart"))
+            try:
+                updater.restart()
+            finally:
+                QApplication.quit()
+
+        poll.timeout.connect(_tick)
+        poll.start()
+        self._update_poll = poll
+
+    # ------------------------------------------------- rapports de problème
+
+    def open_manual(self):
+        """Manuel PDF dans la langue de l'interface (docs/manuel-fr.pdf,
+        docs/manuel-en.pdf), avec la visionneuse du système."""
+        try:
+            import interface_kit
+            if interface_kit.ouvrir_manuel([HERE.parent / "docs"], current_language()):
+                return
+        except Exception:
+            pass
+        QMessageBox.information(self, t("act_manual").replace("&", ""), t("manual_missing"))
+
+    def ask_report_consent(self):
+        """Au premier lancement : demander l'accord pour l'envoi automatique
+        des rapports, puis signaler l'installation ou le démarrage du jour."""
+        try:
+            import reporting
+            premier = reporting.consentement() is None
+            if premier:
+                box = QMessageBox(self)
+                box.setWindowTitle(t("window_title"))
+                box.setIcon(QMessageBox.Icon.Question)
+                box.setText(t("consent_title"))
+                box.setInformativeText(t("consent_text"))
+                oui = box.addButton(t("consent_yes"), QMessageBox.ButtonRole.AcceptRole)
+                box.addButton(t("consent_no"), QMessageBox.ButtonRole.RejectRole)
+                box.exec()
+                reporting.definir_consentement(box.clickedButton() is oui)
+                self.act_autoreport.setChecked(reporting.consentement() is True)
+            reporting.signaler_demarrage(premier=premier)
+        except Exception:
+            pass
+
+    def _set_auto_report(self, on: bool):
+        try:
+            import reporting
+            reporting.definir_consentement(bool(on))
+        except Exception:
+            pass
+
+    def report_problem(self):
+        """Signalement écrit, transmis au point de collecte avec l'état du
+        calcul. Repli : un .zip sur le Bureau si le réseau manque."""
+        try:
+            import reporting
+        except Exception:
+            return
+        from PyQt6.QtWidgets import QDialogButtonBox, QPlainTextEdit
+        dlg = QDialog(self)
+        dlg.setWindowTitle(t("report_title"))
+        dlg.resize(540, 380)
+        form = QVBoxLayout(dlg)
+        form.addWidget(QLabel(t("report_prompt")))
+        texte = QPlainTextEdit()
+        texte.setPlaceholderText(t("report_placeholder"))
+        form.addWidget(texte)
+        note = QLabel(t("report_note"))
+        note.setWordWrap(True)
+        form.addWidget(note)
+        btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                | QDialogButtonBox.StandardButton.Cancel)
+        btns.button(QDialogButtonBox.StandardButton.Ok).setText(t("report_send"))
+        btns.button(QDialogButtonBox.StandardButton.Cancel).setText(t("report_cancel"))
+        form.addWidget(btns)
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+        description = texte.toPlainText().strip()
+        if not description:
+            QMessageBox.information(self, t("report_title"), t("report_empty"))
+            return
+        # Un signalement écrit à la main est toujours transmis : on vient de
+        # demander qu'on le lise. L'accord ne gouverne que l'automatique.
+        accord = reporting.consentement()
+        if accord is not True:
+            reporting.definir_consentement(True)
+        try:
+            etat = {"z": round(float(self.z_spin.value()), 6),
+                    "langue": current_language()}
+        except Exception:
+            etat = {}
+        rapport = reporting.envoyer("manuel", description=description,
+                                    version=__version__, **etat)
+        if accord is not True:
+            reporting.definir_consentement(bool(accord))
+        try:
+            chemin = reporting.paquet_local(rapport, None)
+        except Exception:
+            chemin = None
+        if rapport.get("transmis", True) and chemin is None:
+            msg = t("report_sent")
+        else:
+            msg = t("report_local", path=chemin or "-")
+        QMessageBox.information(self, t("report_title"), msg)
 
     def set_lang(self, code: str):
         set_language(code)
@@ -943,6 +1178,9 @@ class MainWindow(QMainWindow):
         for act, key in self.help_actions:
             act.setText(t(key))
         self.act_update.setText(t("act_update"))
+        self.act_manual.setText(t("act_manual"))
+        self.act_report.setText(t("act_report"))
+        self.act_autoreport.setText(t("act_autoreport"))
         self.act_about.setText(t("act_about"))
 
         # légende et repères du graphe
@@ -1177,6 +1415,37 @@ def _save_language(code: str) -> None:
 _fichier_faulthandler = None
 
 
+def _empaquete() -> bool:
+    """Vrai dans le paquet autonome du kit : python/ à côté de app/.
+
+    Windows : python/python.exe ; macOS et Linux : python/bin/python3.
+    """
+    py = HERE.parent.parent / "python"
+    return (py / "python.exe").exists() or (py / "bin" / "python3").exists()
+
+
+def _verifier() -> int:
+    """--check : le programme et ses dépendances se chargent-ils ?
+
+    Lancé par la construction des paquets avec l'interpréteur embarqué ;
+    aucune fenêtre n'est ouverte."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    try:
+        import astropy.cosmology  # noqa: F401
+        import scipy.integrate  # noqa: F401
+        import reporting  # noqa: F401
+        import updater  # noqa: F401
+        import simbad  # noqa: F401
+        app = QApplication.instance() or QApplication(sys.argv[:1])
+        del app
+    except Exception as exc:
+        print(f"CosmologicalDistanceCalculator {__version__} : "
+              f"ECHEC / FAILED -- {type(exc).__name__}: {exc}")
+        return 1
+    print(f"CosmologicalDistanceCalculator {__version__} : OK")
+    return 0
+
+
 def _demarrer_rapports():
     """Remontée d'incidents : plantage, mort brutale côté Qt, gel, signalement.
 
@@ -1187,8 +1456,16 @@ def _demarrer_rapports():
     """
     from pathlib import Path
     ici = Path(__file__).resolve().parent
-    if (ici.parent.parent / "python" / "python.exe").exists():
-        dossier = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "CosmologicalDistanceCalculator"
+    if _empaquete():
+        # Jamais dans le dossier du programme : la mise à jour le remplace.
+        if sys.platform == "win32":
+            racine = Path(os.environ.get("LOCALAPPDATA", Path.home()))
+        elif sys.platform == "darwin":
+            racine = Path.home() / "Library" / "Application Support"
+        else:
+            racine = Path(os.environ.get("XDG_DATA_HOME")
+                          or Path.home() / ".local" / "share")
+        dossier = racine / "CosmologicalDistanceCalculator"
     else:
         dossier = ici
     try:
@@ -1230,6 +1507,8 @@ def _demarrer_rapports():
 
 
 def main():
+    if "--check" in sys.argv[1:]:
+        sys.exit(_verifier())
     rapports = _demarrer_rapports()
     argv = list(sys.argv)
     lang = None
@@ -1246,22 +1525,39 @@ def main():
     set_language(lang)
 
     app = QApplication(argv)
-    app.setStyle("Fusion")
-    apply_cosmic_theme(app)
+    # Verrou nommé lu par l'installeur Inno (AppMutex = <nom_fichier>EnCours) :
+    # installer par-dessus le programme ouvert ne remplacerait pas les
+    # fichiers en cours d'utilisation, et annoncerait pourtant « terminé ».
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            app._mutex_installeur = ctypes.windll.kernel32.CreateMutexW(
+                None, False, "CosmologicalDistanceCalculatorEnCours")
+        except Exception:
+            pass
+    apply_fixed_style(app)
+    try:
+        app.setWindowIcon(QIcon(str(HERE / "logo_256.png")))
+    except Exception:
+        pass
     w = MainWindow()
     w.show()
+
+    # Accord pour l'envoi automatique des rapports (premier lancement), puis
+    # preuve de vie. La recherche de mise à jour est lancée par la fenêtre.
+    if rapports is not None:
+        QTimer.singleShot(1200, w.ask_report_consent)
 
     # Vigie anti-gel : le minuteur bat depuis le fil graphique, un fil de fond
     # regarde l'heure. Si le battement s'arrête, la fenêtre est figée et la
     # pile capturée dit quel calcul la retenait.
     if rapports is not None:
         try:
-            from PyQt6.QtCore import QTimer
             vigie = rapports.Vigie(seuil=10.0, periode=2.0)
             vigie.demarrer()
             minuteur = QTimer(w)
             minuteur.timeout.connect(vigie.battre)
-            minuteur.start(2000)
+            minuteur.start(1000)       # avant le premier contrôle (2 s)
             w._vigie, w._vigie_timer = vigie, minuteur
         except Exception:
             pass

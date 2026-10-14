@@ -8,10 +8,36 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
-## Non publié — 9 octobre 2026
+## [1.4.0] — 14 octobre 2026
+
+### Ajouté
+- **Installeurs pour les trois systèmes**, construits par un seul workflow
+  (`release.yml`, sur tag `vX.Y.Z`) : installeur Windows (Python embarqué, plus de
+  PyInstaller), `.dmg` Apple Silicon et Intel, `.tar.gz` Linux x86_64 et ARM64 avec
+  `installer.sh` ; lien permanent `releases/latest/download/CosmologicalDistanceCalculator-Setup.exe`.
+- **Mise à jour automatique** sur les trois systèmes (kit commun `updater.py`) :
+  adresses GitHub seulement, notes dans la langue de l'interface ; depuis les
+  sources, la page de téléchargement s'ouvre.
+- **Rapports de problème** : accord au premier lancement, *Aide → Signaler un
+  problème…*, *Envoyer automatiquement les rapports de problème* ; données hors du
+  dossier d'installation.
+- **Manuel PDF** (français et anglais, format maison, captures réelles), ouvert par
+  *Aide → Manuel (PDF)* (Maj+F1) ; refait par `docs/captures.py` et `docs/src/compiler.py`.
+- **Apparence figée** : style Fusion, palette complète, police Source Sans 3
+  embarquée — indépendante du thème clair/sombre et des polices du système.
+- Logo : une seule source SVG, rendue en PNG 16 à 512, `.ico` et `.icns` ; affiché
+  dans *À propos*.
+- `--check` (construction des paquets) ; tests : textes en dur, cohérence du kit,
+  branchement du kit sous Xvfb, lancés par `tests.yml` avec les contrôles existants.
 
 ### Modifié
-
+- `reporting.py` et `updater.py` n'étaient pas importables depuis le paquet Windows
+  (ils sont un niveau au-dessus de `programme/`) : aucun rapport ne partait d'une
+  copie installée. Corrigé.
+- Le cache des courbes ne va plus dans le dossier d'installation.
+- `macos-intel.yml`, le `release.yml` PyInstaller et `release-windows.yml` sont
+  remplacés par le seul `release.yml` ; les anciens exécutables monofichiers ne sont
+  plus publiés (les liens de la 1.3.3 répondaient déjà 404).
 - Retrait des mentions personnelles ; éditeur de l'installeur et en-tête de
   `reporting.py` : ARP273-ROSE. L'emplacement des réglages (organisation
   `QSettings` `cosmologie-redshift`) ne change pas.

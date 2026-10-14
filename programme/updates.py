@@ -57,9 +57,10 @@ VERSION = __version__
 GITHUB_REPO = "ARP273-ROSE/cosmologie-redshift"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
-# Lien permanent vers l'exécutable Windows, quelle que soit la version.
+# Lien permanent vers l'installeur Windows, quelle que soit la version.
+# La mise à jour elle-même passe par updater.py (kit commun).
 DOWNLOAD_URL = (f"https://github.com/{GITHUB_REPO}/releases/latest/download/"
-                "CosmologicalDistanceCalculator-windows.exe")
+                "CosmologicalDistanceCalculator-Setup.exe")
 
 _TIMEOUT = 4.0
 
