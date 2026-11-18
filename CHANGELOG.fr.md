@@ -8,6 +8,17 @@ Ce fichier recense les changements notables du projet. Le format suit
 
 ---
 
+## [1.4.1] — 18 novembre 2026
+
+### Sécurité
+- **Mises à jour signées** : chaque version publie un manifeste (numéro de version et empreinte
+  SHA-256 de chaque archive) signé par une clé Ed25519 qui n'est pas sur GitHub ; l'application
+  n'installe plus une mise à jour que si son archive y figure. Un accès GitHub volé ne peut plus
+  pousser de code sur les postes installés.
+- **Kit commun reposé** à son niveau courant : empreintes SHA256SUMS et archive vérifiées avant
+  extraction, adresse vérifiée après les redirections, certificats de la distribution sous Linux,
+  rapports d'incident à jour.
+
 ## [1.4.0] — 14 octobre 2026
 
 ### Ajouté

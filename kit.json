@@ -10,6 +10,7 @@
   "modules": [
     "reporting.py",
     "updater.py",
+    "signature_maj.py",
     "interface_kit.py"
   ],
   "paquets": [
@@ -42,5 +43,6 @@
   "description_fr": "Redshift et distances cosmologiques (ΛCDM, Planck 2018)",
   "description_en": "Redshift to cosmological distances (ΛCDM, Planck 2018)",
   "categories_linux": "Education;Science;Astronomy;Physics;",
-  "icone_icns": "programme/logo.icns"
+  "icone_icns": "programme/logo.icns",
+  "cle_publique_maj": "kHjUuLfq9BPw5+cmaBXwqFGMR4J9Jq5r0wBQLybZN0s="
 }
